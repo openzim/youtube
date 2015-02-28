@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Youtube</title>
+        <meta charset="utf-8">
+	<meta content="utf-8" http-equiv="encoding">
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <link href="CSS/welcome.css" rel="stylesheet" type="text/css">
+        <link href="CSS/chosen.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+            <div class="container">
+                <img src="CSS/img/YOUTUBE.png" id="title-img"/>
+                <table style="width: 100%;"><tr>
+                   <td>
+		     <div class="pagination" style="visibility: hidden;">
+                       <div class="left-arrow">&#10096;</div>
+                       <span class="pagination-text"></span>
+                       <div class="right-arrow">&#10097;</div>
+                    </div>
+		  </td>
+		</tr></table>
+                <hr/>                
+                <div id="grid-container" style="display:block;">
+                    <ul id="video-items" class="rig grid"></ul>
+                </div>
+                
+                <hr/>
+		
+		<div class="backtotop" onclick="$('html, body').animate({ scrollTop: 0 }, 'slow');">
+		  <span style="margin: auto;">Back to the top</span>
+                </div>
+		
+		<div class="pagination" style="visibility: hidden; margin-bottom: 1em;">
+                  <div class="left-arrow">&#10096;</div>
+                  <span class="pagination-text"></span>
+                  <div class="right-arrow">&#10097;</div>
+                </div>
+
+            </div>
+
+        <script src="JS/jquery.js" type="text/javascript"></script>
+        <script src="JS/chosen.jquery.js" type="text/javascript"></script>
+        <script src="JS/data.js"></script>
+        <script src="JS/db.js"></script>
+        <script src="JS/app.js"></script>
+    </body>
+</html>

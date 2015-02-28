@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{ title }}</title>
+        <meta charset="utf-8">
+	<meta content="utf-8" http-equiv="encoding">
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <link href="../CSS/video.css" rel="stylesheet" type="text/css">
+        <link href="../CSS/ted.css" rel="stylesheet" type="text/css">
+        <script src="../JS/video.js"></script>
+    </head>
+    <body>
+        <div id="content">
+	    <img id="backtolist" src="../CSS/img/YOUTUBE_small.png" title="Back to the list" onclick="history.go(-1)" />
+            <p id="speaker">{{ author }}</p>
+            <p id="title">{{ title }}</p>
+            <video class="video-js vjs-default-skin" controls preload="auto" width="480" height="270" 
+                data-setup='{"autoplay": true, "preload": "true"}'>
+                <source src="video.webm" type="video/webm" />
+                {% for language in vtt %}
+                <track kind="subtitles" src="subs/{{ language }}.vtt" srclang="{{ language }}" label="{{ language }}" />
+                {% endfor %}
+            </video>
+            <div id="description">
+                <p id="description">{{ description }}</p>
+		<a href="{{ url }}">{{ url }}</a>
+            </div>
+            <div id="date">{{ date }}</div>
+        </div>
+    </body>
+</html>
