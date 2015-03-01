@@ -204,6 +204,22 @@ def create_zim(static_folder, zim_path, title, description):
     else:
         print "Unable to create ZIM file :("
 
+def bin_is_present(binary):
+    try:
+        subprocess.Popen(binary,
+                         universal_newlines=True,
+                         shell=False,
+                         stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         bufsize=0)
+    except OSError:
+        return False
+    else:
+        return True
+
+
+
 if not bin_is_present("zimwriterfs"):
         sys.exit("zimwriterfs is not available, please install it.")
 
