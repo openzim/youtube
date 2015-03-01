@@ -37,8 +37,11 @@ def get_list_item_info(url):
 	"""
         with youtube_dl.YoutubeDL({'outtmpl': scraper_dir+'%(id)s/video.mp4', 'writesubtitles': True}) as ydl:
         	result = ydl.extract_info(url, download=True) 
-	title = result['title']
-	type = result['extractor_key']
+        type = result['extractor_key']
+        if type == "YoutubePlaylist":
+                title = result['title']
+        else:
+                title =  result.get('entries')[0].get('uploader')
 	return result.get('entries')
 
 def welcome_page(title, author, id, description):
