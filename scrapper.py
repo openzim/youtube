@@ -6,12 +6,13 @@ import youtube_dl
 import urllib
 import requests
 import subprocess
-from datetime import datetime
+import datetime
 from sys import platform as _platform
 from jinja2 import Environment, FileSystemLoader
 import pycaption
 import json
 import shutil
+import envoy
 
 type = ""
 title = ""
@@ -42,6 +43,7 @@ def get_list_item_info(url):
                 title = result['title']
         else:
                 title =  result.get('entries')[0].get('uploader')
+	print result
 	return result.get('entries')
 
 def welcome_page(title, author, id, description):
@@ -133,6 +135,9 @@ def resize_image(image_path):
     image = image.resize((248, 187), Image.ANTIALIAS)
     image.save(image_path)
 
+def exec_cmd(cmd):
+    return envoy.run(str(cmd.encode('utf-8')))
+
 def encode_videos(list,scraper_dir):
          """
          Encode the videos from mp4 to webm. We will use ffmpeg over the 
@@ -168,20 +173,20 @@ def convert_video_and_move_to_rendering(from_path, to_path):
         os.system(command)
 
 
-def create_zims():
+def create_zims(list_title):
         print 'Creating ZIM files'
         # Check, if the folder exists. Create it, if it doesn't.
       	zim_dir = scraper_dir
         if not os.path.exists(zim_dir):
             os.makedirs(zim_dir)
         html_dir = os.path.join(scraper_dir)
-	zim_path = os.path.join(zim_dir, "youtube_{title}_{date}.zim".format(title=title,date=datetime.datetime.now().strftime('%Y-%m')))
+	zim_path = os.path.join(zim_dir, "youtube_{title}_{date}.zim".format(title=list_title,date=datetime.datetime.now().strftime('%Y-%m')))
 	if type == "YoutubePlaylist":
-		title = "Youtube - Playlist - {title} ".format(title=title)
-	        description = "Youtube - {title} playlist video".format(title=title)	
+		title = "Youtube - Playlist - {title} ".format(title=list_title)
+	        description = "Youtube - {title} playlist video".format(title=list_title)	
 	else:
-		title = "Youtube - User - {title} ".format(title=title)
-	        description = "Youtube - {title} user video".format(title=title)
+		title = "Youtube - User - {title} ".format(title=list_title)
+	        description = "Youtube - {title} user video".format(title=list_title)
         create_zim(html_dir, zim_path, title, description)
 
 def create_zim(static_folder, zim_path, title, description):
@@ -237,4 +242,4 @@ list=get_list_item_info(sys.argv[1])
 write_video_info(list)
 dump_data(videos)
 encode_videos(list, scraper_dir)
-create_zims()
+create_zims(title)
