@@ -11,6 +11,7 @@ from sys import platform as _platform
 from jinja2 import Environment, FileSystemLoader
 import pycaption
 import json
+import shutil
 
 type = ""
 title = ""
@@ -18,25 +19,24 @@ videos = []
 #prepare build folder
 scraper_dir = "build/"
 if not os.path.exists(scraper_dir):
-	os.makedirs(scraper_dir)
+        os.makedirs(scraper_dir)
 if not os.path.exists(scraper_dir+"CSS/"):
-	os.rename("templates/CSS/", scraper_dir+"CSS/")
+        shutil.copytree("templates/CSS/", scraper_dir+"CSS/")
 if not os.path.exists(scraper_dir+"JS/"):
-        os.rename("templates/JS/", scraper_dir+"JS/")
+        shutil.copytree("templates/JS/", scraper_dir+"JS/")
 if not os.path.exists(scraper_dir+"favicon.png"):
-        os.rename("templates/favicon.png", scraper_dir+"favicon.png")
+        shutil.copy("templates/favicon.png", scraper_dir+"favicon.png")
 if not os.path.exists(scraper_dir+"index.html"):
-        os.rename("templates/welcome.html", scraper_dir+"index.html")
+        shutil.copy("templates/welcome.html", scraper_dir+"index.html")
 
 def get_list_item_info(url):
 	"""
 	Create dictionnary with all info about video playlist or user video
 	structure is {dict [list of dict {dict for each video} ] }
 	Only return list of video and write title of playlist/user name
-	Save video in best quality in build/{id}/video.mp4 
 	"""
-        with youtube_dl.YoutubeDL({'outtmpl': scraper_dir+'%(id)s/video.mp4', 'writesubtitles': True}) as ydl:
-        	result = ydl.extract_info(url, download=True) 
+        with youtube_dl.YoutubeDL({'writesubtitles': True}) as ydl:
+                result = ydl.extract_info(url, download=False) 
         type = result['extractor_key']
         if type == "YoutubePlaylist":
                 title = result['title']
@@ -56,31 +56,37 @@ def write_video_info(list):
         """
         Render static html pages from the scraped video data and
         save the pages in build/{video id}/index.html.
+	Save video in best quality in build/{video id}/video.mp4
         """
 	print 'Rendering template...'
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('video.html')
+        for item in list:
+                if not os.path.exists(scraper_dir+item.get('id')+"/"):
+                        url = "https://www.youtube.com/watch?v="+item.get('id')
+                        with youtube_dl.YoutubeDL({'outtmpl': scraper_dir+item.get('id')+'/video.mp4'})  as ydl:
+                                ydl.download([url])
+                        date = item.get('upload_date')
+                        id = item.get('id')
+                        publication_date = date[6:8]+"/"+date[4:6]+"/"+date[0:4]
+                        subtitles = download_video_thumbnail_subtitles(id, item.get('subtitles'))
+                        video_path = scraper_dir+id+"/"
 
-	for item in list:
-		date = item.get('upload_date')
-		id = item.get('id')
-		publication_date = date[6:8]+"/"+date[4:6]+"/"+date[0:4]		
-		subtitles = download_video_thumbnail_subtitles(id, item.get('subtitles'))
- 		video_path = scraper_dir+id+"/" 
+                        html = template.render(
+                                title=item.get('title'),
+                                author=item.get('uploader'),
+                                vtt = subtitles,
+                                description=item.get('description'),
+                                url=item.get('webpage_url'),
+                                date=publication_date)
 
-                html = template.render(
-                        title=item.get('title'),
-                        author=item.get('uploader'),
-			vtt = subtitles,
-                        description=item.get('description'),
-                        url=item.get('webpage_url'),
-                        date=publication_date)
-
-                html = html.encode('utf-8')
-                index_path = os.path.join(video_path, 'index.html')
-                with open(index_path, 'w') as html_page:
-                    html_page.write(html)
-		welcome_page(item.get('title'), item.get('uploader'), id, item.get('description'))
+                        html = html.encode('utf-8')
+                        index_path = os.path.join(video_path, 'index.html')
+                        with open(index_path, 'w') as html_page:
+                            html_page.write(html)
+                        welcome_page(item.get('title'), item.get('uploader'), id, item.get('description')
+                else:
+                        print "pass, video already exist"
 
 def dump_data(videos):
         """
