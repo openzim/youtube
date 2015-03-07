@@ -84,7 +84,7 @@ def write_video_info(list):
                         index_path = os.path.join(video_path, 'index.html')
                         with open(index_path, 'w') as html_page:
                             html_page.write(html)
-                        welcome_page(item.get('title'), item.get('uploader'), id, item.get('description')
+                        welcome_page(item.get('title'), item.get('uploader'), id, item.get('description'))
                 else:
                         print "pass, video already exist"
 
