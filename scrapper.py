@@ -13,6 +13,9 @@ import pycaption
 import json
 import shutil
 import envoy
+import bs4 as BeautifulSoup
+import cssutils
+import slugify
 
 type = ""
 title = ""
@@ -43,7 +46,7 @@ def get_list_item_info(url):
                 title = result['title']
         else:
                 title =  result.get('entries')[0].get('uploader')
-	print result
+		get_user_pictures(title)
 	return result.get('entries')
 
 def welcome_page(title, author, id, description):
@@ -52,7 +55,7 @@ def welcome_page(title, author, id, description):
             'title': title.encode('ascii', 'ignore'),
             'description': description.encode('ascii', 'ignore'),
             'speaker': author.encode('ascii', 'ignore'),
-            'thumbnail': id+"thumbnail.jpg".encode('ascii', 'ignore')})
+            'thumbnail': id+"/thumbnail.jpg".encode('ascii', 'ignore')})
 
 def write_video_info(list):
         """
@@ -66,13 +69,14 @@ def write_video_info(list):
         for item in list:
                 if not os.path.exists(scraper_dir+item.get('id')+"/"):
                         url = "https://www.youtube.com/watch?v="+item.get('id')
-                        with youtube_dl.YoutubeDL({'outtmpl': scraper_dir+item.get('id')+'/video.mp4'})  as ydl:
+			title_clean = slugify.slugify(item.get('title'))
+                        with youtube_dl.YoutubeDL({'outtmpl': scraper_dir+title_clean+'/video.mp4'})  as ydl:
                                 ydl.download([url])
                         date = item.get('upload_date')
                         id = item.get('id')
                         publication_date = date[6:8]+"/"+date[4:6]+"/"+date[0:4]
-                        subtitles = download_video_thumbnail_subtitles(id, item.get('subtitles'))
-                        video_path = scraper_dir+id+"/"
+                        subtitles = download_video_thumbnail_subtitles(id, item.get('subtitles'), title_clean)
+                        video_path = scraper_dir+title_clean+"/"
 
                         html = template.render(
                                 title=item.get('title'),
@@ -86,7 +90,7 @@ def write_video_info(list):
                         index_path = os.path.join(video_path, 'index.html')
                         with open(index_path, 'w') as html_page:
                             html_page.write(html)
-                        welcome_page(item.get('title'), item.get('uploader'), id, item.get('description'))
+                        welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
                 else:
                         print "pass, video already exist"
 
@@ -106,11 +110,11 @@ def dump_data(videos):
         with open(scraper_dir + 'JS/data.js', 'w') as youtube_file:
             youtube_file.write(data)
 
-def download_video_thumbnail_subtitles(id, subtitles):
+def download_video_thumbnail_subtitles(id, subtitles, title):
 	""" Download thumbnail and subtitles of each video in his folder """
 	#download thumbnail
 	thumbnail_url = "https://i.ytimg.com/vi/"+id+"/hqdefault.jpg"
-	thumbnail_file = scraper_dir+id+"/thumbnail.jpg" 
+	thumbnail_file = scraper_dir+title+"/thumbnail.jpg" 
 	urllib.urlretrieve (thumbnail_url , thumbnail_file)  
 	resize_image(thumbnail_file)
 	#download substitle and add it to video.html if they exist
@@ -121,13 +125,31 @@ def download_video_thumbnail_subtitles(id, subtitles):
 			subs_list.append(caps)
 		        reader = pycaption.detect_format(caps)
        			if reader:
-			    file_name = scraper_dir+id+key+".vtt"
+			    file_name = scraper_dir+title+key+".vtt"
        			    subtitle_vtt = pycaption.WebVTTWriter().write(reader().read(caps))
 			    webvttfile = open(file_name, "w") 
 			    webvttfile.write(subtitle_vtt)
 			    webvttfile.close()
 	return subs_list
 
+def get_user_pictures(user_name):
+	page_url = 'http://youtube.com/user/'+user_name
+	html = urllib.urlopen(page_url).read()
+	soup = BeautifulSoup.BeautifulSoup(html)
+	profile_picture = soup.find('meta',attrs={"property":u"og:image"})['content']
+	url_profile_picture =  "https:"+profile_picture
+	print url_profile_picture
+	urllib.urlretrieve (url_profile_picture , scraper_dir+"CSS/img/YOUTUBE_small.png")
+	# get user header
+	header = soup.find('div',attrs={"id":u"gh-banner"}).find('style').text
+	sheet = cssutils.parseString(header)
+	for rule in sheet:
+	    if rule.type == rule.STYLE_RULE:
+	        for property in rule.style:
+	            if property.name == 'background-image':
+	                urls = property.value
+	url_user_header = "https:"+urls[4:-1]
+	urllib.urlretrieve (url_user_header , scraper_dir+"CSS/img/YOUTUBE_header.png")
 def resize_image(image_path):
     from PIL import Image
     image = Image.open(image_path)
@@ -145,7 +167,7 @@ def encode_videos(list,scraper_dir):
          in the kiwix-other/youtube/ directory, that we will use on macs. 
          """
          for item in list:
-                 video_id = str(item.get('id'))
+                 video_id = slugify.slugify(item.get('title'))
                  video_path = os.path.join(scraper_dir, video_id, 'video.mp4')
                  video_copy_path = os.path.join(scraper_dir, video_id, 'video.webm')
 
@@ -180,7 +202,7 @@ def create_zims(list_title):
         if not os.path.exists(zim_dir):
             os.makedirs(zim_dir)
         html_dir = os.path.join(scraper_dir)
-	zim_path = os.path.join(zim_dir, "youtube_{title}_{date}.zim".format(title=list_title,date=datetime.datetime.now().strftime('%Y-%m')))
+	zim_path = os.path.join(zim_dir, "{title}_{lang}_all_{date}.zim".format(title=list_title,lang=lang_input,date=datetime.datetime.now().strftime('%Y_%m')))
 	if type == "YoutubePlaylist":
 		title = "Youtube - Playlist - {title} ".format(title=list_title)
 	        description = "Youtube - {title} playlist video".format(title=list_title)	
@@ -201,7 +223,7 @@ def create_zim(static_folder, zim_path, title, description):
         'publisher': 'Kiwix',
 
         'home': 'index.html',
-        'favicon': 'favicon.png',
+        'favicon': 'CSS/img/YOUTUBE_small.png',
 
         'static': static_folder,
         'zim': zim_path
@@ -237,7 +259,7 @@ def bin_is_present(binary):
 
 if not bin_is_present("zimwriterfs"):
         sys.exit("zimwriterfs is not available, please install it.")
-
+lang_input=sys.argv[2]
 list=get_list_item_info(sys.argv[1])
 write_video_info(list)
 dump_data(videos)
