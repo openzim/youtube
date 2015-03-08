@@ -18,7 +18,6 @@ import cssutils
 import slugify
 
 type = ""
-title = ""
 videos = []
 #prepare build folder
 scraper_dir = "build/"
@@ -42,10 +41,11 @@ def get_list_item_info(url):
         with youtube_dl.YoutubeDL({'writesubtitles': True}) as ydl:
                 result = ydl.extract_info(url, download=False) 
         type = result['extractor_key']
+	global title
         if type == "YoutubePlaylist":
-                title = result['title']
+                title = slugify.slugify(result['title'])
         else:
-                title =  result.get('entries')[0].get('uploader')
+                title =  slugify.slugify(result.get('entries')[0].get('uploader'))
 		get_user_pictures(url)
 	return result.get('entries')
 
@@ -67,9 +67,9 @@ def write_video_info(list):
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('video.html')
         for item in list:
-                if not os.path.exists(scraper_dir+item.get('id')+"/"):
+		title_clean = slugify.slugify(item.get('title'))
+                if not os.path.exists(scraper_dir+title_clean+"/"):
                         url = "https://www.youtube.com/watch?v="+item.get('id')
-			title_clean = slugify.slugify(item.get('title'))
                         with youtube_dl.YoutubeDL({'outtmpl': scraper_dir+title_clean+'/video.mp4'})  as ydl:
                                 ydl.download([url])
                         date = item.get('upload_date')
@@ -93,6 +93,7 @@ def write_video_info(list):
                         welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
                 else:
                         print "pass, video already exist"
+			welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
 
 def dump_data(videos):
         """
@@ -101,7 +102,6 @@ def dump_data(videos):
         """
         # Prettified json dump
         data = 'json_data = ' + json.dumps(videos, indent=4, separators=(',', ': '))
-
         # Check, if the folder exists. Create it, if it doesn't.
         if not os.path.exists(scraper_dir):
             os.makedirs(scraper_dir)
@@ -136,7 +136,10 @@ def get_user_pictures(url):
 	html = urllib.urlopen(url).read()
 	soup = BeautifulSoup.BeautifulSoup(html)
 	profile_picture = soup.find('meta',attrs={"property":u"og:image"})['content']
-	url_profile_picture =  profile_picture
+	if profile_picture[1] == "/":
+		url_profile_picture =  "http:"+profile_picture
+	else:
+		url_profile_picture =  profile_picture
 	print url_profile_picture
 	urllib.urlretrieve (url_profile_picture , scraper_dir+"CSS/img/YOUTUBE_small.png")
 	# get user header
@@ -147,7 +150,10 @@ def get_user_pictures(url):
 	        for property in rule.style:
 	            if property.name == 'background-image':
 	                urls = property.value
-	url_user_header = "https:"+urls[5:-1]
+        if urls[4] == '"':
+                url_user_header = "https:"+urls[5:-1]
+        else:
+                url_user_header = "https:"+urls[4:-1]
 	print url_user_header
 	urllib.urlretrieve (url_user_header , scraper_dir+"CSS/img/YOUTUBE_header.png")
 def resize_image(image_path):
@@ -209,18 +215,18 @@ def create_zims(list_title):
 	else:
 		title = "Youtube - User - {title} ".format(title=list_title)
 	        description = "Youtube - {title} user video".format(title=list_title)
-        create_zim(html_dir, zim_path, title, description)
+        create_zim(html_dir, zim_path, title, description, list_title)
 
-def create_zim(static_folder, zim_path, title, description):
+def create_zim(static_folder, zim_path, title, description, list_title):
 
     print "\tWritting ZIM for {}".format(title)
 
     context = {
-        'languages': 'eng',
-        'title': title,
+        'languages': lang_input,
+        'title': list_title,
         'description': description,
-        'creator': 'Youtube',
-        'publisher': 'Kiwix',
+        'creator': list_title,
+        'publisher': publisher,
 
         'home': 'index.html',
         'favicon': 'CSS/img/YOUTUBE_small.png',
@@ -255,13 +261,23 @@ def bin_is_present(binary):
     else:
         return True
 
+def usage():
+    print "\nYoutube to zim script\n"
+    print 'Usage: python scrapper.py [your user url or playlist url] [lang of your zim archive] [publisher]]\n'
+    print 'Exemple : \npython scrapper.py https://www.youtube.com/channel/UC2gwowvVGh7NMYtHHeyzMmw ara  kiwix => for an user channel \npython scrapper.py https://www.youtube.com/playlist?list=PL1rRii_tzDcK47PQTWUX5yzoL8xz7Kgna en kiwix=> for an playlist '
 
+if len(sys.argv) != 4 :
+	usage()
+	exit()
 
-#if not bin_is_present("zimwriterfs"):
- #       sys.exit("zimwriterfs is not available, please install it.")
+if not bin_is_present("zimwriterfs"):
+        sys.exit("zimwriterfs is not available, please install it.")
+
 lang_input=sys.argv[2]
+publisher=sys.argv[3]
 list=get_list_item_info(sys.argv[1])
 write_video_info(list)
 dump_data(videos)
 encode_videos(list, scraper_dir)
+print title
 create_zims(title)
