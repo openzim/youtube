@@ -46,7 +46,7 @@ def get_list_item_info(url):
                 title = result['title']
         else:
                 title =  result.get('entries')[0].get('uploader')
-		get_user_pictures(title)
+		get_user_pictures(url)
 	return result.get('entries')
 
 def welcome_page(title, author, id, description):
@@ -132,12 +132,11 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
 			    webvttfile.close()
 	return subs_list
 
-def get_user_pictures(user_name):
-	page_url = 'http://youtube.com/user/'+user_name
-	html = urllib.urlopen(page_url).read()
+def get_user_pictures(url):
+	html = urllib.urlopen(url).read()
 	soup = BeautifulSoup.BeautifulSoup(html)
 	profile_picture = soup.find('meta',attrs={"property":u"og:image"})['content']
-	url_profile_picture =  "https:"+profile_picture
+	url_profile_picture =  profile_picture
 	print url_profile_picture
 	urllib.urlretrieve (url_profile_picture , scraper_dir+"CSS/img/YOUTUBE_small.png")
 	# get user header
@@ -148,7 +147,8 @@ def get_user_pictures(user_name):
 	        for property in rule.style:
 	            if property.name == 'background-image':
 	                urls = property.value
-	url_user_header = "https:"+urls[4:-1]
+	url_user_header = "https:"+urls[5:-1]
+	print url_user_header
 	urllib.urlretrieve (url_user_header , scraper_dir+"CSS/img/YOUTUBE_header.png")
 def resize_image(image_path):
     from PIL import Image
@@ -257,8 +257,8 @@ def bin_is_present(binary):
 
 
 
-if not bin_is_present("zimwriterfs"):
-        sys.exit("zimwriterfs is not available, please install it.")
+#if not bin_is_present("zimwriterfs"):
+ #       sys.exit("zimwriterfs is not available, please install it.")
 lang_input=sys.argv[2]
 list=get_list_item_info(sys.argv[1])
 write_video_info(list)
