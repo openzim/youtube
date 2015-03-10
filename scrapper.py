@@ -16,6 +16,7 @@ import envoy
 import bs4 as BeautifulSoup
 import cssutils
 import slugify
+import time
 
 type = ""
 videos = []
@@ -39,7 +40,19 @@ def get_list_item_info(url):
 	Only return list of video and write title of playlist/user name
 	"""
         with youtube_dl.YoutubeDL({'writesubtitles': True}) as ydl:
-                result = ydl.extract_info(url, download=False) 
+				attempts = 0
+                                while attempts < 5:
+                                        try:
+						result = ydl.extract_info(url, download=False)
+                                                break
+                                        except:
+                                                e = sys.exc_info()[0]
+                                                attempts += 1
+                                                print "error : " + e
+                                                if attempts == 5:
+                                                        sys.exit("Error during getting list of video")
+                                                print "We will re-try to get this video in 10s"
+                                                time.sleep(10)
         type = result['extractor_key']
 	global title
         if type == "YoutubePlaylist":
@@ -71,7 +84,19 @@ def write_video_info(list):
                 if not os.path.exists(scraper_dir+title_clean+"/"):
                         url = "https://www.youtube.com/watch?v="+item.get('id')
                         with youtube_dl.YoutubeDL({'outtmpl': scraper_dir+title_clean+'/video.mp4'})  as ydl:
-                                ydl.download([url])
+				attempts = 0
+				while attempts < 5:
+	                                try:
+						ydl.download([url])
+						break
+					except:
+						e = sys.exc_info()[0]
+						attempts += 1						
+						print "error : " + e
+						if attempts == 5:
+							sys.exit("Error during getting video")
+						print "We will re-try to get this video in 10s"
+						time.sleep(10)
                         date = item.get('upload_date')
                         id = item.get('id')
                         publication_date = date[6:8]+"/"+date[4:6]+"/"+date[0:4]
@@ -115,7 +140,20 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
 	#download thumbnail
 	thumbnail_url = "https://i.ytimg.com/vi/"+id+"/hqdefault.jpg"
 	thumbnail_file = scraper_dir+title+"/thumbnail.jpg" 
-	urllib.urlretrieve (thumbnail_url , thumbnail_file)  
+	attempts = 0
+	while attempts < 5:
+		try:
+			urllib.urlretrieve (thumbnail_url , thumbnail_file)
+			break
+		except:
+			e = sys.exc_info()[0]
+			attempts += 1
+			print "error : " + e
+			if attempts == 5:
+				sys.exit("Error during getting list of video")
+				print "We will re-try to get this video in 10s"
+				time.sleep(10)
+
 	resize_image(thumbnail_file)
 	#download substitle and add it to video.html if they exist
 	if subtitles != "none" or subtitles != {}:
@@ -133,7 +171,20 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
 	return subs_list
 
 def get_user_pictures(url):
-	html = urllib.urlopen(url).read()
+	attempts = 0
+	while attempts < 5:
+		try:
+			html = urllib.urlopen(url).read()
+			break
+		except:
+			e = sys.exc_info()[0]
+			attempts += 1
+			print "error : " + e
+			if attempts == 5:
+				sys.exit("Error during getting list of video")
+				print "We will re-try to get this video in 10s"
+				time.sleep(10)
+
 	soup = BeautifulSoup.BeautifulSoup(html)
 	profile_picture = soup.find('meta',attrs={"property":u"og:image"})['content']
 	if profile_picture[1] == "/":
@@ -141,7 +192,19 @@ def get_user_pictures(url):
 	else:
 		url_profile_picture =  profile_picture
 	print url_profile_picture
-	urllib.urlretrieve (url_profile_picture , scraper_dir+"CSS/img/YOUTUBE_small.png")
+        attempts = 0
+        while attempts < 5:
+                try:
+			urllib.urlretrieve (url_profile_picture , scraper_dir+"CSS/img/YOUTUBE_small.png")
+                        break
+                except:
+                        e = sys.exc_info()[0]
+                        attempts += 1
+                        print "error : " + e
+                        if attempts == 5:
+                                sys.exit("Error during getting list of video")
+                                print "We will re-try to get this video in 10s"
+                                time.sleep(10)
 	# get user header
 	header = soup.find('div',attrs={"id":u"gh-banner"}).find('style').text
 	sheet = cssutils.parseString(header)
@@ -155,7 +218,19 @@ def get_user_pictures(url):
         else:
                 url_user_header = "https:"+urls[4:-1]
 	print url_user_header
-	urllib.urlretrieve (url_user_header , scraper_dir+"CSS/img/YOUTUBE_header.png")
+        attempts = 0
+        while attempts < 5:
+                try:
+			urllib.urlretrieve (url_user_header , scraper_dir+"CSS/img/YOUTUBE_header.png")
+                        break
+                except:
+                        e = sys.exc_info()[0]
+                        attempts += 1
+                        print "error : " + e
+                        if attempts == 5:
+                                sys.exit("Error during getting list of video")
+                                print "We will re-try to get this video in 10s"
+                                time.sleep(10)
 def resize_image(image_path):
     from PIL import Image
     image = Image.open(image_path)
@@ -270,8 +345,8 @@ if len(sys.argv) != 4 :
 	usage()
 	exit()
 
-if not bin_is_present("zimwriterfs"):
-        sys.exit("zimwriterfs is not available, please install it.")
+#if not bin_is_present("zimwriterfs"):
+ #       sys.exit("zimwriterfs is not available, please install it.")
 
 lang_input=sys.argv[2]
 publisher=sys.argv[3]
