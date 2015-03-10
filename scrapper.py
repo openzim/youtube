@@ -345,8 +345,8 @@ if len(sys.argv) != 4 :
 	usage()
 	exit()
 
-#if not bin_is_present("zimwriterfs"):
- #       sys.exit("zimwriterfs is not available, please install it.")
+if not bin_is_present("zimwriterfs"):
+        sys.exit("zimwriterfs is not available, please install it.")
 
 lang_input=sys.argv[2]
 publisher=sys.argv[3]
