@@ -157,18 +157,41 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
 	resize_image(thumbnail_file)
 	#download substitle and add it to video.html if they exist
 	if subtitles != "none" or subtitles != {}:
-		subs_list = []
-		for key in subtitles:
-			caps = subtitles.get(key) 
-			subs_list.append(caps)
-		        reader = pycaption.detect_format(caps)
-       			if reader:
-			    file_name = scraper_dir+title+key+".vtt"
-       			    subtitle_vtt = pycaption.WebVTTWriter().write(reader().read(caps))
-			    webvttfile = open(file_name, "w") 
-			    webvttfile.write(subtitle_vtt)
-			    webvttfile.close()
-	return subs_list
+                subs_list = []
+                print subtitles
+                for key in subtitles:
+                        for element in subtitles.get(key):
+                                if element.get('ext') == "vtt":
+                                        url =  element.get('url')        
+                                        subs_list.append(key)
+                                        webvtt_file = scraper_dir+title+"/"+key+".vtt"
+                                        while attempts < 5:
+                                                try:
+                                                        urllib.urlretrieve (url , webvtt_file)
+                                                        break
+                                                except:
+                                                        e = sys.exc_info()[0]
+                                                        attempts += 1
+                                                        print "error : " + e
+                                                        if attempts == 5:  
+                                                                sys.exit("Error during getting subtitleof video")  
+                                                                print "We will re-try to get this video in 10s"
+                                                                time.sleep(10)
+
+                                """
+                                #Only for tracking, it's maybe a other way to get youtube subtitle
+                                        caps = subtitles.get(key) 
+                                        subs_list.append(caps)
+                                        reader = pycaption.detect_format(caps)
+                                        if reader:
+                                            file_name = scraper_dir+title+key+".vtt"
+                                            subtitle_vtt = pycaption.WebVTTWriter().write(reader().read(caps))
+                                            webvttfile = open(file_name, "w") 
+                                            webvttfile.write(subtitle_vtt)
+                                            webvttfile.close()
+                                """
+        return subs_list
+
 
 def get_user_pictures(url):
 	attempts = 0
@@ -257,7 +280,7 @@ def encode_videos(list,scraper_dir):
                      continue
 
                  if os.path.exists(video_path):
-                      print 'Converting Video... ' + item.get('title')
+                      print 'Converting Video... ' + slugify.slugify(item.get('title'))
                       convert_video_and_move_to_rendering(video_path, video_copy_path)
 
 
