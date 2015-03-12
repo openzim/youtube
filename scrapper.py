@@ -268,6 +268,7 @@ def encode_videos(list,scraper_dir):
                  if os.path.exists(video_path):
                       print 'Converting Video... ' + slugify.slugify(item.get('title'))
                       convert_video_and_move_to_rendering(video_path, video_copy_path)
+		      os.remove(video_path)
 
 
 def convert_video_and_move_to_rendering(from_path, to_path):
