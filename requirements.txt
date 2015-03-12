@@ -1,7 +1,6 @@
 youtube-dl
 requests
 jinja2
-pycaption
 pillow
 envoy
 beautifulsoup4

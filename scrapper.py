@@ -9,7 +9,6 @@ import subprocess
 import datetime
 from sys import platform as _platform
 from jinja2 import Environment, FileSystemLoader
-import pycaption
 import json
 import shutil
 import envoy
@@ -177,19 +176,6 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
                                                                 sys.exit("Error during getting subtitleof video")  
                                                                 print "We will re-try to get this video in 10s"
                                                                 time.sleep(10)
-
-                                """
-                                #Only for tracking, it's maybe a other way to get youtube subtitle
-                                        caps = subtitles.get(key) 
-                                        subs_list.append(caps)
-                                        reader = pycaption.detect_format(caps)
-                                        if reader:
-                                            file_name = scraper_dir+title+key+".vtt"
-                                            subtitle_vtt = pycaption.WebVTTWriter().write(reader().read(caps))
-                                            webvttfile = open(file_name, "w") 
-                                            webvttfile.write(subtitle_vtt)
-                                            webvttfile.close()
-                                """
         return subs_list
 
 
