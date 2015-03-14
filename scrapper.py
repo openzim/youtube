@@ -51,7 +51,7 @@ def get_list_item_info(url):
         scraper_dir = "build/"+title+"/"
         if not os.path.exists(scraper_dir):
                 os.makedirs(scraper_dir)
-	zim_dir = "build/zim_file/"
+	zim_dir = "build/"
         if not os.path.exists(zim_dir):
                 os.makedirs(zim_dir)
         if not os.path.exists(scraper_dir+"CSS/"):
