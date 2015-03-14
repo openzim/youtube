@@ -64,8 +64,9 @@ def get_list_item_info(url):
                 shutil.copy("templates/welcome.html", scraper_dir+"index.html")
 
 	if type != "YoutubePlaylist":
-		get_user_pictures(url)
-
+		get_user_pictures(url,result.get('entries')[0].get('uploader_id'),1)
+	else:
+		get_user_pictures(url,result.get('entries')[0].get('uploader_id'),0)
 	return result.get('entries')
 
 def welcome_page(title, author, id, description):
@@ -186,72 +187,98 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
         return subs_list
 
 
-def get_user_pictures(url):
-	attempts = 0
-	while attempts < 5:
-		try:
-			html = urllib.urlopen(url).read()
-			break
-		except:
-			e = sys.exc_info()[0]
-			attempts += 1
-			print "error : " + e
-			if attempts == 5:
-				sys.exit("Error during getting list of video")
-			print "We will re-try to get this video in 10s"
-                        time.sleep(10)
-
-	soup = BeautifulSoup.BeautifulSoup(html)
-	profile_picture = soup.find('meta',attrs={"property":u"og:image"})['content']
-	if profile_picture[1] == "/":
-		url_profile_picture =  "http:"+profile_picture
-	else:
-		url_profile_picture =  profile_picture
-	print url_profile_picture
+def get_user_pictures(url,api_key, is_user):
+	""" 
+	Get profile picture of a user or the profile picture of the uploader of the first video if it's a playlist
+	Get user header if it's a user
+	"""
+	url_api = "https://gdata.youtube.com/feeds/api/users/"+api_key+"?v=2.1"
         attempts = 0
         while attempts < 5:
                 try:
-			urllib.urlretrieve (url_profile_picture , scraper_dir+"CSS/img/YOUTUBE_small.png")
-                        break
-                except:
-                        e = sys.exc_info()[0]
-                        attempts += 1
-                        print "error : " +e
-                        if attempts == 5:
-                                sys.exit("Error during getting list of video")
-                        print "We will re-try to get this video in 10s"
-                        time.sleep(10)
-	# get user header
-	header = soup.find('div',attrs={"id":u"gh-banner"}).find('style').text
-	sheet = cssutils.parseString(header)
-	for rule in sheet:
-	    if rule.type == rule.STYLE_RULE:
-	        for property in rule.style:
-	            if property.name == 'background-image':
-	                urls = property.value
-        if urls[4] == '"':
-                url_user_header = "https:"+urls[5:-1]
-        else:
-                url_user_header = "https:"+urls[4:-1]
-	print url_user_header
-        attempts = 0
-        while attempts < 5:
-                try:
-			urllib.urlretrieve (url_user_header , scraper_dir+"CSS/img/YOUTUBE_header.png")
+                        api = urllib.urlopen(url_api).read()
                         break
                 except:
                         e = sys.exc_info()[0]
                         attempts += 1
                         print "error : " + e
                         if attempts == 5:
-                                sys.exit("Error during getting list of video")
+                                sys.exit("Error during getting api data")
+                        print "We will re-try to get this in 10s"
+                        time.sleep(10)
+
+	soup_api = BeautifulSoup.BeautifulSoup(api)
+	url_profile_picture = soup_api.find('media:thumbnail')['url']
+        attempts = 0
+        while attempts < 5:
+                try:
+                        urllib.urlretrieve (url_profile_picture , scraper_dir+"CSS/img/YOUTUBE_small.png")
+                        break
+                except:
+                        e = sys.exc_info()[0]
+                        attempts += 1
+                        print "error : " +e
+                        if attempts == 5:
+                                sys.exit("Error during getting user pic profile")
                         print "We will re-try to get this video in 10s"
                         time.sleep(10)
+	shutil.copy(scraper_dir+"CSS/img/YOUTUBE_small.png", scraper_dir+"CSS/img/YOUTUBE_small_mini.png")
+	resize_image_profile(scraper_dir+"CSS/img/YOUTUBE_small_mini.png")
+
+	#get user header
+	if is_user == 1:
+		attempts = 0
+		while attempts < 5:
+			try:
+				html = urllib.urlopen(url).read()
+				break
+			except:
+				e = sys.exc_info()[0]
+				attempts += 1
+				print "error : " + e
+				if attempts == 5:
+					sys.exit("Error during getting html data of user")
+				print "We will re-try to get this in 10s"
+	                        time.sleep(10)
+	
+		soup = BeautifulSoup.BeautifulSoup(html)
+		header = soup.find('div',attrs={"id":u"gh-banner"}).find('style').text
+		sheet = cssutils.parseString(header)
+		for rule in sheet:
+		    if rule.type == rule.STYLE_RULE:
+		        for property in rule.style:
+		            if property.name == 'background-image':
+		                urls = property.value
+	        if urls[4] == '"':
+	                url_user_header = "https:"+urls[5:-1]
+	        else:
+	                url_user_header = "https:"+urls[4:-1]
+		print url_user_header
+	        attempts = 0
+	        while attempts < 5:
+			try:
+				urllib.urlretrieve (url_user_header , scraper_dir+"CSS/img/YOUTUBE_header.png")
+        	                break
+        	        except:
+        	                e = sys.exc_info()[0]
+	                        attempts += 1
+	                        print "error : " + e
+	                        if attempts == 5:
+	                                sys.exit("Error during getting user header")
+	                        print "We will re-try to get this user header in 10s"
+	                        time.sleep(10)
 def resize_image(image_path):
     from PIL import Image
     image = Image.open(image_path)
     w, h = image.size
     image = image.resize((248, 187), Image.ANTIALIAS)
+    image.save(image_path)
+
+def resize_image_profile(image_path):
+    from PIL import Image
+    image = Image.open(image_path)
+    w, h = image.size
+    image = image.resize((48, 48), Image.ANTIALIAS)
     image.save(image_path)
 
 def exec_cmd(cmd):
@@ -320,7 +347,7 @@ def create_zim(static_folder, zim_path, title, description, list_title):
         'creator': list_title,
         'publisher': publisher,
         'home': 'index.html',
-        'favicon': 'CSS/img/YOUTUBE_small.png',
+        'favicon': 'CSS/img/YOUTUBE_small_mini.png',
         'static': static_folder,
         'zim': zim_path
     }
