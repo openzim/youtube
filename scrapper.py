@@ -19,19 +19,6 @@ import time
 
 type = ""
 videos = []
-#prepare build folder
-scraper_dir = "build/"
-if not os.path.exists(scraper_dir):
-        os.makedirs(scraper_dir)
-if not os.path.exists(scraper_dir+"CSS/"):
-        shutil.copytree("templates/CSS/", scraper_dir+"CSS/")
-if not os.path.exists(scraper_dir+"JS/"):
-        shutil.copytree("templates/JS/", scraper_dir+"JS/")
-if not os.path.exists(scraper_dir+"favicon.png"):
-        shutil.copy("templates/favicon.png", scraper_dir+"favicon.png")
-if not os.path.exists(scraper_dir+"index.html"):
-        shutil.copy("templates/welcome.html", scraper_dir+"index.html")
-
 def get_list_item_info(url):
 	"""
 	Create dictionnary with all info about video playlist or user video
@@ -52,13 +39,33 @@ def get_list_item_info(url):
                                                         sys.exit("Error during getting list of video")
                                                 print "We will re-try to get this video in 10s"
                                                 time.sleep(10)
+
         type = result['extractor_key']
 	global title
         if type == "YoutubePlaylist":
                 title = slugify.slugify(result['title'])
         else:
                 title =  slugify.slugify(result.get('entries')[0].get('uploader'))
+
+	global scraper_dir
+        scraper_dir = "build/"+title+"/"
+        if not os.path.exists(scraper_dir):
+                os.makedirs(scraper_dir)
+	zim_dir = "build/zim_file/"
+        if not os.path.exists(zim_dir):
+                os.makedirs(zim_dir)
+        if not os.path.exists(scraper_dir+"CSS/"):
+                shutil.copytree("templates/CSS/", scraper_dir+"CSS/")
+        if not os.path.exists(scraper_dir+"JS/"):
+                shutil.copytree("templates/JS/", scraper_dir+"JS/")
+        if not os.path.exists(scraper_dir+"favicon.png"):
+                shutil.copy("templates/favicon.png", scraper_dir+"favicon.png")
+        if not os.path.exists(scraper_dir+"index.html"):
+                shutil.copy("templates/welcome.html", scraper_dir+"index.html")
+
+	if type != "YoutubePlaylist":
 		get_user_pictures(url)
+
 	return result.get('entries')
 
 def welcome_page(title, author, id, description):
@@ -73,7 +80,7 @@ def write_video_info(list):
         """
         Render static html pages from the scraped video data and
         save the pages in build/{video id}/index.html.
-	Save video in best quality in build/{video id}/video.mp4
+	Save video in best quality in build/{title of user/playlist}/{video id}/video.mp4
         """
 	print 'Rendering template...'
         env = Environment(loader=FileSystemLoader('templates'))
@@ -150,8 +157,8 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
 			print "error : " + e
 			if attempts == 5:
 				sys.exit("Error during getting list of video")
-				print "We will re-try to get this video in 10s"
-				time.sleep(10)
+                        print "We will re-try to get this video in 10s"
+                        time.sleep(10)
 
 	resize_image(thumbnail_file)
 	#download substitle and add it to video.html if they exist
@@ -172,10 +179,10 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
                                                         e = sys.exc_info()[0]
                                                         attempts += 1
                                                         print "error : " + e
-                                                        if attempts == 5:  
+			                                if attempts == 5:  
                                                                 sys.exit("Error during getting subtitleof video")  
-                                                                print "We will re-try to get this video in 10s"
-                                                                time.sleep(10)
+                                                        print "We will re-try to get this video in 10s"
+                                                        time.sleep(10)
         return subs_list
 
 
@@ -191,8 +198,8 @@ def get_user_pictures(url):
 			print "error : " + e
 			if attempts == 5:
 				sys.exit("Error during getting list of video")
-				print "We will re-try to get this video in 10s"
-				time.sleep(10)
+			print "We will re-try to get this video in 10s"
+                        time.sleep(10)
 
 	soup = BeautifulSoup.BeautifulSoup(html)
 	profile_picture = soup.find('meta',attrs={"property":u"og:image"})['content']
@@ -209,11 +216,11 @@ def get_user_pictures(url):
                 except:
                         e = sys.exc_info()[0]
                         attempts += 1
-                        print "error : " + e
+                        print "error : " +e
                         if attempts == 5:
                                 sys.exit("Error during getting list of video")
-                                print "We will re-try to get this video in 10s"
-                                time.sleep(10)
+                        print "We will re-try to get this video in 10s"
+                        time.sleep(10)
 	# get user header
 	header = soup.find('div',attrs={"id":u"gh-banner"}).find('style').text
 	sheet = cssutils.parseString(header)
@@ -238,8 +245,8 @@ def get_user_pictures(url):
                         print "error : " + e
                         if attempts == 5:
                                 sys.exit("Error during getting list of video")
-                                print "We will re-try to get this video in 10s"
-                                time.sleep(10)
+                        print "We will re-try to get this video in 10s"
+                        time.sleep(10)
 def resize_image(image_path):
     from PIL import Image
     image = Image.open(image_path)
@@ -289,7 +296,7 @@ def convert_video_and_move_to_rendering(from_path, to_path):
 def create_zims(list_title):
         print 'Creating ZIM files'
         # Check, if the folder exists. Create it, if it doesn't.
-      	zim_dir = scraper_dir
+      	zim_dir = "build/zim_file/"
         if not os.path.exists(zim_dir):
             os.makedirs(zim_dir)
         html_dir = os.path.join(scraper_dir)
