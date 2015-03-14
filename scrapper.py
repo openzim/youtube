@@ -51,9 +51,6 @@ def get_list_item_info(url):
         scraper_dir = "build/"+title+"/"
         if not os.path.exists(scraper_dir):
                 os.makedirs(scraper_dir)
-	zim_dir = "build/"
-        if not os.path.exists(zim_dir):
-                os.makedirs(zim_dir)
         if not os.path.exists(scraper_dir+"CSS/"):
                 shutil.copytree("templates/CSS/", scraper_dir+"CSS/")
         if not os.path.exists(scraper_dir+"JS/"):
@@ -296,17 +293,10 @@ def convert_video_and_move_to_rendering(from_path, to_path):
 def create_zims(list_title):
         print 'Creating ZIM files'
         # Check, if the folder exists. Create it, if it doesn't.
-      	zim_dir = "build/zim_file/"
-        if not os.path.exists(zim_dir):
-            os.makedirs(zim_dir)
         html_dir = os.path.join(scraper_dir)
-	zim_path = os.path.join(zim_dir, "{title}_{lang}_all_{date}.zim".format(title=list_title.lower(),lang=lang_input,date=datetime.datetime.now().strftime('%Y-%m')))
-	if type == "YoutubePlaylist":
-		title = "Youtube - Playlist - {title} ".format(title=list_title)
-	        description = "Youtube - {title} playlist video".format(title=list_title)	
-	else:
-		title = "Youtube - User - {title} ".format(title=list_title)
-	        description = "Youtube - {title} user video".format(title=list_title)
+	zim_path = os.path.join("build/", "{title}_{lang}_all_{date}.zim".format(title=list_title.lower(),lang=lang_input,date=datetime.datetime.now().strftime('%Y-%m')))
+	title = list_title.replace("-", " ")
+	description = "{title} videos".format(title=title)
         create_zim(html_dir, zim_path, title, description, list_title)
 
 def create_zim(static_folder, zim_path, title, description, list_title):
@@ -315,9 +305,9 @@ def create_zim(static_folder, zim_path, title, description, list_title):
 
     context = {
         'languages': lang_input,
-        'title': list_title,
+        'title': title,
         'description': description,
-        'creator': list_title,
+        'creator': list_title.replace("-", " "),
         'publisher': publisher,
         'home': 'index.html',
         'favicon': 'CSS/img/YOUTUBE_small.png',
