@@ -293,7 +293,7 @@ def create_zims(list_title):
         if not os.path.exists(zim_dir):
             os.makedirs(zim_dir)
         html_dir = os.path.join(scraper_dir)
-	zim_path = os.path.join(zim_dir, "{title}_{lang}_all_{date}.zim".format(title=list_title,lang=lang_input,date=datetime.datetime.now().strftime('%Y_%m')))
+	zim_path = os.path.join(zim_dir, "{title}_{lang}_all_{date}.zim".format(title=list_title,lang=lang_input,date=datetime.datetime.now().strftime('%Y-%m')))
 	if type == "YoutubePlaylist":
 		title = "Youtube - Playlist - {title} ".format(title=list_title)
 	        description = "Youtube - {title} playlist video".format(title=list_title)	
@@ -312,10 +312,8 @@ def create_zim(static_folder, zim_path, title, description, list_title):
         'description': description,
         'creator': list_title,
         'publisher': publisher,
-
         'home': 'index.html',
         'favicon': 'CSS/img/YOUTUBE_small.png',
-
         'static': static_folder,
         'zim': zim_path
     }
