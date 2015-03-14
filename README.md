@@ -1,7 +1,7 @@
 This script made a .zim file of video from youtube user or youtube playlist.
 
 == Usage ==
-python scrapper.py [your user url or playlist url] [lang of your zim archive] [publisher]
+python youtube2zim.py [your user url or playlist url] [lang of your zim archive] [publisher]
 
 == Building ==
 
