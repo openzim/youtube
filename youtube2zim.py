@@ -219,8 +219,8 @@ def get_user_pictures(url,api_key, is_user):
                                 sys.exit("Error during getting user pic profile")
                         print "We will re-try to get this video in 10s"
                         time.sleep(10)
-	shutil.copy(scraper_dir+"CSS/img/YOUTUBE_small.png", scraper_dir+"CSS/img/YOUTUBE_small_mini.png")
-	resize_image_profile(scraper_dir+"CSS/img/YOUTUBE_small_mini.png")
+	shutil.copy(scraper_dir+"CSS/img/YOUTUBE_small.png", scraper_dir+"favicon.png")
+	resize_image_profile(scraper_dir+"favicon.png")
 
 	#get user header
 	if is_user == 1:
@@ -337,7 +337,7 @@ def create_zim(static_folder, zim_path, title, description, list_title):
         'creator': list_title.replace("-", " "),
         'publisher': publisher,
         'home': 'index.html',
-        'favicon': 'CSS/img/YOUTUBE_small_mini.png',
+        'favicon': 'favicon.png',
         'static': static_folder,
         'zim': zim_path
     }
