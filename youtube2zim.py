@@ -85,7 +85,8 @@ def write_video_info(list):
         template = env.get_template('video.html')
         for item in list:
 		title_clean = slugify.slugify(item.get('title'))
-                if not os.path.exists(scraper_dir+title_clean+"/"):
+		video_directory = scraper_dir+title_clean+"/"
+                if not os.path.exists(video_directory):
                         url = "https://www.youtube.com/watch?v="+item.get('id')
                         with youtube_dl.YoutubeDL({'outtmpl': scraper_dir+title_clean+'/video.mp4'})  as ydl:
 				attempts = 0
@@ -105,7 +106,6 @@ def write_video_info(list):
                         id = item.get('id')
                         publication_date = date[6:8]+"/"+date[4:6]+"/"+date[0:4]
                         subtitles = download_video_thumbnail_subtitles(id, item.get('subtitles'), title_clean)
-                        video_path = scraper_dir+title_clean+"/"
 
                         html = template.render(
                                 title=item.get('title'),
@@ -116,12 +116,12 @@ def write_video_info(list):
                                 date=publication_date)
 
                         html = html.encode('utf-8')
-                        index_path = os.path.join(video_path, 'index.html')
+                        index_path = os.path.join(video_directory, 'index.html')
                         with open(index_path, 'w') as html_page:
                             html_page.write(html)
                         welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
                 else:
-                        print "pass, video already exist"
+                        print "Video directory " + video_directory + "already exists. Skipping."
 			welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
 
 def dump_data(videos):
@@ -293,7 +293,7 @@ def encode_videos(list,scraper_dir):
                  video_copy_path = os.path.join(scraper_dir, video_id, 'video.webm')
 
                  if os.path.exists(video_copy_path):
-                     print 'Video already encoded. Skipping.'
+                     print 'Video ' + video_copy_path + ' already encoded. Skipping.'
                      continue
 
                  if os.path.exists(video_path):
