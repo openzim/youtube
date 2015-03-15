@@ -149,7 +149,9 @@ def write_video_info(list):
                                 vtt = subtitles,
                                 description=item.get('description'),
                                 url=item.get('webpage_url'),
-                                date=publication_date)
+                                date=publication_date,
+				background_color=background_color
+				)
 
                         html = html.encode('utf-8')
                         index_path = os.path.join(video_directory, 'index.html')
