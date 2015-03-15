@@ -6,4 +6,4 @@ envoy
 beautifulsoup4
 cssutils
 awesome-slugify
-pycountry
+

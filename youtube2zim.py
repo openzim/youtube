@@ -16,10 +16,11 @@ import bs4 as BeautifulSoup
 import cssutils
 import slugify
 import time
-import pycountry
+import codecs
 
 type = ""
 videos = []
+
 def get_list_item_info(url):
 	"""
 	Create dictionnary with all info about video playlist or user video
@@ -42,14 +43,16 @@ def get_list_item_info(url):
                                                 time.sleep(10)
 
         type = result['extractor_key']
+
 	global title
         if type == "YoutubePlaylist":
                 title = slugify.slugify(result['title'])
         else:
                 title =  slugify.slugify(result.get('entries')[0].get('uploader'))
 
-	global scraper_dir
-        scraper_dir = "build/"+title+"/"
+        global scraper_dir
+        scraper_dir = script_dirname + "build/" + title + "/"
+
         if not os.path.exists(scraper_dir):
                 os.makedirs(scraper_dir)
         if not os.path.exists(scraper_dir+"CSS/"):
@@ -282,7 +285,7 @@ def resize_image_profile(image_path):
 def exec_cmd(cmd):
     return envoy.run(str(cmd.encode('utf-8')))
 
-def encode_videos(list,scraper_dir):
+def encode_videos(list):
          """
          Encode the videos from mp4 to webm. We will use ffmpeg over the 
          command line for this. There is a static binary version
@@ -322,8 +325,8 @@ def create_zims(list_title):
         print 'Creating ZIM files'
         # Check, if the folder exists. Create it, if it doesn't.
         html_dir = os.path.join(scraper_dir)
-	lang_alpha2 = pycountry.countries.get(alpha3=lang_input).alpha2
-	zim_path = os.path.join("build/", "{title}_{lang}_all_{date}.zim".format(title=list_title.lower(),lang=lang_alpha2,date=datetime.datetime.now().strftime('%Y-%m')))
+	lang_input_alpha2 = languageIso3ToIso2(lang_input)
+	zim_path = os.path.join("build/", "{title}_{lang}_all_{date}.zim".format(title=list_title.lower(),lang=lang_input_alpha2,date=datetime.datetime.now().strftime('%Y-%m')))
 	title = list_title.replace("-", " ")
 	description = "{title} videos".format(title=title)
         create_zim(html_dir, zim_path, title, description, list_title)
@@ -370,6 +373,20 @@ def bin_is_present(binary):
     else:
         return True
 
+def languageIso3ToIso2(iso3):
+    f = codecs.open(script_dirname + 'ISO-639-2_utf-8.txt', 'rb', 'utf-8')
+    for line in f:
+        iD = {}
+        iD['bibliographic'], iD['terminologic'], iD['alpha2'], \
+            iD['english'], iD['french'] = line.strip().split('|')
+
+        if iD['terminologic'] == iso3 or iD['bibliographic'] == iso3:
+            f.close();
+            return iD['alpha2'];
+
+    f.close()
+    return ""
+
 def usage():
     print "\nYoutube to zim script\n"
     print 'Usage: python youtube2zim.py [your user url or playlist url] [lang of your zim archive] [publisher]]\n'
@@ -382,11 +399,12 @@ if len(sys.argv) != 4 :
 if not bin_is_present("zimwriterfs"):
         sys.exit("zimwriterfs is not available, please install it.")
 
+script_dirname=(os.path.dirname(sys.argv[0]) or ".") + "/"
 lang_input=sys.argv[2]
 publisher=sys.argv[3]
 list=get_list_item_info(sys.argv[1])
 write_video_info(list)
 dump_data(videos)
-encode_videos(list, scraper_dir)
+encode_videos(list)
 print title
 create_zims(title)
