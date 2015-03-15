@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Youtube</title>
+        <title>{{ title }}</title>
         <meta charset="utf-8">
 	<meta content="utf-8" http-equiv="encoding">
 	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
@@ -10,7 +10,11 @@
     </head>
     <body>
             <div class="container">
-                <img src="CSS/img/YOUTUBE_small.png" id="title-img" width="80px"/>
+	      <div style="background: white; background-image: url(CSS/img/header.png); height: 250px; background-repeat: no-repeat; background-size: contain; background-position: 0 0; margin: 0 0 1em 0;" id="header">
+		<img style="margin: 0 0 0 1em;" id="header-profile" src="CSS/img/header_profile.png">
+		<div style="top: 10px; margin: 6em 1em; font-size: 20px; font-weight: bold;">{{ title }}</div>
+	      </div>
+
                 <table style="width: 100%;"><tr>
                    <td>
 		     <div class="pagination" style="visibility: hidden;">
