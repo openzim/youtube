@@ -47,8 +47,10 @@ def get_list_item_info(url):
 	global title
         if type == "YoutubePlaylist":
                 title = slugify.slugify(result['title'])
+		title_html = result['title']
         else:
                 title =  slugify.slugify(result.get('entries')[0].get('uploader'))
+		title_html = result.get('entries')[0].get('uploader')
 
         global scraper_dir
         scraper_dir = script_dirname + "build/" + title + "/"
@@ -59,13 +61,23 @@ def get_list_item_info(url):
                 shutil.copytree("templates/CSS/", scraper_dir+"CSS/")
         if not os.path.exists(scraper_dir+"JS/"):
                 shutil.copytree("templates/JS/", scraper_dir+"JS/")
-        if not os.path.exists(scraper_dir+"index.html"):
-                shutil.copy("templates/welcome.html", scraper_dir+"index.html")
 
 	if type != "YoutubePlaylist":
 		get_user_pictures(url,result.get('entries')[0].get('uploader_id'),1)
 	else:
 		get_user_pictures(url,result.get('entries')[0].get('uploader_id'),0)
+        env = Environment(loader=FileSystemLoader('templates'))
+        template = env.get_template('welcome.html')
+	html = template.render(title=title_html)
+        html = html.encode('utf-8')
+	index_path = os.path.join(scraper_dir, 'index.html')
+        with open(index_path, 'w') as html_page:
+        	html_page.write(html)
+
+
+
+
+
 	return result.get('entries')
 
 def welcome_page(title, author, id, description):
