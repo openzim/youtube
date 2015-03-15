@@ -17,6 +17,8 @@ import cssutils
 import slugify
 import time
 import codecs
+from PIL import Image
+from dominantColor import *
 
 type = ""
 videos = []
@@ -66,6 +68,9 @@ def get_list_item_info(url):
 		get_user_pictures(url,result.get('entries')[0].get('uploader_id'),1)
 	else:
 		get_user_pictures(url,result.get('entries')[0].get('uploader_id'),0)
+
+	color = colorz(scraper_dir+"CSS/img/header.png", 1)[0];
+
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('welcome.html')
 	html = template.render(title=title_html)
@@ -279,14 +284,12 @@ def get_user_pictures(url,api_key, is_user):
 	                        print "We will re-try to get this user header in 10s"
 	                        time.sleep(10)
 def resize_image(image_path):
-    from PIL import Image
     image = Image.open(image_path)
     w, h = image.size
     image = image.resize((248, 187), Image.ANTIALIAS)
     image.save(image_path)
 
 def resize_image_profile(image_path):
-    from PIL import Image
     image = Image.open(image_path)
     w, h = image.size
     image = image.resize((48, 48), Image.ANTIALIAS)
