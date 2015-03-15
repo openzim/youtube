@@ -67,6 +67,8 @@ def get_list_item_info(url):
 	get_user_pictures(result.get('entries')[0].get('uploader_id'))
 
 	color = colorz(scraper_dir+"CSS/img/header.png", 1)[0];
+
+	global background_color
 	background_color = solarize_color(color);
 
         env = Environment(loader=FileSystemLoader('templates'))
@@ -126,7 +128,8 @@ def write_video_info(list):
                                 vtt = subtitles,
                                 description=item.get('description'),
                                 url=item.get('webpage_url'),
-                                date=publication_date)
+                                date=publication_date,
+				background_color=background_color)
 
                         html = html.encode('utf-8')
                         index_path = os.path.join(video_directory, 'index.html')
