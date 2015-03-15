@@ -7,11 +7,20 @@
 	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
         <link href="CSS/welcome.css" rel="stylesheet" type="text/css">
         <link href="CSS/chosen.css" rel="stylesheet" type="text/css">
+	<style type="text/css">
+	  a:hover {
+	      color: {{ color }}
+	  }
+
+	  a.nostyle:hover {
+	      background-color: {{ color }};
+	  }
+	</style>
     </head>
     <body>
             <div class="container">
-	      <div style="background: white; background-image: url(CSS/img/header.png); height: 250px; background-repeat: no-repeat; background-size: contain; background-position: 0 0; margin: 0 0 1em 0;" id="header">
-		<img style="margin: 0 0 0 1em;" id="header-profile" src="CSS/img/header_profile.png">
+	      <div style="border-color: #CCCCCC; border-style: solid; border-width: 0 1px 1px 1px; background: white; background-image: url(CSS/img/header.png); height: 250px; background-repeat: no-repeat; background-size: contain; background-position: 0 0; margin: 0 0 1em 0;" id="header">
+		<a href="./index.html"><img style="margin: 0 0 0 1em;" id="header-profile" src="CSS/img/header_profile.png"></a>
 		<div style="top: 10px; margin: 6em 1em; font-size: 20px; font-weight: bold;">{{ title }}</div>
 	      </div>
 
@@ -24,12 +33,10 @@
                     </div>
 		  </td>
 		</tr></table>
-                <hr/>                
+
                 <div id="grid-container" style="display:block;">
                     <ul id="video-items" class="rig grid"></ul>
                 </div>
-                
-                <hr/>
 		
 		<div class="backtotop" onclick="$('html, body').animate({ scrollTop: 0 }, 'slow');">
 		  <span style="margin: auto;">Back to the top</span>

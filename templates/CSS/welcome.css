@@ -42,14 +42,6 @@ a {
     color: inherit;
 }
 
-a:visited {
-    color: purple;
-}
-
-a:hover {
-    color: red;
-}
-
 #author {
     font-family: "RobotoLight";
     font-size: 15px;
@@ -325,7 +317,6 @@ a.nostyle:visited {
 }
 
 a.nostyle:hover {
-    background-color: #FF2B06;
     text-decoration: none;
     color: #000000;
 }
