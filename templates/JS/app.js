@@ -132,16 +132,11 @@ function refreshVideos(pageData) {
       /* img.src = video['id']+'/thumbnail.jpg'; */
       img.src = video['id']+'/thumbnail.jpg'; 
 
-      var author = document.createElement('p');
-      author.id = 'author';
-      author.innerHTML = video['speaker'];
-      
       var title = document.createElement('p');
       title.id = 'title';
       title.innerHTML = video['title'];
 
       a.appendChild(img);
-      a.appendChild(author);
       a.appendChild(title);
       li.appendChild(a);
       videoList.appendChild(li);
