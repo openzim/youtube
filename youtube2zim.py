@@ -59,8 +59,6 @@ def get_list_item_info(url):
                 shutil.copytree("templates/CSS/", scraper_dir+"CSS/")
         if not os.path.exists(scraper_dir+"JS/"):
                 shutil.copytree("templates/JS/", scraper_dir+"JS/")
-        if not os.path.exists(scraper_dir+"favicon.png"):
-                shutil.copy("templates/favicon.png", scraper_dir+"favicon.png")
         if not os.path.exists(scraper_dir+"index.html"):
                 shutil.copy("templates/welcome.html", scraper_dir+"index.html")
 
@@ -213,7 +211,7 @@ def get_user_pictures(url,api_key, is_user):
         attempts = 0
         while attempts < 5:
                 try:
-                        urllib.urlretrieve (url_profile_picture , scraper_dir+"CSS/img/YOUTUBE_small.png")
+                        urllib.urlretrieve (url_profile_picture , scraper_dir+"CSS/img/header_profile.png")
                         break
                 except:
                         e = sys.exc_info()[0]
@@ -223,7 +221,7 @@ def get_user_pictures(url,api_key, is_user):
                                 sys.exit("Error during getting user pic profile")
                         print "We will re-try to get this video in 10s"
                         time.sleep(10)
-	shutil.copy(scraper_dir+"CSS/img/YOUTUBE_small.png", scraper_dir+"favicon.png")
+	shutil.copy(scraper_dir+"CSS/img/header_profile.png", scraper_dir+"favicon.png")
 	resize_image_profile(scraper_dir+"favicon.png")
 
 	#get user header
@@ -258,7 +256,7 @@ def get_user_pictures(url,api_key, is_user):
 	        attempts = 0
 	        while attempts < 5:
 			try:
-				urllib.urlretrieve (url_user_header , scraper_dir+"CSS/img/YOUTUBE_header.png")
+				urllib.urlretrieve(url_user_header , scraper_dir+"CSS/img/header.png")
         	                break
         	        except:
         	                e = sys.exc_info()[0]
