@@ -62,10 +62,8 @@ def get_list_item_info(url):
         if not os.path.exists(scraper_dir+"JS/"):
                 shutil.copytree("templates/JS/", scraper_dir+"JS/")
 
-	if type != "YoutubePlaylist":
-		get_user_pictures(url,result.get('entries')[0].get('uploader_id'),1)
-	else:
-		get_user_pictures(url,result.get('entries')[0].get('uploader_id'),0)
+	get_user_pictures(result.get('entries')[0].get('uploader_id'))
+
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('welcome.html')
 	html = template.render(title=title_html)
@@ -73,10 +71,6 @@ def get_list_item_info(url):
 	index_path = os.path.join(scraper_dir, 'index.html')
         with open(index_path, 'w') as html_page:
         	html_page.write(html)
-
-
-
-
 
 	return result.get('entries')
 
@@ -198,12 +192,13 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
         return subs_list
 
 
-def get_user_pictures(url,api_key, is_user):
+def get_user_pictures(api_key):
 	""" 
 	Get profile picture of a user or the profile picture of the uploader of the first video if it's a playlist
 	Get user header if it's a user
 	"""
 	url_api = "https://gdata.youtube.com/feeds/api/users/"+api_key+"?v=2.1"
+	print url_api
         attempts = 0
         while attempts < 5:
                 try:
@@ -220,6 +215,7 @@ def get_user_pictures(url,api_key, is_user):
 
 	soup_api = BeautifulSoup.BeautifulSoup(api)
 	url_profile_picture = soup_api.find('media:thumbnail')['url']
+	url_channel = soup_api.find('link',attrs={"rel":u'alternate'})['href']
         attempts = 0
         while attempts < 5:
                 try:
@@ -237,47 +233,46 @@ def get_user_pictures(url,api_key, is_user):
 	resize_image_profile(scraper_dir+"favicon.png")
 
 	#get user header
-	if is_user == 1:
-		attempts = 0
-		while attempts < 5:
-			try:
-				html = urllib.urlopen(url).read()
-				break
-			except:
-				e = sys.exc_info()[0]
-				attempts += 1
-				print "error : " + e
-				if attempts == 5:
-					sys.exit("Error during getting html data of user")
-				print "We will re-try to get this in 10s"
-	                        time.sleep(10)
-	
-		soup = BeautifulSoup.BeautifulSoup(html)
-		header = soup.find('div',attrs={"id":u"gh-banner"}).find('style').text
-		sheet = cssutils.parseString(header)
-		for rule in sheet:
-		    if rule.type == rule.STYLE_RULE:
-		        for property in rule.style:
-		            if property.name == 'background-image':
-		                urls = property.value
-	        if urls[4] == '"':
-	                url_user_header = "https:"+urls[5:-1]
-	        else:
-	                url_user_header = "https:"+urls[4:-1]
-		print url_user_header
-	        attempts = 0
-	        while attempts < 5:
-			try:
-				urllib.urlretrieve(url_user_header , scraper_dir+"CSS/img/header.png")
-        	                break
-        	        except:
-        	                e = sys.exc_info()[0]
-	                        attempts += 1
-	                        print "error : " + e
-	                        if attempts == 5:
-	                                sys.exit("Error during getting user header")
-	                        print "We will re-try to get this user header in 10s"
-	                        time.sleep(10)
+	attempts = 0
+	while attempts < 5:
+		try:
+			html = urllib.urlopen(url_channel).read()
+			break
+		except:
+			e = sys.exc_info()[0]
+			attempts += 1
+			print "error : " + e
+			if attempts == 5:
+				sys.exit("Error during getting html data of user")
+			print "We will re-try to get this in 10s"
+                        time.sleep(10)
+
+	soup = BeautifulSoup.BeautifulSoup(html)
+	header = soup.find('div',attrs={"id":u"gh-banner"}).find('style').text
+	sheet = cssutils.parseString(header)
+	for rule in sheet:
+	    if rule.type == rule.STYLE_RULE:
+	        for property in rule.style:
+	            if property.name == 'background-image':
+	                urls = property.value
+        if urls[4] == '"':
+                url_user_header = "https:"+urls[5:-1]
+        else:
+                url_user_header = "https:"+urls[4:-1]
+	print url_user_header
+        attempts = 0
+        while attempts < 5:
+		try:
+			urllib.urlretrieve(url_user_header , scraper_dir+"CSS/img/header.png")
+       	                break
+       	        except:
+       	                e = sys.exc_info()[0]
+                        attempts += 1
+                        print "error : " + e
+                        if attempts == 5:
+                                sys.exit("Error during getting user header")
+                        print "We will re-try to get this user header in 10s"
+                        time.sleep(10)
 def resize_image(image_path):
     from PIL import Image
     image = Image.open(image_path)
