@@ -128,6 +128,26 @@ def write_video_info(list):
                         with open(index_path, 'w') as html_page:
                             html_page.write(html)
                         welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
+		elif os.path.exists(video_directory+"index.html"):
+			date = item.get('upload_date')
+                        id = item.get('id')
+                        publication_date = date[6:8]+"/"+date[4:6]+"/"+date[0:4]
+                        subtitles = download_video_thumbnail_subtitles(id, item.get('subtitles'), title_clean)
+
+                        html = template.render(
+                                title=item.get('title'),
+                                author=item.get('uploader'),
+                                vtt = subtitles,
+                                description=item.get('description'),
+                                url=item.get('webpage_url'),
+                                date=publication_date)
+
+                        html = html.encode('utf-8')
+                        index_path = os.path.join(video_directory, 'index.html')
+                        with open(index_path, 'w') as html_page:
+                            html_page.write(html)
+			welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
+ 
                 else:
                         print "Video directory " + video_directory + "already exists. Skipping."
 			welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
