@@ -16,6 +16,7 @@ import bs4 as BeautifulSoup
 import cssutils
 import slugify
 import time
+import pycountry
 
 type = ""
 videos = []
@@ -321,7 +322,8 @@ def create_zims(list_title):
         print 'Creating ZIM files'
         # Check, if the folder exists. Create it, if it doesn't.
         html_dir = os.path.join(scraper_dir)
-	zim_path = os.path.join("build/", "{title}_{lang}_all_{date}.zim".format(title=list_title.lower(),lang=lang_input,date=datetime.datetime.now().strftime('%Y-%m')))
+	lang_alpha2 = pycountry.countries.get(alpha3=lang_input).alpha2
+	zim_path = os.path.join("build/", "{title}_{lang}_all_{date}.zim".format(title=list_title.lower(),lang=lang_alpha2,date=datetime.datetime.now().strftime('%Y-%m')))
 	title = list_title.replace("-", " ")
 	description = "{title} videos".format(title=title)
         create_zim(html_dir, zim_path, title, description, list_title)
