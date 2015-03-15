@@ -17,7 +17,6 @@ import cssutils
 import slugify
 import time
 import codecs
-from PIL import Image
 from dominantColor import *
 
 type = ""
@@ -66,6 +65,7 @@ def get_list_item_info(url):
 
 	get_user_pictures(result.get('entries')[0].get('uploader_id'))
 
+	global color
 	color = colorz(scraper_dir+"CSS/img/header.png", 1)[0];
 
 	global background_color
@@ -101,7 +101,8 @@ def write_video_info(list):
         for item in list:
 		title_clean = slugify.slugify(item.get('title'))
 		video_directory = scraper_dir+title_clean+"/"
-                if not os.path.exists(video_directory):
+                html_file = os.path.join(video_directory, 'index.html')
+		if not os.path.exists(video_directory):
                         url = "https://www.youtube.com/watch?v="+item.get('id')
                         with youtube_dl.YoutubeDL({'outtmpl': scraper_dir+title_clean+'/video.mp4'})  as ydl:
 				attempts = 0
@@ -136,6 +137,26 @@ def write_video_info(list):
                         with open(index_path, 'w') as html_page:
                             html_page.write(html)
                         welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
+		elif not os.path.exists(html_file):
+			date = item.get('upload_date')
+                        id = item.get('id')
+                        publication_date = date[6:8]+"/"+date[4:6]+"/"+date[0:4]
+                        subtitles = download_video_thumbnail_subtitles(id, item.get('subtitles'), title_clean)
+
+                        html = template.render(
+                                title=item.get('title'),
+                                author=item.get('uploader'),
+                                vtt = subtitles,
+                                description=item.get('description'),
+                                url=item.get('webpage_url'),
+                                date=publication_date)
+
+                        html = html.encode('utf-8')
+                        index_path = os.path.join(video_directory, 'index.html')
+                        with open(index_path, 'w') as html_page:
+                            html_page.write(html)
+			welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
+ 
                 else:
                         print "Video directory " + video_directory + "already exists. Skipping."
 			welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
@@ -206,7 +227,6 @@ def get_user_pictures(api_key):
 	Get user header if it's a user
 	"""
 	url_api = "https://gdata.youtube.com/feeds/api/users/"+api_key+"?v=2.1"
-	print url_api
         attempts = 0
         while attempts < 5:
                 try:
@@ -267,7 +287,6 @@ def get_user_pictures(api_key):
                 url_user_header = "https:"+urls[5:-1]
         else:
                 url_user_header = "https:"+urls[4:-1]
-	print url_user_header
         attempts = 0
         while attempts < 5:
 		try:
@@ -282,12 +301,14 @@ def get_user_pictures(api_key):
                         print "We will re-try to get this user header in 10s"
                         time.sleep(10)
 def resize_image(image_path):
+    from PIL import Image
     image = Image.open(image_path)
     w, h = image.size
     image = image.resize((248, 187), Image.ANTIALIAS)
     image.save(image_path)
 
 def resize_image_profile(image_path):
+    from PIL import Image
     image = Image.open(image_path)
     w, h = image.size
     image = image.resize((48, 48), Image.ANTIALIAS)
