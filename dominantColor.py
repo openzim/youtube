@@ -2,6 +2,7 @@ from PIL import Image
 from collections import namedtuple
 from math import sqrt
 import random
+import colorsys
 
 Point = namedtuple('Point', ('coords', 'n', 'ct'))
 Cluster = namedtuple('Cluster', ('points', 'center', 'n'))
@@ -66,3 +67,10 @@ def kmeans(points, k, min_diff):
             break
 
     return clusters
+
+def solarize_color(hexstr):
+    hexstr = hexstr.strip('#')
+    r, g, b = int(hexstr[:2], 16), int(hexstr[2:4], 16), int(hexstr[4:], 16)
+    h, l, s = colorsys.rgb_to_hls(float(r)/256, float(g)/256, float(b)/256)
+    r, g, b = colorsys.hls_to_rgb(h, 0.95, s)
+    return "#%02x%02x%02x" % (int(r*256), int(g*256), int(b*256))

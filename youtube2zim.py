@@ -67,10 +67,11 @@ def get_list_item_info(url):
 	get_user_pictures(result.get('entries')[0].get('uploader_id'))
 
 	color = colorz(scraper_dir+"CSS/img/header.png", 1)[0];
+	background_color = solarize_color(color);
 
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('welcome.html')
-	html = template.render(title=title_html, color=color)
+	html = template.render(title=title_html, color=color, background_color=background_color)
         html = html.encode('utf-8')
 	index_path = os.path.join(scraper_dir, 'index.html')
         with open(index_path, 'w') as html_page:
