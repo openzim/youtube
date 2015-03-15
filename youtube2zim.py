@@ -70,7 +70,7 @@ def get_list_item_info(url):
 
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('welcome.html')
-	html = template.render(title=title_html)
+	html = template.render(title=title_html, color=color)
         html = html.encode('utf-8')
 	index_path = os.path.join(scraper_dir, 'index.html')
         with open(index_path, 'w') as html_page:
