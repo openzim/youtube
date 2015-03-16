@@ -130,7 +130,7 @@ function refreshVideos(pageData) {
 
       var img = document.createElement('img');
       /* img.src = video['id']+'/thumbnail.jpg'; */
-      img.src = video['id']+'/thumbnail.jpg'; 
+      img.src = '../I/'+video['id']+'/thumbnail.jpg';
 
       var title = document.createElement('p');
       title.id = 'title';
