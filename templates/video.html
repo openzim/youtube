@@ -23,7 +23,7 @@
                 data-setup='{"autoplay": true, "preload": "true"}'>
                 <source src="video.webm" type="video/webm" />
                 {% for language in vtt %}
-                <track kind="subtitles" src="{{ language }}.vtt" srclang="{{ language }}" label="{{ language }}" />
+                <track kind="subtitles" src="{{ language.code }}.vtt" srclang="{{ language.code }}" label="{{ language.name }}" />
                 {% endfor %}
             </video>
             <div id="description">

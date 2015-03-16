@@ -122,7 +122,6 @@ def write_video_info(list):
                         id = item.get('id')
                         publication_date = date[6:8]+"/"+date[4:6]+"/"+date[0:4]
                         subtitles = download_video_thumbnail_subtitles(id, item.get('subtitles'), title_clean)
-
                         html = template.render(
                                 title=item.get('title'),
                                 author=item.get('uploader'),
@@ -205,8 +204,10 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
                 for key in subtitles:
                         for element in subtitles.get(key):
                                 if element.get('ext') == "vtt":
-                                        url =  element.get('url')        
-                                        subs_list.append(key)
+                                        url =  element.get('url')
+					key_name = language_codeToLanguage_Name(key)        
+        				dict_lang = {'code': key, 'name': key_name}
+	                                subs_list.append(dict_lang)
                                         webvtt_file = scraper_dir+title+"/"+key+".vtt"
                                         while attempts < 5:
                                                 try:
@@ -226,6 +227,7 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
                                                                 sys.exit("Error during getting subtitleof video")  
                                                         print "We will re-try to get this video in 10s"
                                                         time.sleep(10)
+
         return subs_list
 
 
@@ -423,6 +425,20 @@ def languageIso3ToIso2(iso3):
         if iD['terminologic'] == iso3 or iD['bibliographic'] == iso3:
             f.close();
             return iD['alpha2'];
+
+    f.close()
+    return ""
+
+def language_codeToLanguage_Name(lang):
+    f = codecs.open(script_dirname + 'ISO-639-2_utf-8.txt', 'rb', 'utf-8')
+    for line in f:
+        iD = {}
+        iD['bibliographic'], iD['terminologic'], iD['alpha2'], \
+            iD['english'], iD['french'] = line.strip().split('|')
+
+        if iD['terminologic'] == lang or iD['bibliographic'] == lang or iD['alpha2'] == lang:
+            f.close();
+            return iD['english'];
 
     f.close()
     return ""
