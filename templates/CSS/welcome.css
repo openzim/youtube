@@ -42,6 +42,19 @@ a {
     color: inherit;
 }
 
+#header {
+    border-color: #CCCCCC;
+    border-style: solid;
+    border-width: 0 1px 1px 1px;
+    background: white;
+    background-image: url('img/header.png');
+    height: 250px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: 0 0;
+    margin: 0 0 1em 0;
+}
+
 #author {
     font-family: "RobotoLight";
     font-size: 15px;
