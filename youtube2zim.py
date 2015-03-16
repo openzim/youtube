@@ -37,7 +37,7 @@ def get_list_item_info(url):
                                         except:
                                                 e = sys.exc_info()[0]
                                                 attempts += 1
-                                                print "error : " + e
+                                                print "error : " + str(e)
                                                 if attempts == 5:
                                                         sys.exit("Error during getting list of video")
                                                 print "We will re-try to get this video in 10s"
@@ -113,7 +113,7 @@ def write_video_info(list):
 					except:
 						e = sys.exc_info()[0]
 						attempts += 1						
-						print "error : " + e
+						print "error : " + str(e)
 						if attempts == 5:
 							sys.exit("Error during getting video")
 						print "We will re-try to get this video in 10s"
@@ -191,7 +191,7 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
 		except:
 			e = sys.exc_info()[0]
 			attempts += 1
-			print "error : " + e
+			print "error : " + str(e)
 			if attempts == 5:
 				sys.exit("Error during getting list of video")
                         print "We will re-try to get this video in 10s"
@@ -221,7 +221,7 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
                                                 except:
                                                         e = sys.exc_info()[0]
                                                         attempts += 1
-                                                        print "error : " + e
+                                                        print "error : " + str(e)
 			                                if attempts == 5:  
                                                                 sys.exit("Error during getting subtitleof video")  
                                                         print "We will re-try to get this video in 10s"
@@ -243,7 +243,7 @@ def get_user_pictures(api_key):
                 except:
                         e = sys.exc_info()[0]
                         attempts += 1
-                        print "error : " + e
+                        print "error : " + str(e)
                         if attempts == 5:
                                 sys.exit("Error during getting api data")
                         print "We will re-try to get this in 10s"
@@ -260,7 +260,7 @@ def get_user_pictures(api_key):
                 except:
                         e = sys.exc_info()[0]
                         attempts += 1
-                        print "error : " +e
+                        print "error : " + str(e)
                         if attempts == 5:
                                 sys.exit("Error during getting user pic profile")
                         print "We will re-try to get this video in 10s"
@@ -277,7 +277,7 @@ def get_user_pictures(api_key):
 		except:
 			e = sys.exc_info()[0]
 			attempts += 1
-			print "error : " + e
+			print "error : " + str(e)
 			if attempts == 5:
 				sys.exit("Error during getting html data of user")
 			print "We will re-try to get this in 10s"
@@ -303,7 +303,7 @@ def get_user_pictures(api_key):
        	        except:
        	                e = sys.exc_info()[0]
                         attempts += 1
-                        print "error : " + e
+                        print "error : " + str(e)
                         if attempts == 5:
                                 sys.exit("Error during getting user header")
                         print "We will re-try to get this user header in 10s"
