@@ -211,6 +211,12 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
                                         while attempts < 5:
                                                 try:
                                                         urllib.urlretrieve (url , webvtt_file)
+	                                                with open(webvtt_file, "r") as vttfile:
+        	                                                vtt_str = ''.join(vttfile.readlines()[3:])
+                	                                        vttfile.close()
+                	                                with open(webvtt_file, "w") as vttfile:
+                        	                                vtt_str = "WEBVTT\n" + vtt_str
+                                	                        vttfile.write(vtt_str)
                                                         break
                                                 except:
                                                         e = sys.exc_info()[0]
