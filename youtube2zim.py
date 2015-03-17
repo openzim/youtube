@@ -41,7 +41,8 @@ def get_list_item_info(url):
                                                 if attempts == 5:
                                                         sys.exit("Error during getting list of video")
                                                 print "We will re-try to get this video in 10s"
-                                                time.sleep(10)
+                                                time_to_wait = 60 * attempts
+						time.sleep(time_to_wait)
 
         type = result['extractor_key']
 
@@ -117,7 +118,8 @@ def write_video_info(list):
 						if attempts == 5:
 							sys.exit("Error during getting video")
 						print "We will re-try to get this video in 10s"
-						time.sleep(10)
+						time_to_wait = 60 * attempts
+                                                time.sleep(time_to_wait)
                         date = item.get('upload_date')
                         id = item.get('id')
                         publication_date = date[6:8]+"/"+date[4:6]+"/"+date[0:4]
@@ -194,7 +196,9 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
 			if attempts == 5:
 				sys.exit("Error during getting list of video")
                         print "We will re-try to get this video in 10s"
-                        time.sleep(10)
+                        time_to_wait = 60 * attempts
+                        time.sleep(time_to_wait)
+
 
 	resize_image(thumbnail_file)
 	#download substitle and add it to video.html if they exist
@@ -226,7 +230,9 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
 			                                if attempts == 5:  
                                                                 sys.exit("Error during getting subtitleof video")  
                                                         print "We will re-try to get this video in 10s"
-                                                        time.sleep(10)
+                                                        time_to_wait = 60 * attempts
+	                                                time.sleep(time_to_wait)
+
 
         return subs_list
 
@@ -249,7 +255,9 @@ def get_user_pictures(api_key):
                         if attempts == 5:
                                 sys.exit("Error during getting api data")
                         print "We will re-try to get this in 10s"
-                        time.sleep(10)
+                        time_to_wait = 60 * attempts
+                        time.sleep(time_to_wait)
+
 
 	soup_api = BeautifulSoup.BeautifulSoup(api)
 	url_profile_picture = soup_api.find('media:thumbnail')['url']
@@ -266,7 +274,9 @@ def get_user_pictures(api_key):
                         if attempts == 5:
                                 sys.exit("Error during getting user pic profile")
                         print "We will re-try to get this video in 10s"
-                        time.sleep(10)
+                        time_to_wait = 60 * attempts
+                        time.sleep(time_to_wait)
+
 	shutil.copy(scraper_dir+"CSS/img/header_profile.png", scraper_dir+"favicon.png")
 	resize_image_profile(scraper_dir+"favicon.png")
 
@@ -283,7 +293,9 @@ def get_user_pictures(api_key):
 			if attempts == 5:
 				sys.exit("Error during getting html data of user")
 			print "We will re-try to get this in 10s"
-                        time.sleep(10)
+                        time_to_wait = 60 * attempts
+                        time.sleep(time_to_wait)
+
 
 	soup = BeautifulSoup.BeautifulSoup(html)
 	header = soup.find('div',attrs={"id":u"gh-banner"}).find('style').text
@@ -309,7 +321,9 @@ def get_user_pictures(api_key):
                         if attempts == 5:
                                 sys.exit("Error during getting user header")
                         print "We will re-try to get this user header in 10s"
-                        time.sleep(10)
+                        time_to_wait = 60 * attempts
+                        time.sleep(time_to_wait)
+
 def resize_image(image_path):
     from PIL import Image
     image = Image.open(image_path)
