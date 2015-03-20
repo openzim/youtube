@@ -85,10 +85,10 @@ def get_list_item_info(url):
 def welcome_page(title, author, id, description):
         videos.append({
             'id': id,
-            'title': title.encode('ascii', 'ignore'),
-            'description': description.encode('ascii', 'ignore'),
-            'speaker': author.encode('ascii', 'ignore'),
-            'thumbnail': id+"/thumbnail.jpg".encode('ascii', 'ignore')})
+            'title': title.encode('utf-8', 'ignore'),
+            'description': description.encode('utf-8', 'ignore'),
+            'speaker': author.encode('utf-8', 'ignore'),
+            'thumbnail': id+"/thumbnail.jpg".encode('utf-8', 'ignore')})
 
 def write_video_info(list):
         """
