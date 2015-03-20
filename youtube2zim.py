@@ -184,20 +184,8 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
 	#download thumbnail
 	thumbnail_url = "https://i.ytimg.com/vi/"+id+"/hqdefault.jpg"
 	thumbnail_file = scraper_dir+title+"/thumbnail.jpg" 
-	attempts = 0
-	while attempts < 5:
-		try:
-			urllib.urlretrieve (thumbnail_url , thumbnail_file)
-			break
-		except:
-			e = sys.exc_info()[0]
-			attempts += 1
-			print "error : " + str(e)
-			if attempts == 5:
-				sys.exit("Error during getting list of video")
-                        print "We will re-try to get this video in 10s"
-                        time_to_wait = 60 * attempts
-                        time.sleep(time_to_wait)
+	download(thumbnail_url , thumbnail_file)
+
 
 
 	resize_image(thumbnail_file)
@@ -213,25 +201,14 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
         				dict_lang = {'code': key, 'name': key_name}
 	                                subs_list.append(dict_lang)
                                         webvtt_file = scraper_dir+title+"/"+key+".vtt"
-                                        while attempts < 5:
-                                                try:
-                                                        urllib.urlretrieve (url , webvtt_file)
-	                                                with open(webvtt_file, "r") as vttfile:
-        	                                                vtt_str = ''.join(vttfile.readlines()[3:])
-                	                                        vttfile.close()
-                	                                with open(webvtt_file, "w") as vttfile:
-                        	                                vtt_str = "WEBVTT\n" + vtt_str
-                                	                        vttfile.write(vtt_str)
-                                                        break
-                                                except:
-                                                        e = sys.exc_info()[0]
-                                                        attempts += 1
-                                                        print "error : " + str(e)
-			                                if attempts == 5:  
-                                                                sys.exit("Error during getting subtitleof video")  
-                                                        print "We will re-try to get this video in 10s"
-                                                        time_to_wait = 60 * attempts
-	                                                time.sleep(time_to_wait)
+                                        download(url , webvtt_file)
+	                                with open(webvtt_file, "r") as vttfile:
+                	                        vtt_str = ''.join(vttfile.readlines()[3:])
+                        	                vttfile.close()
+                	                with open(webvtt_file, "w") as vttfile:
+                                	        vtt_str = "WEBVTT\n" + vtt_str
+                                	        vttfile.write(vtt_str)
+
 
 
         return subs_list
@@ -262,20 +239,8 @@ def get_user_pictures(api_key):
 	soup_api = BeautifulSoup.BeautifulSoup(api)
 	url_profile_picture = soup_api.find('media:thumbnail')['url']
 	url_channel = soup_api.find('link',attrs={"rel":u'alternate'})['href']
-        attempts = 0
-        while attempts < 5:
-                try:
-                        urllib.urlretrieve (url_profile_picture , scraper_dir+"CSS/img/header_profile.png")
-                        break
-                except:
-                        e = sys.exc_info()[0]
-                        attempts += 1
-                        print "error : " + str(e)
-                        if attempts == 5:
-                                sys.exit("Error during getting user pic profile")
-                        print "We will re-try to get this video in 10s"
-                        time_to_wait = 60 * attempts
-                        time.sleep(time_to_wait)
+        download(url_profile_picture , scraper_dir+"CSS/img/header_profile.png")
+
 
 	shutil.copy(scraper_dir+"CSS/img/header_profile.png", scraper_dir+"favicon.png")
 	resize_image_profile(scraper_dir+"favicon.png")
@@ -309,20 +274,7 @@ def get_user_pictures(api_key):
                 url_user_header = "https:"+urls[5:-1]
         else:
                 url_user_header = "https:"+urls[4:-1]
-        attempts = 0
-        while attempts < 5:
-		try:
-			urllib.urlretrieve(url_user_header , scraper_dir+"CSS/img/header.png")
-       	                break
-       	        except:
-       	                e = sys.exc_info()[0]
-                        attempts += 1
-                        print "error : " + str(e)
-                        if attempts == 5:
-                                sys.exit("Error during getting user header")
-                        print "We will re-try to get this user header in 10s"
-                        time_to_wait = 60 * attempts
-                        time.sleep(time_to_wait)
+        download(url_user_header , scraper_dir+"CSS/img/header.png")
 
 def resize_image(image_path):
     from PIL import Image
@@ -456,6 +408,21 @@ def language_codeToLanguage_Name(lang):
 
     f.close()
     return ""
+def download(url, destination):
+        attempts = 0
+        while attempts < 5:
+		try:
+			urllib.urlretrieve(url, destination )
+       	                break
+       	        except:
+       	                e = sys.exc_info()[0]
+                        attempts += 1
+                        print "error : " + str(e)
+                        if attempts == 5:
+                                sys.exit("Error during getting user header")
+                        print "We will re-try to get this resources in 10s"
+                        time_to_wait = 60 * attempts
+                        time.sleep(time_to_wait)
 
 def usage():
     print "\nYoutube to zim script\n"
