@@ -8,7 +8,7 @@ python youtube2zim.py [your user url or playlist url] [lang of your zim archive]
 It's advised, that you have `pip` installed. 
 Chose one of the following methods to do that:
 
-    sudo apt-get install python-setuptools
+    sudo apt-get install python-setuptools python-dev
 
     sudo easy_install pip
 
