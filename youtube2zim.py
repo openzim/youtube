@@ -219,11 +219,11 @@ def get_user_pictures(api_key):
 	Get profile picture of a user or the profile picture of the uploader of the first video if it's a playlist
 	Get user header if it's a user
 	"""
-	url_api = "https://gdata.youtube.com/feeds/api/users/"+api_key+"?v=2.1"
+        url_channel = "https://www.youtube.com/channel/"+api_key
         attempts = 0
         while attempts < 5:
                 try:
-                        api = urllib.urlopen(url_api).read()
+                        api = urllib.urlopen(url_channel).read()
                         break
                 except:
                         e = sys.exc_info()[0]
@@ -237,9 +237,12 @@ def get_user_pictures(api_key):
 
 
 	soup_api = BeautifulSoup.BeautifulSoup(api)
-	url_profile_picture = soup_api.find('media:thumbnail')['url']
-	url_channel = soup_api.find('link',attrs={"rel":u'alternate'})['href']
-        download(url_profile_picture , scraper_dir+"CSS/img/header_profile.png")
+	url_profile_picture = soup_api.find('img',attrs={"class":u"appbar-nav-avatar"})['src']
+        
+
+
+
+	download(url_profile_picture , scraper_dir+"CSS/img/header_profile.png")
 
 
 	shutil.copy(scraper_dir+"CSS/img/header_profile.png", scraper_dir+"favicon.png")
