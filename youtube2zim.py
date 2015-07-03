@@ -44,9 +44,13 @@ def get_list_item_info(url):
                                                 time_to_wait = 60 * attempts
 						time.sleep(time_to_wait)
 
+        global type
         type = result['extractor_key']
+        if "www.youtube.com/user/" in sys.argv[1]:
+                type = "user"
 
 	global title
+
         if type == "YoutubePlaylist":
                 title = slugify.slugify(result['title'])
 		title_html = result['title']
@@ -220,6 +224,9 @@ def get_user_pictures(api_key):
 	Get user header if it's a user
 	"""
         url_channel = "https://www.youtube.com/channel/"+api_key
+        if type == "user" :
+                url_channel = sys.argv[1]
+
         attempts = 0
         while attempts < 5:
                 try:
@@ -238,8 +245,9 @@ def get_user_pictures(api_key):
 
 	soup_api = BeautifulSoup.BeautifulSoup(api)
 	url_profile_picture = soup_api.find('img',attrs={"class":u"appbar-nav-avatar"})['src']
-        
 
+	if type == "user" :
+        	url_profile_picture = "http:"+url_profile_picture
 
 
 	download(url_profile_picture , scraper_dir+"CSS/img/header_profile.png")
