@@ -246,9 +246,8 @@ def get_user_pictures(api_key):
 	soup_api = BeautifulSoup.BeautifulSoup(api)
 	url_profile_picture = soup_api.find('img',attrs={"class":u"appbar-nav-avatar"})['src']
 
-	if type == "user" :
-        	url_profile_picture = "http:"+url_profile_picture
-
+        if "https:" not in url_profile_picture :
+                url_profile_picture = "https:" + url_profile_picture
 
 	download(url_profile_picture , scraper_dir+"CSS/img/header_profile.png")
 
