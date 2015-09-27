@@ -1,10 +1,12 @@
 
-window.onload = function() {
+window.onload = genplaylist();
+
+function genplaylist() {
   setupLanguageFilter();
   setupPagination();
-
   // Load the initial data. 
   // This will display all data without any language filter.
+  videoDB.resetPage();
   videoDB.loadData(undefined, function() {
     var data = videoDB.getPage(videoDB.getPageNumber());
     refreshVideos(data);
@@ -12,7 +14,7 @@ window.onload = function() {
 
   refreshPagination();
   return false;
-};
+}
 
 /** 
  * Apply a language filter, that is selected by the

@@ -18,6 +18,7 @@ import slugify
 import time
 import codecs
 from dominantColor import *
+import re
 
 type = ""
 videos = []
@@ -40,23 +41,29 @@ def get_list_item_info(url):
                                                 print "error : " + str(e)
                                                 if attempts == 5:
                                                         sys.exit("Error during getting list of video")
-                                                print "We will re-try to get this video in 10s"
+                                                print "We will re-try to get this video"
                                                 time_to_wait = 60 * attempts
 						time.sleep(time_to_wait)
 
+        return result
+
+def prepare_folder(list):
         global type
-        type = result['extractor_key']
+        type = list['extractor_key']
         if "www.youtube.com/user/" in sys.argv[1]:
                 type = "user"
 
-	global title
+        global title
+	global title_html
 
         if type == "YoutubePlaylist":
-                title = slugify.slugify(result['title'])
-		title_html = result['title']
+                title = slugify.slugify(list['title'])
+                title_html = list['title']
         else:
-                title =  slugify.slugify(result.get('entries')[0].get('uploader'))
-		title_html = result.get('entries')[0].get('uploader')
+                title =  slugify.slugify(list.get('entries')[0].get('uploader'))
+                title_html = list.get('entries')[0].get('uploader')
+
+
 
         global scraper_dir
         scraper_dir = script_dirname + "build/" + title + "/"
@@ -67,8 +74,7 @@ def get_list_item_info(url):
                 shutil.copytree("templates/CSS/", scraper_dir+"CSS/")
         if not os.path.exists(scraper_dir+"JS/"):
                 shutil.copytree("templates/JS/", scraper_dir+"JS/")
-
-	get_user_pictures(result.get('entries')[0].get('uploader_id'))
+	get_user_pictures(list.get('entries')[0].get('uploader_id'))
 
 	global color
 	color = colorz(scraper_dir+"CSS/img/header.png", 1)[0];
@@ -76,15 +82,19 @@ def get_list_item_info(url):
 	global background_color
 	background_color = solarize_color(color);
 
+def make_welcome_page(list, playlist):
+
+	options = ""
+	for j in playlist:
+		options += "<option value=" + j  + ">" + j
+
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('welcome.html')
-	html = template.render(title=title_html, color=color, background_color=background_color)
+	html = template.render(title=title_html, color=color, background_color=background_color, options=options)
         html = html.encode('utf-8')
 	index_path = os.path.join(scraper_dir, 'index.html')
         with open(index_path, 'w') as html_page:
         	html_page.write(html)
-
-	return result.get('entries')
 
 def welcome_page(title, author, id, description):
         videos.append({
@@ -168,20 +178,20 @@ def write_video_info(list):
                         print "Video directory " + video_directory + "already exists. Skipping."
 			welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
 
-def dump_data(videos):
+def dump_data(videos, title):
         """
         Dump all the data about every youtube video in a JS/data.js file
         inside the 'build' folder.
         """
         # Prettified json dump
-        data = 'json_data = ' + json.dumps(videos, indent=4, separators=(',', ': '))
+        data = 'var json_' + title + ' = ' + json.dumps(videos, indent=4, separators=(',', ': ')) + ";"
         # Check, if the folder exists. Create it, if it doesn't.
         if not os.path.exists(scraper_dir):
             os.makedirs(scraper_dir)
         # Create or override the 'TED.json' file in the build
         # directory with the video data gathered from the scraper.
-        with open(scraper_dir + 'JS/data.js', 'w') as youtube_file:
-            youtube_file.write(data)
+        with open(scraper_dir + 'JS/data.js', 'a') as youtube_file:
+            youtube_file.write(data + ' \n')
 
 def download_video_thumbnail_subtitles(id, subtitles, title):
 	""" Download thumbnail and subtitles of each video in his folder """
@@ -223,9 +233,9 @@ def get_user_pictures(api_key):
 	Get profile picture of a user or the profile picture of the uploader of the first video if it's a playlist
 	Get user header if it's a user
 	"""
-        url_channel = "https://www.youtube.com/channel/"+api_key
+        url_channel = "https://www.youtube.com/user/"+api_key
         if type == "user" :
-                url_channel = sys.argv[1]
+	         url_channel = sys.argv[1]
 
         attempts = 0
         while attempts < 5:
@@ -439,7 +449,31 @@ def usage():
     print 'Usage: python youtube2zim.py [your user url or playlist url] [lang of your zim archive] [publisher]]\n'
     print 'Exemple : \npython youtube2zim.py https://www.youtube.com/channel/UC2gwowvVGh7NMYtHHeyzMmw ara  kiwix => for an user channel \npython youtube2zim.py https://www.youtube.com/playlist?list=PL1rRii_tzDcK47PQTWUX5yzoL8xz7Kgna en kiwix=> for an playlist '
 
-if len(sys.argv) != 4 :
+
+def get_playlist(url):
+    playlist = []
+    url_channel = url + "/playlists"
+    attempts = 0
+    while attempts < 5:
+            try:
+                    api = urllib.urlopen(url_channel).read()
+                    break
+            except:
+                    e = sys.exc_info()[0]
+                    attempts += 1
+                    print "error : " + str(e)
+                    if attempts == 5:
+                            sys.exit("Error during getting lsit of playlist")
+                    print "We will re-try to get this in 10s"
+                    time_to_wait = 60 * attempts
+                    time.sleep(time_to_wait)
+
+    soup_api = BeautifulSoup.BeautifulSoup(api)
+    for link in  soup_api.find_all('a', attrs={"class":u"yt-uix-sessionlink yt-uix-tile-link  spf-link  yt-ui-ellipsis yt-ui-ellipsis-2"}):
+            playlist.append("https://youtube.com" + link.get('href'))
+    return playlist
+
+if len(sys.argv) < 4 and len(sys.argv) > 6 :
 	usage()
 	exit()
 
@@ -450,8 +484,31 @@ script_dirname=(os.path.dirname(sys.argv[0]) or ".") + "/"
 lang_input=sys.argv[2]
 publisher=sys.argv[3]
 list=get_list_item_info(sys.argv[1])
-write_video_info(list)
-dump_data(videos)
-encode_videos(list)
-print title
-create_zims(title)
+prepare_folder(list)
+write_video_info(list.get('entries'))
+dump_data(videos, "all")
+encode_videos(list.get('entries'))
+
+if "--dl-playlist" in  sys.argv :
+	print "on est dnas dl playlist"
+	playlist=get_playlist(sys.argv[1])
+	list_of_playlist = [ "all" ]
+	for x in playlist :
+		list=get_list_item_info(x)
+		videos = []
+		write_video_info(list.get('entries'))
+		title = slugify.slugify(list.get('title'))
+		title = re.sub(r'-', '_', title)
+		print title
+		dump_data(videos, title )
+		encode_videos(list.get('entries'))
+		list_of_playlist.append(title)
+		print list_of_playlist
+	make_welcome_page(list,list_of_playlist)
+else :
+	list_of_playlist = [ "all" ]
+        make_welcome_page(list,list_of_playlist)
+
+title_zim  = slugify.slugify(title_html)
+create_zims(title_zim)
+

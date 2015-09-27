@@ -7,7 +7,9 @@ var videoDB = (function() {
   var db = {};
   var data;
   var page;
-
+  var selected_playlist
+  var  i
+  var json_selected
   /**
    * Load the data with or without an 
    * applied language filter. 
@@ -20,9 +22,13 @@ var videoDB = (function() {
    * @param {callback} This callback will be called 
    *                   when the data is loaded.
    */
+  i = document.playlist.list.selectedIndex;
+  selected_playlist = document.playlist.list.options[i].value;
+  json_selected = window["json_".concat(selected_playlist)];
+  console.log("lol");
   db.loadData = function(language, callback){
     if (typeof language === 'undefined'){
-      data = json_data;
+      data = json_selected;
     }
     else {
 
@@ -32,9 +38,9 @@ var videoDB = (function() {
       // Iterate through the whole data set and 
       // add the video objects that have the language 
       // that we want to the data array.
-      for (i in json_data){
-        if (json_data[i].languages.indexOf(language) > -1) {
-          data.push(json_data[i]);
+      for (i in json_selected){
+        if (json_selected[i].languages.indexOf(language) > -1) {
+          data.push(json_selected[i]);
         }
       }
     }

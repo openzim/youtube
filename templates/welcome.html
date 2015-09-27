@@ -24,7 +24,14 @@
     <div class="container">
       <div id="header">
         <a href="./index.html"><img style="margin: 0 0 0 1em;" id="header-profile" src="CSS/img/header_profile.png"></a>
-        <div style="top: 10px; margin: 6em 1em; font-size: 20px; font-weight: bold;">{{ title }}</div>
+        <div style="top: 10px; margin: 6em 1em; font-size: 20px; font-weight: bold;">
+		{{ title }}
+		<form name="playlist">
+			<select name="list" onChange="genplaylist()">
+			{{ options }}
+			</select>
+		</form>
+	</div>
       </div>
       <table style="width: 100%;">
         <tr>
