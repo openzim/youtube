@@ -52,7 +52,6 @@ def prepare_folder(list):
         type = list['extractor_key']
         if "www.youtube.com/user/" in sys.argv[1]:
                 type = "user"
-
         global title
 	global title_html
 
@@ -234,9 +233,8 @@ def get_user_pictures(api_key):
 	Get user header if it's a user
 	"""
         url_channel = "https://www.youtube.com/user/"+api_key
-        if type == "user" :
+        if type == "user" or type == "YoutubeChannel":
 	         url_channel = sys.argv[1]
-
         attempts = 0
         while attempts < 5:
                 try:

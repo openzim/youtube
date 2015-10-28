@@ -22,10 +22,11 @@ var videoDB = (function() {
    * @param {callback} This callback will be called 
    *                   when the data is loaded.
    */
-  i = document.playlist.list.selectedIndex;
-  selected_playlist = document.playlist.list.options[i].value;
-  json_selected = window["json_".concat(selected_playlist)];
-  console.log("lol");
+  db.getjson = function(){
+	i = document.playlist.list.selectedIndex;
+	selected_playlist = document.playlist.list.options[i].value;
+	json_selected = window["json_".concat(selected_playlist)];
+  }
   db.loadData = function(language, callback){
     if (typeof language === 'undefined'){
       data = json_selected;

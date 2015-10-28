@@ -7,6 +7,7 @@ function genplaylist() {
   // Load the initial data. 
   // This will display all data without any language filter.
   videoDB.resetPage();
+  videoDB.getjson();
   videoDB.loadData(undefined, function() {
     var data = videoDB.getPage(videoDB.getPageNumber());
     refreshVideos(data);
@@ -131,8 +132,8 @@ function refreshVideos(pageData) {
       a.className = 'nostyle'
 
       var img = document.createElement('img');
-      /* img.src = video['id']+'/thumbnail.jpg'; */
-      img.src = '../I/'+video['id']+'/thumbnail.jpg';
+      img.src = video['id']+'/thumbnail.jpg'; 
+      /* img.src = '../I/'+video['id']+'/thumbnail.jpg'; */
 
       var title = document.createElement('p');
       title.id = 'title';
