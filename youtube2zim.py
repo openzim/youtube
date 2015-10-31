@@ -471,9 +471,10 @@ def get_playlist(url):
             playlist.append("https://youtube.com" + link.get('href'))
     return playlist
 
-if len(sys.argv) < 4 and len(sys.argv) > 6 :
+if len(sys.argv) < 4 or len(sys.argv) > 6 :
 	usage()
 	exit()
+
 
 if not bin_is_present("zimwriterfs"):
         sys.exit("zimwriterfs is not available, please install it.")
@@ -509,4 +510,5 @@ else :
 
 title_zim  = slugify.slugify(title_html)
 create_zims(title_zim)
+
 
