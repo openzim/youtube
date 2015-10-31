@@ -233,7 +233,7 @@ def get_user_pictures(api_key):
 	Get user header if it's a user
 	"""
         url_channel = "https://www.youtube.com/user/"+api_key
-        if type == "user" or type == "YoutubeChannel":
+        if type == "user" or type == "YoutubeChannel" or type == "YoutubePlaylist":
 	         url_channel = sys.argv[1]
         attempts = 0
         while attempts < 5:
