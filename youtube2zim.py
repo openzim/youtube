@@ -445,6 +445,7 @@ def download(url, destination):
 def usage():
     print "\nYoutube to zim script\n"
     print 'Usage: python youtube2zim.py [your user url or playlist url] [lang of your zim archive] [publisher]]\n'
+    print " add --dl-playlist if you want to add playlist of your user to zim file"
     print 'Exemple : \npython youtube2zim.py https://www.youtube.com/channel/UC2gwowvVGh7NMYtHHeyzMmw ara  kiwix => for an user channel \npython youtube2zim.py https://www.youtube.com/playlist?list=PL1rRii_tzDcK47PQTWUX5yzoL8xz7Kgna en kiwix=> for an playlist '
 
 
