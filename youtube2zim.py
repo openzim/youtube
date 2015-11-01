@@ -476,10 +476,10 @@ if len(sys.argv) < 4 or len(sys.argv) > 6 :
 	usage()
 	exit()
 
-"""
+
 if not bin_is_present("zimwriterfs"):
         sys.exit("zimwriterfs is not available, please install it.")
-"""
+
 script_dirname=(os.path.dirname(sys.argv[0]) or ".") + "/"
 lang_input=sys.argv[2]
 publisher=sys.argv[3]
