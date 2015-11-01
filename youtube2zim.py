@@ -476,10 +476,10 @@ if len(sys.argv) < 4 or len(sys.argv) > 6 :
 	usage()
 	exit()
 
-
+"""
 if not bin_is_present("zimwriterfs"):
         sys.exit("zimwriterfs is not available, please install it.")
-
+"""
 script_dirname=(os.path.dirname(sys.argv[0]) or ".") + "/"
 lang_input=sys.argv[2]
 publisher=sys.argv[3]
@@ -489,25 +489,21 @@ write_video_info(list.get('entries'))
 dump_data(videos, "all")
 encode_videos(list.get('entries'))
 
-if "--dl-playlist" in  sys.argv :
-	print "on est dnas dl playlist"
-	playlist=get_playlist(sys.argv[1])
-	list_of_playlist = [ "all" ]
-	for x in playlist :
-		list=get_list_item_info(x)
-		videos = []
-		write_video_info(list.get('entries'))
-		title = slugify.slugify(list.get('title'))
-		title = re.sub(r'-', '_', title)
-		print title
-		dump_data(videos, title )
-		encode_videos(list.get('entries'))
-		list_of_playlist.append(title)
-		print list_of_playlist
-	make_welcome_page(list,list_of_playlist)
-else :
-	list_of_playlist = [ "all" ]
-        make_welcome_page(list,list_of_playlist)
+
+playlist=get_playlist(sys.argv[1])
+list_of_playlist = [ "all" ]
+for x in playlist :
+	list=get_list_item_info(x)
+	videos = []
+	write_video_info(list.get('entries'))
+	title = slugify.slugify(list.get('title'))
+	title = re.sub(r'-', '_', title)
+	print title
+	dump_data(videos, title )
+	encode_videos(list.get('entries'))
+	list_of_playlist.append(title)
+	print list_of_playlist
+make_welcome_page(list,list_of_playlist)
 
 title_zim  = slugify.slugify(title_html)
 create_zims(title_zim)
