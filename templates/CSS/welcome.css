@@ -42,6 +42,11 @@ a {
     color: inherit;
 }
 
+#top-link {
+    position: absolute;
+    padding: 5px;
+}
+
 #header {
     border-color: #CCCCCC;
     border-style: solid;
@@ -53,6 +58,21 @@ a {
     background-size: contain;
     background-position: 0 0;
     margin: 0 0 1em 0;
+}
+
+#header-profile {
+    margin: 0 0 0 1em;
+}
+
+#header-line {
+    padding: 205px 10px 0px 10px;
+    margin: 0xp;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+#header-playlists {
+    float: right;
 }
 
 #author {

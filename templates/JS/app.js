@@ -93,7 +93,11 @@ function refreshPagination() {
 	    var pageText = document.getElementsByClassName('pagination-text')[i];
 	    var pageNumber = videoDB.getPageNumber();
 	    pageText.innerHTML = 'Page ' + pageNumber + '/' + pageCount;
-	    
+
+	    pageBox.style.display = 'block';
+	    leftArrow.style.display = 'block';
+	    rightArrow.style.display = 'block';
+
 	    if (videoDB.getPageNumber() == 1) {
 		leftArrow.style.visibility = 'hidden';
 		rightArrow.style.visibility = 'visible';
@@ -107,9 +111,9 @@ function refreshPagination() {
 	    
 	    pageBox.style.visibility = 'visible';
 	} else {
-	    pageBox.style.visibility = 'hidden';
-	    leftArrow.style.visibility = 'hidden';
-	    rightArrow.style.visibility = 'hidden';	
+	    pageBox.style.display = 'none';
+	    leftArrow.style.display = 'none';
+	    rightArrow.style.display = 'none';
 	}
     }
 }

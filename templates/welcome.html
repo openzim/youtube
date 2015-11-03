@@ -23,10 +23,10 @@
   <body>
     <div class="container">
       <div id="header">
-        <a href="./index.html"><img style="margin: 0 0 0 1em;" id="header-profile" src="CSS/img/header_profile.png"></a>
-        <div style="top: 10px; margin: 6em 1em; font-size: 20px; font-weight: bold;">
+        <a href="./index.html" id="top-link"><img id="header-profile" src="CSS/img/header_profile.png"></a>
+        <div id="header-line">
 		{{ title }}
-		<form name="playlist">
+		<form name="playlist" id="header-playlists">
 			<select name="list" onChange="genplaylist()">
 			{{ options }}
 			</select>
@@ -36,7 +36,7 @@
       <table style="width: 100%;">
         <tr>
           <td>
-            <div class="pagination" style="visibility: hidden;">
+            <div class="pagination" style="display: none;">
               <div class="left-arrow">&#10096;</div>
               <span class="pagination-text"></span>
               <div class="right-arrow">&#10097;</div>
@@ -50,7 +50,7 @@
     <div class="backtotop" onclick="$('html, body').animate({ scrollTop: 0 }, 'slow');">
       <span style="margin: auto;">Back to the top</span>
     </div>
-    <div class="pagination" style="visibility: hidden; margin-bottom: 1em;">
+    <div class="pagination" style="display: none; margin-bottom: 1em;">
       <div class="left-arrow">&#10096;</div>
       <span class="pagination-text"></span>
       <div class="right-arrow">&#10097;</div>
