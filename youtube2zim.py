@@ -83,9 +83,9 @@ def prepare_folder(list):
 
 def make_welcome_page(list, playlist):
 
-	options = ""
-	for j in playlist:
-		options += "<option value=" + j  + ">" + j.replace('_', ' ') + "</option>"
+	options = "<option value=\"All\">All</option>"
+	for j in sorted(playlist):
+		options += "<option value=\"" + j  + "\">" + j.replace('_', ' ') + "</option>"
 
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('welcome.html')
@@ -468,9 +468,11 @@ def get_playlist(url):
                     time.sleep(time_to_wait)
 
     soup_api = BeautifulSoup.BeautifulSoup(api)
-    for link in  soup_api.find_all('a', attrs={"class":u"yt-uix-sessionlink yt-uix-tile-link  spf-link  yt-ui-ellipsis yt-ui-ellipsis-2"}):
-            playlist.append("https://youtube.com" + link.get('href'))
-    return list(set(playlist)) # list to set to list for remove dupe
+    for link in  soup_api.find_all('a', attrs={"class":u"yt-uix-sessionlink yt-uix-tile-link spf-link yt-ui-ellipsis yt-ui-ellipsis-2"}):
+	    new = "https://youtube.com" + link.get('href')
+	    if new not in playlist:
+		    playlist.append(new)
+    return playlist
 
 if len(sys.argv) < 4 or len(sys.argv) > 6 :
 	usage()
@@ -491,18 +493,16 @@ encode_videos(list.get('entries'))
 
 
 playlist=get_playlist(sys.argv[1])
-list_of_playlist = [ "All" ]
-for x in playlist :
+list_of_playlist = []
+for x in playlist:
 	list=get_list_item_info(x)
 	videos = []
 	write_video_info(list.get('entries'))
 	title = slugify.slugify(list.get('title'))
 	title = re.sub(r'-', '_', title)
-	print title
 	dump_data(videos, title)
 	encode_videos(list.get('entries'))
 	list_of_playlist.append(title)
-	print list_of_playlist
 make_welcome_page(list, list_of_playlist)
 
 title_zim  = slugify.slugify(title_html)
