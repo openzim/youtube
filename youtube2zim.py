@@ -85,7 +85,7 @@ def make_welcome_page(list, playlist):
 
 	options = ""
 	for j in playlist:
-		options += "<option value=" + j  + ">" + j
+		options += "<option value=" + j  + ">" + j.replace('_', ' ') + "</option>"
 
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('welcome.html')
@@ -486,12 +486,12 @@ publisher=sys.argv[3]
 list=get_list_item_info(sys.argv[1])
 prepare_folder(list)
 write_video_info(list.get('entries'))
-dump_data(videos, "all")
+dump_data(videos, "All")
 encode_videos(list.get('entries'))
 
 
 playlist=get_playlist(sys.argv[1])
-list_of_playlist = [ "all" ]
+list_of_playlist = [ "All" ]
 for x in playlist :
 	list=get_list_item_info(x)
 	videos = []
@@ -499,11 +499,11 @@ for x in playlist :
 	title = slugify.slugify(list.get('title'))
 	title = re.sub(r'-', '_', title)
 	print title
-	dump_data(videos, title )
+	dump_data(videos, title)
 	encode_videos(list.get('entries'))
 	list_of_playlist.append(title)
 	print list_of_playlist
-make_welcome_page(list,list_of_playlist)
+make_welcome_page(list, list_of_playlist)
 
 title_zim  = slugify.slugify(title_html)
 create_zims(title_zim)
