@@ -478,7 +478,6 @@ if len(sys.argv) < 4 or len(sys.argv) > 6 :
 	usage()
 	exit()
 
-
 if not bin_is_present("zimwriterfs"):
         sys.exit("zimwriterfs is not available, please install it.")
 
@@ -490,7 +489,6 @@ prepare_folder(list)
 write_video_info(list.get('entries'))
 dump_data(videos, "All")
 encode_videos(list.get('entries'))
-
 
 playlist=get_playlist(sys.argv[1])
 list_of_playlist = []

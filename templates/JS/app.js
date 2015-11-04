@@ -94,10 +94,6 @@ function refreshPagination() {
 	    var pageNumber = videoDB.getPageNumber();
 	    pageText.innerHTML = 'Page ' + pageNumber + '/' + pageCount;
 
-	    pageBox.style.display = 'block';
-	    leftArrow.style.display = 'block';
-	    rightArrow.style.display = 'block';
-
 	    if (videoDB.getPageNumber() == 1) {
 		leftArrow.style.visibility = 'hidden';
 		rightArrow.style.visibility = 'visible';
