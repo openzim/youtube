@@ -470,7 +470,7 @@ def get_playlist(url):
     soup_api = BeautifulSoup.BeautifulSoup(api)
     for link in  soup_api.find_all('a', attrs={"class":u"yt-uix-sessionlink yt-uix-tile-link  spf-link  yt-ui-ellipsis yt-ui-ellipsis-2"}):
             playlist.append("https://youtube.com" + link.get('href'))
-    return playlist
+    return list(set(playlist)) # list to set to list for remove dupe
 
 if len(sys.argv) < 4 or len(sys.argv) > 6 :
 	usage()
