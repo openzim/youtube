@@ -83,7 +83,7 @@ def prepare_folder(list):
 
 def make_welcome_page(list, playlist):
 
-	options = "<option value=\"All\">All</option>"
+	options = "<option value=\"All\">--</option>"
 	for j in sorted(playlist):
 		options += "<option value=\"" + j  + "\">" + j.replace('_', ' ') + "</option>"
 
