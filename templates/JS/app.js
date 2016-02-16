@@ -3,7 +3,6 @@ window.onload = genplaylist();
 
 function genplaylist() {
   setupLanguageFilter();
-  setupPagination();
   // Load the initial data. 
   // This will display all data without any language filter.
   videoDB.resetPage();
@@ -13,6 +12,7 @@ function genplaylist() {
     refreshVideos(data);
   });
 
+  setupPagination();
   refreshPagination();
   return false;
 }
@@ -106,6 +106,9 @@ function refreshPagination() {
 	    }
 	    
 	    pageBox.style.visibility = 'visible';
+	    pageBox.style.display = '';
+	    leftArrow.style.display = '';
+	    rightArrow.style.display = '';
 	} else {
 	    pageBox.style.display = 'none';
 	    leftArrow.style.display = 'none';
