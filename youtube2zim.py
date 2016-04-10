@@ -35,6 +35,11 @@ def get_list_item_info(url):
                                         try:
 						result = ydl.extract_info(url, download=False)
                                                 break
+                                        except youtube_dl.utils.DownloadError as e:
+						if "Please sign in to view this video." in str(e.exc_info[1]):
+							print("Imposible to get this playlist")
+							result = None
+							break
                                         except:
                                                 e = sys.exc_info()[0]
                                                 attempts += 1
@@ -253,7 +258,7 @@ def get_user_pictures(api_key):
 
 	soup_api = BeautifulSoup.BeautifulSoup(api)
 	url_profile_picture = soup_api.find('img',attrs={"class":u"appbar-nav-avatar"})['src']
-
+#	url_profile_picture = soup_api.find('img',attrs={"class":u"channel-header-profile-image"})['src']
         if "https:" not in url_profile_picture :
                 url_profile_picture = "https:" + url_profile_picture
 
@@ -485,25 +490,27 @@ script_dirname=(os.path.dirname(sys.argv[0]) or ".") + "/"
 lang_input=sys.argv[2]
 publisher=sys.argv[3]
 list=get_list_item_info(sys.argv[1])
-prepare_folder(list)
-write_video_info(list.get('entries'))
-dump_data(videos, "All")
-encode_videos(list.get('entries'))
-
-playlist=get_playlist(sys.argv[1])
-list_of_playlist = []
-for x in playlist:
-	list=get_list_item_info(x)
-	videos = []
+if list != None :
+	prepare_folder(list)
 	write_video_info(list.get('entries'))
-	title = slugify.slugify(list.get('title'))
-	title = re.sub(r'-', '_', title)
-	dump_data(videos, title)
+	dump_data(videos, "All")
 	encode_videos(list.get('entries'))
-	list_of_playlist.append(title)
-make_welcome_page(list, list_of_playlist)
+	playlist=get_playlist(sys.argv[1])
+	list_of_playlist = []
+	for x in playlist:
+		list=get_list_item_info(x)
+		if list != None :
+			videos = []
+			write_video_info(list.get('entries'))
+			title = slugify.slugify(list.get('title'))
+			title = re.sub(r'-', '_', title)
+			dump_data(videos, title)
+			encode_videos(list.get('entries'))
+			list_of_playlist.append(title)
 
-title_zim  = slugify.slugify(title_html)
-create_zims(title_zim)
+	make_welcome_page(list, list_of_playlist)
+	
+	title_zim  = slugify.slugify(title_html)
+	create_zims(title_zim)
 
 
