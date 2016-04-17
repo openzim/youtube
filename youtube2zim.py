@@ -119,7 +119,7 @@ def write_video_info(list):
 	                html_file = os.path.join(video_directory, 'index.html')
 			if not os.path.exists(video_directory):
 	                        url = "https://www.youtube.com/watch?v="+item.get('id')
-	                        with youtube_dl.YoutubeDL({'outtmpl': scraper_dir+title_clean+'/video.mp4'})  as ydl:
+	                        with youtube_dl.YoutubeDL({'outtmpl': scraper_dir+title_clean+'/video.%(ext)s' , 'preferredcodec': 'webm' })  as ydl:
 					attempts = 0
 					while attempts < 5:
 		                                try:
