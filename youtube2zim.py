@@ -29,17 +29,12 @@ def get_list_item_info(url):
 	structure is {dict [list of dict {dict for each video} ] }
 	Only return list of video and write title of playlist/user name
 	"""
-        with youtube_dl.YoutubeDL({'writesubtitles': True}) as ydl:
+        with youtube_dl.YoutubeDL({'writesubtitles': True, 'ignoreerrors': True}) as ydl:
 				attempts = 0
                                 while attempts < 5:
                                         try:
 						result = ydl.extract_info(url, download=False)
                                                 break
-                                        except youtube_dl.utils.DownloadError as e:
-						if "Please sign in to view this video." in str(e.exc_info[1]):
-							print("Imposible to get this playlist")
-							result = None
-							break
                                         except:
                                                 e = sys.exc_info()[0]
                                                 attempts += 1
@@ -118,70 +113,71 @@ def write_video_info(list):
         env = Environment(loader=FileSystemLoader('templates'))
         template = env.get_template('video.html')
         for item in list:
-		title_clean = slugify.slugify(item.get('title'))
-		video_directory = scraper_dir+title_clean+"/"
-                html_file = os.path.join(video_directory, 'index.html')
-		if not os.path.exists(video_directory):
-                        url = "https://www.youtube.com/watch?v="+item.get('id')
-                        with youtube_dl.YoutubeDL({'outtmpl': scraper_dir+title_clean+'/video.mp4'})  as ydl:
-				attempts = 0
-				while attempts < 5:
-	                                try:
-						ydl.download([url])
-						break
-					except:
-						e = sys.exc_info()[0]
-						attempts += 1						
-						print "error : " + str(e)
-						if attempts == 5:
-							sys.exit("Error during getting video")
-						print "We will re-try to get this video in 10s"
-						time_to_wait = 60 * attempts
-                                                time.sleep(time_to_wait)
-                        date = item.get('upload_date')
-                        id = item.get('id')
-                        publication_date = date[6:8]+"/"+date[4:6]+"/"+date[0:4]
-                        subtitles = download_video_thumbnail_subtitles(id, item.get('subtitles'), title_clean)
-                        html = template.render(
-                                title=item.get('title'),
-                                author=item.get('uploader'),
-                                vtt = subtitles,
-                                description=item.get('description'),
-                                url=item.get('webpage_url'),
-                                date=publication_date,
-				background_color=background_color)
+		if item != None :
+			title_clean = slugify.slugify(item.get('title'))
+			video_directory = scraper_dir+title_clean+"/"
+	                html_file = os.path.join(video_directory, 'index.html')
+			if not os.path.exists(video_directory):
+	                        url = "https://www.youtube.com/watch?v="+item.get('id')
+	                        with youtube_dl.YoutubeDL({'outtmpl': scraper_dir+title_clean+'/video.mp4'})  as ydl:
+					attempts = 0
+					while attempts < 5:
+		                                try:
+							ydl.download([url])
+							break
+						except:
+							e = sys.exc_info()[0]
+							attempts += 1						
+							print "error : " + str(e)
+							if attempts == 5:
+								sys.exit("Error during getting video")
+							print "We will re-try to get this video in 10s"
+							time_to_wait = 60 * attempts
+                	                                time.sleep(time_to_wait)
+	                        date = item.get('upload_date')
+        	                id = item.get('id')
+                	        publication_date = date[6:8]+"/"+date[4:6]+"/"+date[0:4]
+                        	subtitles = download_video_thumbnail_subtitles(id, item.get('subtitles'), title_clean)
+	                        html = template.render(
+        	                        title=item.get('title'),
+                	                author=item.get('uploader'),
+                        	        vtt = subtitles,
+                                	description=item.get('description'),
+	                                url=item.get('webpage_url'),
+        	                        date=publication_date,
+					background_color=background_color)
+	                        html = html.encode('utf-8')
+        	                index_path = os.path.join(video_directory, 'index.html')
+                	        with open(index_path, 'w') as html_page:
+                        	    html_page.write(html)
+	                        welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
+			elif not os.path.exists(html_file):
+				date = item.get('upload_date')
+	                        id = item.get('id')
+        	                publication_date = date[6:8]+"/"+date[4:6]+"/"+date[0:4]
+                	        subtitles = download_video_thumbnail_subtitles(id, item.get('subtitles'), title_clean)
 
-                        html = html.encode('utf-8')
-                        index_path = os.path.join(video_directory, 'index.html')
-                        with open(index_path, 'w') as html_page:
-                            html_page.write(html)
-                        welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
-		elif not os.path.exists(html_file):
-			date = item.get('upload_date')
-                        id = item.get('id')
-                        publication_date = date[6:8]+"/"+date[4:6]+"/"+date[0:4]
-                        subtitles = download_video_thumbnail_subtitles(id, item.get('subtitles'), title_clean)
+                        	html = template.render(
+	                                title=item.get('title'),
+        	                        author=item.get('uploader'),
+                	                vtt = subtitles,
+                        	        description=item.get('description'),
+                                	url=item.get('webpage_url'),
+	                                date=publication_date,
+					background_color=background_color
+					)
 
-                        html = template.render(
-                                title=item.get('title'),
-                                author=item.get('uploader'),
-                                vtt = subtitles,
-                                description=item.get('description'),
-                                url=item.get('webpage_url'),
-                                date=publication_date,
-				background_color=background_color
-				)
-
-                        html = html.encode('utf-8')
-                        index_path = os.path.join(video_directory, 'index.html')
-                        with open(index_path, 'w') as html_page:
-                            html_page.write(html)
-			welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
+                        	html = html.encode('utf-8')
+	                        index_path = os.path.join(video_directory, 'index.html')
+	                        with open(index_path, 'w') as html_page:
+        	                    html_page.write(html)
+				welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
  
-                else:
-                        print "Video directory " + video_directory + "already exists. Skipping."
-			welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
-
+	                else:
+        	                print "Video directory " + video_directory + "already exists. Skipping."
+				welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
+		else:
+			print "We can't get this video"
 def dump_data(videos, title):
         """
         Dump all the data about every youtube video in a JS/data.js file
@@ -210,7 +206,6 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
 	#download substitle and add it to video.html if they exist
 	if subtitles != "none" or subtitles != {}:
                 subs_list = []
-                print subtitles
                 for key in subtitles:
                         for element in subtitles.get(key):
                                 if element.get('ext') == "vtt":
@@ -323,18 +318,19 @@ def encode_videos(list):
          in the kiwix-other/youtube/ directory, that we will use on macs. 
          """
          for item in list:
-                 video_id = slugify.slugify(item.get('title'))
-                 video_path = os.path.join(scraper_dir, video_id, 'video.mp4')
-                 video_copy_path = os.path.join(scraper_dir, video_id, 'video.webm')
+		if item != None:
+	                 video_id = slugify.slugify(item.get('title'))
+        	         video_path = os.path.join(scraper_dir, video_id, 'video.mp4')
+	                 video_copy_path = os.path.join(scraper_dir, video_id, 'video.webm')
 
-                 if os.path.exists(video_copy_path):
-                     print 'Video ' + video_copy_path + ' already encoded. Skipping.'
-                     continue
+	                 if os.path.exists(video_copy_path):
+        	             print 'Video ' + video_copy_path + ' already encoded. Skipping.'
+                	     continue
 
-                 if os.path.exists(video_path):
-                      print 'Converting Video... ' + slugify.slugify(item.get('title'))
-                      convert_video_and_move_to_rendering(video_path, video_copy_path)
-		      os.remove(video_path)
+        	         if os.path.exists(video_path):
+                	      print 'Converting Video... ' + slugify.slugify(item.get('title'))
+	                      convert_video_and_move_to_rendering(video_path, video_copy_path)
+			      os.remove(video_path)
 
 
 def convert_video_and_move_to_rendering(from_path, to_path):
