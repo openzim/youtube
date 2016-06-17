@@ -256,8 +256,8 @@ def get_user_pictures(api_key):
 
 
 	soup_api = BeautifulSoup.BeautifulSoup(api)
-	url_profile_picture = soup_api.find('img',attrs={"class":u"appbar-nav-avatar"})['src']
-#	url_profile_picture = soup_api.find('img',attrs={"class":u"channel-header-profile-image"})['src']
+#	url_profile_picture = soup_api.find('img',attrs={"class":u"appbar-nav-avatar"})['src']
+	url_profile_picture = soup_api.find('img',attrs={"class":u"channel-header-profile-image"})['src']
         if "https:" not in url_profile_picture :
                 url_profile_picture = "https:" + url_profile_picture
 
