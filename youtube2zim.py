@@ -82,18 +82,22 @@ def prepare_folder(list):
 	background_color = solarize_color(color);
 
 def make_welcome_page(list, playlist):
-
-	options = "<option value=\"All\">--</option>"
-	for j in sorted(playlist):
-		options += "<option value=\"" + j  + "\">" + j.replace('_', ' ') + "</option>"
-
-        env = Environment(loader=FileSystemLoader('templates'))
-        template = env.get_template('welcome.html')
-	html = template.render(title=title_html, color=color, background_color=background_color, options=options)
-        html = html.encode('utf-8')
-	index_path = os.path.join(scraper_dir, 'index.html')
-        with open(index_path, 'w') as html_page:
-        	html_page.write(html)
+    if len(playlist) == 0:
+        options = "<form name=\"playlist\" id=\"header-playlists\" style=\"display:none\">\n                        <select name=\"list\" onChange=\"genplaylist()\">"
+    else:
+        options = "<form name=\"playlist\" id=\"header-playlists\">\n            <select name=\"list\" onChange=\"genplaylist()\">"
+    
+    options += "<option value=\"All\">--</option>"
+    for j in sorted(playlist):
+        options += "<option value=\"" + j  + "\">" + j.replace('_', ' ') + "</option>"
+    options += "\n </select>\n                                              </form>"
+    env = Environment(loader=FileSystemLoader('templates'))
+    template = env.get_template('welcome.html')
+    html = template.render(title=title_html, color=color, background_color=background_color, options=options)
+    html = html.encode('utf-8')
+    index_path = os.path.join(scraper_dir, 'index.html')
+    with open(index_path, 'w') as html_page:
+        html_page.write(html)
 
 def welcome_page(title, author, id, description):
         videos.append({
