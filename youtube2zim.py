@@ -315,6 +315,15 @@ def resize_image_profile(image_path):
 def exec_cmd(cmd):
     return envoy.run(str(cmd.encode('utf-8')))
 
+def sort_list_by_view(list):
+#	print(list)
+#	print list[0].get('title') + str(list[0].get('view_count'))
+	list_sorted= sorted(list, key=lambda k: k['view_count'])
+	list_sorted.reverse()
+	return list_sorted
+
+
+
 def encode_videos(list):
          """
          Encode the videos from mp4 to webm. We will use ffmpeg over the 
@@ -493,7 +502,8 @@ publisher=sys.argv[3]
 list=get_list_item_info(sys.argv[1])
 if list != None :
 	prepare_folder(list)
-	write_video_info(list.get('entries'))
+	sorted_list = sort_list_by_view(list.get('entries'))
+	write_video_info(sorted_list)
 	dump_data(videos, "All")
 	encode_videos(list.get('entries'))
 	playlist=get_playlist(sys.argv[1])
@@ -502,7 +512,8 @@ if list != None :
 		list=get_list_item_info(x)
 		if list != None :
 			videos = []
-			write_video_info(list.get('entries'))
+			sorted_list = sort_list_by_view(list.get('entries'))
+			write_video_info(sorted_list)
 			title = slugify.slugify(list.get('title'))
 			title = re.sub(r'-', '_', title)
 			dump_data(videos, title)
