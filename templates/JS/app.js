@@ -153,24 +153,20 @@ function refreshVideos(pageData) {
 
 
 function firstVideos(pageData) {  
-    var videoIntro = document.getElementById('video-intro');
-    videoIntro.innerHTML = '';
+    var videoDetails = document.getElementById('video-details');
+    videoDetails.innerHTML = '';
     var video = pageData[0];
-    var v = document.createElement('video');
-    v.className = 'video-js vjs-default-skin';
-//    v.controls 
-    v.preload='auto';
-    v.width='480';
-    v.height='270'; 
-//    v.data-setup='{"autoplay": true, "preload": "true"}';
-    var source = document.createElement('source');
-    source.src = '../I/'+video['id']+'/video.webm'; 
-    source.type='video/webm';
 
-    v.appendChild(source);
-    videoIntro.appendChild(v);
-    var title = document.createElement('p');
+    var source = document.getElementById('source-intro');
+    source.src = video['title'] + "/video.webm";
+
+    var title = document.createElement('h4')
     title.id = 'title';
     title.innerHTML = video['title'];
-    videoIntro.appendChild(title);
+    videoDetails.appendChild(title);
+
+    var description = document.createElement('p');
+    description.innerHTML = video['description'];
+    videoDetails.appendChild(description);
+
 }

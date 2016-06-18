@@ -316,8 +316,6 @@ def exec_cmd(cmd):
     return envoy.run(str(cmd.encode('utf-8')))
 
 def sort_list_by_view(list):
-#	print(list)
-#	print list[0].get('title') + str(list[0].get('view_count'))
 	list_sorted= sorted(list, key=lambda k: k['view_count'])
 	list_sorted.reverse()
 	return list_sorted
@@ -349,14 +347,19 @@ def encode_videos(list):
 def convert_video_and_move_to_rendering(from_path, to_path):
         ffmpeg = ''
         if _platform == "linux" or _platform == "linux2":
-           ffmpeg = 'ffmpeg'
-	#   ffmpeg = 'avconv' # You need to modify command with good avconv argument
+            ffmpeg = 'ffmpeg'
+            #ffmpeg = 'avconv' # You need to modify command with good avconv argument
         elif _platform == "darwin":
            ffmpeg = path.join(os.getcwd(), '..', 'ffmpeg')
 
         command = ''.join(("""{} -i "{}" -codec:v libvpx -quality best -cpu-used 0 -b:v 300k""",
             """ -qmin 30 -qmax 42 -maxrate 300k -bufsize 1000k -threads 8 -vf scale=480:-1""",
             """ -codec:a libvorbis -b:a 128k -f webm "{}" """)).format(ffmpeg, from_path, to_path)
+        #command for avconv
+        #command = ''.join(("""{} -i "{}" -codec:v libvpx -cpu-used 0 -b:v 300k""",
+        #            """ -qmin 30 -qmax 42 -maxrate 300k -bufsize 1000k -threads 8 -vf scale=480:-1""",
+        #            """ -codec:a libvorbis -b:a 128k -f webm "{}" """)).format(ffmpeg, from_path, to_path)
+
 
         os.system(command)
 

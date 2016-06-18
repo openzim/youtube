@@ -22,6 +22,24 @@
     body {
       background: {{ background_color }};
     }
+    #video-intro {
+      margin:2%;
+      text-align: center;
+    }
+    #video {
+      display:inline-block;
+    }
+    #video-details { 
+      display:inline-block;
+      vertical-align: top; 
+    }
+    #video-items{
+      /*border: medium solid black;*/
+    }
+    #grid-container {
+      display:block;
+      text-align: center;
+    }
     </style>
   </head>
   <body>
@@ -44,9 +62,17 @@
           </td>
         </tr>
       </table>
-      <div id="grid-container" style="display:block;">
-        <div id="video-intro" class="rig grid"></div>
-      <ul id="video-items" class="rig grid"></ul>
+      <div> 
+        <div id="video-intro" class="rig grid">
+          <div id="video" >
+            <video id="video" class="video-js vjs-default-skin" controls preload="auto" width="480" height="270" data-setup='{"autoplay": true, "preload": "true"}'>
+              <source id="source-intro" src="panda/video.webm" type="video/webm" />
+            </video>
+          </div>
+          <div id="video-details" >
+          </div>
+        </div>
+     <ul id="video-items" class="rig grid"></ul>
     </div>
     <div class="backtotop" onclick="$('html, body').animate({ scrollTop: 0 }, 'slow');">
       <span style="margin: auto;">Back to the top</span>
