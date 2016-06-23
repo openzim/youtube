@@ -1,0 +1,5 @@
+Version 1.0 (23 June 2016):
+  Get playlist or user channel (and playlist of user) from youtube
+  the most view video is show on top and bigger
+  --lowquality option for downloading in mp4 and re-encode aggressively in webm
+
