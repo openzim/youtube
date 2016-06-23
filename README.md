@@ -4,6 +4,8 @@ This script made a .zim file of video from youtube user or youtube playlist.
 
     python youtube2zim.py [your user url or playlist url] [lang of your zim archive] [publisher]
 
+
+    You can use --lowquality option that will download the video in mp4 and re-encode aggressively in webm
 == Building ==
 
 It's advised, that you have `pip` installed. 
