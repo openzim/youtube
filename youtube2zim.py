@@ -1,5 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""youtube to zim.
+Create a ZIM snapshot by scraping your prefered Youtube channel or playlist
+Url format for playlist : https://www.youtube.com/playlist?list=PL1rRii_tzDcK47PQTWUX5yzoL8xz7Kgna
+Url format for user : https://www.youtube.com/channel/UC2gwowvVGh7NMYtHHeyzMmw 
+
+Usage:
+  youtube2zim.py <url> <lang> <publisher> [--lowquality]
+
+Options:
+    -h --help  
+    --lowquality  download in mp4 and re-encode aggressively in webm
+"""
+
 import sys
 import os
 import youtube_dl
@@ -19,6 +32,7 @@ import time
 import codecs
 from dominantColor import *
 import re
+from docopt import docopt
 
 type = ""
 videos = []
@@ -416,15 +430,15 @@ def download(url, destination):
             time_to_wait = 60 * attempts
             time.sleep(time_to_wait)
 
-def usage():
-    print '\nCreate a ZIM snapshot by scraping your prefered Youtube channel or playlist\n'
-    print 'Usage:'
-    print '\tpython youtube2zim.py [your user url or playlist url] [lang of your zim archive] [publisher]'
-    print 'Example:'
-    print '\t$python youtube2zim.py https://www.youtube.com/channel/UC2gwowvVGh7NMYtHHeyzMmw ara Kiwix                  # to scrape a channel'
-    print '\t$python youtube2zim.py https://www.youtube.com/playlist?list=PL1rRii_tzDcK47PQTWUX5yzoL8xz7Kgna eng Kiwix  # to scrape a playlist'
-    print '\t python youtube2zim.py https://www.youtube.com/playlist?list=    PL1rRii_tzDcK47PQTWUX5yzoL8xz7Kgna eng Kiwix --lowquality  #download in mp4 and re-encode aggressively in webm'
-
+#def usage():
+#    print '\nCreate a ZIM snapshot by scraping your prefered Youtube channel or playlist\n'
+#    print 'Usage:'
+#    print '\tpython youtube2zim.py [your user url or playlist url] [lang of your zim archive] [publisher]'
+#    print 'Example:'
+#    print '\t$python youtube2zim.py https://www.youtube.com/channel/UC2gwowvVGh7NMYtHHeyzMmw ara Kiwix                  # to scrape a channel'
+#    print '\t$python youtube2zim.py https://www.youtube.com/playlist?list=PL1rRii_tzDcK47PQTWUX5yzoL8xz7Kgna eng Kiwix  # to scrape a playlist'
+#    print '\t python youtube2zim.py https://www.youtube.com/playlist?list=    PL1rRii_tzDcK47PQTWUX5yzoL8xz7Kgna eng Kiwix --lowquality  #download in mp4 and re-encode aggressively in webm'
+#
 def get_playlist(url):
     playlist = []
     url_channel = url + "/playlists"
@@ -450,15 +464,17 @@ def get_playlist(url):
             playlist.append(new)
     return playlist
 
-if len(sys.argv) < 4 or len(sys.argv) > 6 :
-    usage()
-    exit()
+
+arguments = docopt(__doc__, version='youtube2zim 1.0')
+#if len(sys.argv) < 4 or len(sys.argv) > 6 :
+#    usage()
+#    exit()
 
 if not bin_is_present("zimwriterfs"):
     sys.exit("zimwriterfs is not available, please install it.")
 
 
-if "--lowquality" in sys.argv:
+if arguments["--lowquality"]:
     if bin_is_present("avconv"):
         parametre = {'preferredcodec': 'mp4',  'format' : 'mp4', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-qscale", "1", "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
     else:
@@ -469,9 +485,9 @@ else:
 
 
 script_dirname=(os.path.dirname(sys.argv[0]) or ".") + "/"
-lang_input=sys.argv[2]
-publisher=sys.argv[3]
-list=get_list_item_info(sys.argv[1])
+lang_input=arguments["<lang>"]
+publisher=arguments["<publisher>"]
+list=get_list_item_info(arguments["<url>"])
 if list != None :
     prepare_folder(list)
     sorted_list = sort_list_by_view(list.get('entries'))
