@@ -423,6 +423,7 @@ def usage():
     print 'Example:'
     print '\t$python youtube2zim.py https://www.youtube.com/channel/UC2gwowvVGh7NMYtHHeyzMmw ara Kiwix                  # to scrape a channel'
     print '\t$python youtube2zim.py https://www.youtube.com/playlist?list=PL1rRii_tzDcK47PQTWUX5yzoL8xz7Kgna eng Kiwix  # to scrape a playlist'
+    print '\t python youtube2zim.py https://www.youtube.com/playlist?list=    PL1rRii_tzDcK47PQTWUX5yzoL8xz7Kgna eng Kiwix --lowquality  #download in mp4 and re-encode aggressively in webm'
 
 def get_playlist(url):
     playlist = []
