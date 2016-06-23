@@ -321,50 +321,6 @@ def sort_list_by_view(list):
     list_sorted.reverse()
     return list_sorted
 
-
-
-#def encode_videos(list):
-#         """
-#         Encode the videos from mp4 to webm. We will use ffmpeg over the
-#         command line for this. There is a static binary version
-#         in the kiwix-other/youtube/ directory, that we will use on macs.
-#         """
-#         for item in list:
-#               if item != None:
-#                        video_id = slugify.slugify(item.get('title'))
-#                        video_path = os.path.join(scraper_dir, video_id, 'video.mp4')
-#                        video_copy_path = os.path.join(scraper_dir, video_id, 'video.webm')
-#
-#                        if os.path.exists(video_copy_path):
-#                            print 'Video ' + video_copy_path + ' already encoded. Skipping.'
-#                            continue
-#
-#                        if os.path.exists(video_path):
-#                             print 'Converting Video... ' + slugify.slugify(item.get('title'))
-#                             convert_video_and_move_to_rendering(video_path, video_copy_path)
-#                             os.remove(video_path)
-#
-#
-#def convert_video_and_move_to_rendering(from_path, to_path):
-#        ffmpeg = ''
-#        if _platform == "linux" or _platform == "linux2":
-#            ffmpeg = 'ffmpeg'
-#            #ffmpeg = 'avconv' # You need to modify command with good avconv argument
-#        elif _platform == "darwin":
-#           ffmpeg = path.join(os.getcwd(), '..', 'ffmpeg')
-#
-#        command = ''.join(("""{} -i "{}" -codec:v libvpx -quality best -cpu-used 0 -b:v 300k""",
-#            """ -qmin 30 -qmax 42 -maxrate 300k -bufsize 1000k -threads 8 -vf scale=480:-1""",
-#            """ -codec:a libvorbis -b:a 128k -f webm "{}" """)).format(ffmpeg, from_path, to_path)
-#        #command for avconv
-#        #command = ''.join(("""{} -i "{}" -codec:v libvpx -cpu-used 0 -b:v 300k""",
-#        #            """ -qmin 30 -qmax 42 -maxrate 300k -bufsize 1000k -threads 8 -vf scale=480:-1""",
-#        #            """ -codec:a libvorbis -b:a 128k -f webm "{}" """)).format(ffmpeg, from_path, to_path)
-#
-#
-#        os.system(command)
-
-
 def create_zims(list_title):
     print 'Creating ZIM files'
     # Check, if the folder exists. Create it, if it doesn't.
@@ -517,7 +473,6 @@ if list != None :
     sorted_list = sort_list_by_view(list.get('entries'))
     write_video_info(sorted_list,parametre)
     dump_data(videos, "All")
-    #encode_videos(list.get('entries'))
     playlist=get_playlist(sys.argv[1])
     list_of_playlist = []
     for x in playlist:
@@ -529,7 +484,6 @@ if list != None :
             title = slugify.slugify(list.get('title'))
             title = re.sub(r'-', '_', title)
             dump_data(videos, title)
-        #encode_videos(list.get('entries'))
             list_of_playlist.append(title)
 
     make_welcome_page(list, list_of_playlist)
