@@ -157,8 +157,11 @@ function firstVideos(pageData) {
     videoDetails.innerHTML = '';
     var video = pageData[0];
 
-    var source = document.getElementById('source-intro');
-    source.src = '../I/' + video['title'] + "/video.webm";
+    $("video:nth-child(1)").attr("src","../I/" + video['id'] + "/video.webm");
+    $("#video").removeClass("vjs-playing").addClass("vjs-paused");
+    $("#video").load();
+    $("#div_video_html5_api").show();
+
 
     var title = document.createElement('h4')
     title.id = 'title';
