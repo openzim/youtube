@@ -158,7 +158,7 @@ function firstVideos(pageData) {
     var video = pageData[0];
 
     var source = document.getElementById('source-intro');
-    source.src = video['title'] + "/video.webm";
+    source.src = '../I/' + video['title'] + "/video.webm";
 
     var title = document.createElement('h4')
     title.id = 'title';
