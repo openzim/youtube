@@ -270,7 +270,7 @@ def get_user_pictures(api_key):
             time.sleep(time_to_wait)
 
 
-    soup_api = BeautifulSoup.BeautifulSoup(api)
+    soup_api = BeautifulSoup.BeautifulSoup(api, "html.parser")
 #       url_profile_picture = soup_api.find('img',attrs={"class":u"appbar-nav-avatar"})['src']
     url_profile_picture = soup_api.find('img',attrs={"class":u"channel-header-profile-image"})['src']
     if "https:" not in url_profile_picture :
@@ -299,7 +299,7 @@ def get_user_pictures(api_key):
             time.sleep(time_to_wait)
 
 
-    soup = BeautifulSoup.BeautifulSoup(html)
+    soup = BeautifulSoup.BeautifulSoup(html, "html.parser")
     header = soup.find('div',attrs={"id":u"gh-banner"}).find('style').text
     sheet = cssutils.parseString(header)
     for rule in sheet:
@@ -457,7 +457,7 @@ def get_playlist(url):
             time_to_wait = 60 * attempts
             time.sleep(time_to_wait)
 
-    soup_api = BeautifulSoup.BeautifulSoup(api)
+    soup_api = BeautifulSoup.BeautifulSoup(api, "html.parser")
     for link in  soup_api.find_all('a', attrs={"class":u"yt-uix-sessionlink yt-uix-tile-link spf-link yt-ui-ellipsis yt-ui-ellipsis-2"}):
         new = "https://youtube.com" + link.get('href')
         if new not in playlist:
