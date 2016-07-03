@@ -474,6 +474,9 @@ if not bin_is_present("zimwriterfs"):
     sys.exit("zimwriterfs is not available, please install it.")
 
 
+
+
+
 if arguments["--lowquality"]:
     if bin_is_present("avconv"):
         parametre = {'preferredcodec': 'mp4',  'format' : 'mp4', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-qscale", "1", "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
@@ -482,7 +485,14 @@ if arguments["--lowquality"]:
 else:
     parametre = {'preferredcodec': 'webm',  'format' : 'webm'}
 
+if arguments["<url>"][24:28] == "user" or arguments["<url>"][23:27] == "user" :
+    get_page = urllib.urlopen(arguments["<url>"]).read()
+    soup_page = BeautifulSoup.BeautifulSoup(get_page, "html.parser")
+    url_channel = soup_page.find('meta',attrs={"itemprop":u"channelId"})['content']
+    url = str("https://www.youtube.com/channel/"+url_channel)
 
+else:
+    url = arguments["<url>"]
 
 script_dirname=(os.path.dirname(sys.argv[0]) or ".") + "/"
 lang_input=arguments["<lang>"]
