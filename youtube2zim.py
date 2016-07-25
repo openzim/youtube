@@ -330,9 +330,15 @@ def resize_image_profile(image_path):
 def exec_cmd(cmd):
     return envoy.run(str(cmd.encode('utf-8'))).status_code
 
+def sort_dict_view_count(k):
+    try :
+        return k['view_count']
+    except:
+        return 0
+
+
 def sort_list_by_view(list):
-    list_sorted= sorted(list, key=lambda k: k['view_count'])
-    list_sorted.reverse()
+    list_sorted= sorted(list, key=sort_dict_view_count, reverse=True))
     return list_sorted
 
 def create_zims(list_title):
