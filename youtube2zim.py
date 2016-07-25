@@ -338,7 +338,7 @@ def sort_dict_view_count(k):
 
 
 def sort_list_by_view(list):
-    list_sorted= sorted(list, key=sort_dict_view_count, reverse=True))
+    list_sorted= sorted(list, key=sort_dict_view_count, reverse=True)
     return list_sorted
 
 def create_zims(list_title):
