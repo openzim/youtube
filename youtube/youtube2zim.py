@@ -6,7 +6,7 @@ Url format for playlist : https://www.youtube.com/playlist?list=PL1rRii_tzDcK47P
 Url format for user : https://www.youtube.com/channel/UC2gwowvVGh7NMYtHHeyzMmw 
 
 Usage:
-  youtube2zim.py <url> <lang> <publisher> [--lowquality]
+  youtube2zim <url> <lang> <publisher> [--lowquality]
 
 Options:
     -h --help  
