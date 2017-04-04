@@ -1,9 +1,0 @@
-youtube-dl
-requests
-jinja2
-pillow
-envoy
-beautifulsoup4
-cssutils
-awesome-slugify
-docopt

@@ -1,0 +1,2 @@
+include *.md
+recursive-include youtube *.txt *.js *.css *.html *.ttf *.svg *.eot *.ttf *.woff  *.png

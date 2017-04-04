@@ -1,3 +1,5 @@
+Version 1.1 (04 April 2017):
+  Make it as python package
 Version 1.0 (23 June 2016):
   Get playlist or user channel (and playlist of user) from youtube
   the most view video is show on top and bigger

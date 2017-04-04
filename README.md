@@ -2,18 +2,11 @@ This script made a .zim file of video from youtube user or youtube playlist.
 
 == Usage ==
 
-    python youtube2zim.py [your user url or playlist url] [lang of your zim archive] [publisher]
+    youtube2zim [your user url or playlist url] [lang of your zim archive] [publisher]
 
 
     You can use --lowquality option that will download the video in mp4 and re-encode aggressively in webm
 == Building ==
-
-It's advised, that you have `pip` installed. 
-Chose one of the following methods to do that:
-
-    sudo apt-get install python-setuptools python-dev
-
-    sudo easy_install pip
 
 It's advised, that you have `virtualenv` installed:
 
@@ -23,13 +16,13 @@ Up next you have to create a virtual enviroment in the kiwix-other/TED/ director
 
     virtualenv --no-site-packages venv 
 
-Activiate the virtual enviroment:
+Activate the virtual enviroment:
 
     source venv/bin/activate
 
-Requirements are in requirements.txt you just need to make :
+Then install youtube2zim
 
-    pip install -r requirements.txt
+    pip install youtube2zim
 
 You will aslo need ffmpeg to convert mp4 format to webm format (maybe ffmpeg is remplace by avconv in your distribution so you have to modify script)
 

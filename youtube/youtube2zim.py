@@ -62,12 +62,9 @@ def get_list_item_info(url):
     return result
 
 def prepare_folder(list):
-    global type
     type = list['extractor_key']
     if "www.youtube.com/user/" in sys.argv[1]:
         type = "user"
-    global title
-    global title_html
 
     if type == "YoutubePlaylist":
         title = slugify.slugify(list['title'])
@@ -78,24 +75,22 @@ def prepare_folder(list):
 
 
 
-    global scraper_dir
-    scraper_dir = script_dirname + "build/" + title + "/"
+    scraper_dir = os.path.join( "build/", title) + "/"
 
     if not os.path.exists(scraper_dir):
         os.makedirs(scraper_dir)
     if not os.path.exists(scraper_dir+"CSS/"):
-        shutil.copytree("templates/CSS/", scraper_dir+"CSS/")
+        shutil.copytree(os.path.join(os.path.abspath(os.path.dirname(__file__)),"templates/CSS/"), scraper_dir+"CSS/")
     if not os.path.exists(scraper_dir+"JS/"):
-        shutil.copytree("templates/JS/", scraper_dir+"JS/")
-    get_user_pictures(list.get('entries')[0].get('uploader_id'))
+        shutil.copytree(os.path.join(os.path.abspath(os.path.dirname(__file__)), "templates/JS/"), scraper_dir+"JS/")
+    get_user_pictures(list.get('entries')[0].get('uploader_id'),scraper_dir,type)
 
-    global color
-    color = colorz(scraper_dir+"CSS/img/header.png", 1)[0];
+    color = colorz(scraper_dir+"CSS/img/header.png", 1)[0]
 
-    global background_color
     background_color = solarize_color(color);
+    return [ type, title , title_html, scraper_dir, color, background_color ]
 
-def make_welcome_page(list, playlist):
+def make_welcome_page(list, playlist,scraper_dir,title_html,color,background_color):
     if len(playlist) == 0:
         options = "<form name=\"playlist\" id=\"header-playlists\" style=\"display:none\">\n                        <select name=\"list\" onChange=\"genplaylist()\">"
     else:
@@ -105,7 +100,7 @@ def make_welcome_page(list, playlist):
     for j in sorted(playlist):
         options += "<option value=\"" + j  + "\">" + j.replace('_', ' ') + "</option>"
     options += "\n </select>\n                                              </form>"
-    env = Environment(loader=FileSystemLoader('templates'))
+    env = Environment(loader=FileSystemLoader(os.path.join(os.path.abspath(os.path.dirname(__file__)),'templates')))
     template = env.get_template('welcome.html')
     html = template.render(title=title_html, color=color, background_color=background_color, options=options)
     html = html.encode('utf-8')
@@ -121,14 +116,14 @@ def welcome_page(title, author, id, description):
         'speaker': author.encode('utf-8', 'ignore'),
         'thumbnail': id+"/thumbnail.jpg".encode('utf-8', 'ignore')})
 
-def write_video_info(list, parametre):
+def write_video_info(list, parametre,scraper_dir,background_color):
     """
     Render static html pages from the scraped video data and
     save the pages in build/{video id}/index.html.
     Save video in best quality in build/{title of user/playlist}/{video id}/video.mp4
     """
     print 'Rendering template...'
-    env = Environment(loader=FileSystemLoader('templates'))
+    env = Environment(loader=FileSystemLoader(os.path.join(os.path.abspath(os.path.dirname(__file__)),'templates')))
     template = env.get_template('video.html')
     for item in list:
         if item != None :
@@ -156,7 +151,7 @@ def write_video_info(list, parametre):
                     date = item.get('upload_date')
                     id = item.get('id')
                     publication_date = date[6:8]+"/"+date[4:6]+"/"+date[0:4]
-                    subtitles = download_video_thumbnail_subtitles(id, item.get('subtitles'), title_clean)
+                    subtitles = download_video_thumbnail_subtitles(id, item.get('subtitles'), title_clean,scraper_dir)
                     html = template.render(
                             title=item.get('title'),
                             author=item.get('uploader'),
@@ -197,7 +192,8 @@ def write_video_info(list, parametre):
                 welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
         else:
             print "We can't get this video"
-def dump_data(videos, title):
+
+def dump_data(videos, title,scraper_dir):
     """
     Dump all the data about every youtube video in a JS/data.js file
     inside the 'build' folder.
@@ -212,7 +208,7 @@ def dump_data(videos, title):
     with open(scraper_dir + 'JS/data.js', 'a') as youtube_file:
         youtube_file.write(data + ' \n')
 
-def download_video_thumbnail_subtitles(id, subtitles, title):
+def download_video_thumbnail_subtitles(id, subtitles, title,scraper_dir):
     """ Download thumbnail and subtitles of each video in his folder """
     #download thumbnail
     thumbnail_url = "https://i.ytimg.com/vi/"+id+"/hqdefault.jpg"
@@ -246,7 +242,7 @@ def download_video_thumbnail_subtitles(id, subtitles, title):
     return subs_list
 
 
-def get_user_pictures(api_key):
+def get_user_pictures(api_key,scraper_dir,type):
     """
     Get profile picture of a user or the profile picture of the uploader of the first video if it's a playlist
     Get user header if it's a user
@@ -308,9 +304,9 @@ def get_user_pictures(api_key):
                 if property.name == 'background-image':
                     urls = property.value
     if urls[4] == '"':
-        url_user_header = "https:"+urls[5:-1]
+        url_user_header = "https:"+urls[5:-2]
     else:
-        url_user_header = "https:"+urls[4:-1]
+        url_user_header = "https:"+urls[4:-2]
     download(url_user_header , scraper_dir+"CSS/img/header.png")
 
 def resize_image(image_path):
@@ -340,7 +336,7 @@ def sort_list_by_view(list):
     list_sorted= sorted(list, key=sort_by_view_count,reverse=True)
     return list_sorted
 
-def create_zims(list_title):
+def create_zims(list_title, lang_input, publisher,scraper_dir):
     print 'Creating ZIM files'
     # Check, if the folder exists. Create it, if it doesn't.
     html_dir = os.path.join(scraper_dir)
@@ -348,9 +344,9 @@ def create_zims(list_title):
     zim_path = os.path.join("build/", "{title}_{lang}_all_{date}.zim".format(title=list_title.lower(),lang=lang_input_alpha2,date=datetime.datetime.now().strftime('%Y-%m')))
     title = list_title.replace("-", " ")
     description = "{title} videos".format(title=title)
-    create_zim(html_dir, zim_path, title, description, list_title)
+    create_zim(html_dir, zim_path, title, description, list_title, lang_input, publisher)
 
-def create_zim(static_folder, zim_path, title, description, list_title):
+def create_zim(static_folder, zim_path, title, description, list_title, lang_input, publisher):
 
     print "\tWritting ZIM for {}".format(title)
 
@@ -393,7 +389,7 @@ def bin_is_present(binary):
         return True
 
 def languageIso3ToIso2(iso3):
-    f = codecs.open(script_dirname + 'ISO-639-2_utf-8.txt', 'rb', 'utf-8')
+    f = codecs.open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'ISO-639-2_utf-8.txt'), 'rb', 'utf-8')
     for line in f:
         iD = {}
         iD['bibliographic'], iD['terminologic'], iD['alpha2'], \
@@ -407,7 +403,7 @@ def languageIso3ToIso2(iso3):
     return ""
 
 def language_codeToLanguage_Name(lang):
-    f = codecs.open(script_dirname + 'ISO-639-2_utf-8.txt', 'rb', 'utf-8')
+    f = codecs.open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'ISO-639-2_utf-8.txt'), 'rb', 'utf-8')
     for line in f:
         iD = {}
         iD['bibliographic'], iD['terminologic'], iD['alpha2'], \
@@ -435,15 +431,6 @@ def download(url, destination):
             time_to_wait = 60 * attempts
             time.sleep(time_to_wait)
 
-#def usage():
-#    print '\nCreate a ZIM snapshot by scraping your prefered Youtube channel or playlist\n'
-#    print 'Usage:'
-#    print '\tpython youtube2zim.py [your user url or playlist url] [lang of your zim archive] [publisher]'
-#    print 'Example:'
-#    print '\t$python youtube2zim.py https://www.youtube.com/channel/UC2gwowvVGh7NMYtHHeyzMmw ara Kiwix                  # to scrape a channel'
-#    print '\t$python youtube2zim.py https://www.youtube.com/playlist?list=PL1rRii_tzDcK47PQTWUX5yzoL8xz7Kgna eng Kiwix  # to scrape a playlist'
-#    print '\t python youtube2zim.py https://www.youtube.com/playlist?list=    PL1rRii_tzDcK47PQTWUX5yzoL8xz7Kgna eng Kiwix --lowquality  #download in mp4 and re-encode aggressively in webm'
-#
 def get_playlist(url):
     playlist = []
     url_channel = url + "/playlists"
@@ -469,59 +456,55 @@ def get_playlist(url):
             playlist.append(new)
     return playlist
 
-
-arguments = docopt(__doc__, version='youtube2zim 1.0')
-#if len(sys.argv) < 4 or len(sys.argv) > 6 :
-#    usage()
-#    exit()
-
-if not bin_is_present("zimwriterfs"):
-    sys.exit("zimwriterfs is not available, please install it.")
-
-
-
-
-
-if arguments["--lowquality"]:
-    if bin_is_present("avconv"):
-        parametre = {'preferredcodec': 'mp4',  'format' : 'mp4', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-qscale", "1", "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
+def run():
+    arguments = docopt(__doc__, version='youtube2zim 1.0')
+    if not bin_is_present("zimwriterfs"):
+        sys.exit("zimwriterfs is not available, please install it.")
+    if arguments["--lowquality"]:
+        if bin_is_present("avconv"):
+            parametre = {'preferredcodec': 'mp4',  'format' : 'mp4', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-qscale", "1", "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
+        else:
+            parametre = {'preferredcodec': 'mp4',  'format' : 'mp4', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-quality", "best",  "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
     else:
-        parametre = {'preferredcodec': 'mp4',  'format' : 'mp4', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-quality", "best",  "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
-else:
-    parametre = {'preferredcodec': 'webm',  'format' : 'webm'}
+        parametre = {'preferredcodec': 'webm',  'format' : 'webm'}
 
-if arguments["<url>"][24:28] == "user" or arguments["<url>"][23:27] == "user" :
-    get_page = urllib.urlopen(arguments["<url>"]).read()
-    soup_page = BeautifulSoup.BeautifulSoup(get_page, "html.parser")
-    url_channel = soup_page.find('meta',attrs={"itemprop":u"channelId"})['content']
-    url = str("https://www.youtube.com/channel/"+url_channel)
+    if arguments["<url>"][24:28] == "user" or arguments["<url>"][23:27] == "user" :
+        get_page = urllib.urlopen(arguments["<url>"]).read()
+        soup_page = BeautifulSoup.BeautifulSoup(get_page, "html.parser")
+        url_channel = soup_page.find('meta',attrs={"itemprop":u"channelId"})['content']
+        url = str("https://www.youtube.com/channel/"+url_channel)
 
-else:
-    url = arguments["<url>"]
+    else:
+        url = arguments["<url>"]
 
-script_dirname=(os.path.dirname(sys.argv[0]) or ".") + "/"
-lang_input=arguments["<lang>"]
-publisher=arguments["<publisher>"]
-list=get_list_item_info(arguments["<url>"])
-if list != None :
-    prepare_folder(list)
-    sorted_list = sort_list_by_view(list.get('entries'))
-    write_video_info(sorted_list,parametre)
-    dump_data(videos, "All")
-    playlist=get_playlist(sys.argv[1])
-    list_of_playlist = []
-    for x in playlist:
-        list=get_list_item_info(x)
-        if list != None :
-            videos = []
-            sorted_list = sort_list_by_view(list.get('entries'))
-            write_video_info(sorted_list, parametre)
-            title = slugify.slugify(list.get('title'))
-            title = re.sub(r'-', '_', title)
-            dump_data(videos, title)
-            list_of_playlist.append(title)
+    script_dirname=(os.path.dirname(sys.argv[0]) or ".") + "/"
+    print script_dirname
+    lang_input=arguments["<lang>"]
+    publisher=arguments["<publisher>"]
+    list=get_list_item_info(arguments["<url>"])
+    if list != None :
+        videos = []
+        type, title , title_html, scraper_dir, color, background_color = prepare_folder(list)
+        sorted_list = sort_list_by_view(list.get('entries'))
+        write_video_info(sorted_list,parametre,scraper_dir,background_color)
+        dump_data(videos, "All",scraper_dir)
+        playlist=get_playlist(sys.argv[1])
+        list_of_playlist = []
+        for x in playlist:
+            list=get_list_item_info(x)
+            if list != None :
+                videos = []
+                sorted_list = sort_list_by_view(list.get('entries'))
+                write_video_info(sorted_list, parametre,scraper_dir,background_color)
+                title = slugify.slugify(list.get('title'))
+                title = re.sub(r'-', '_', title)
+                dump_data(videos, title,scraper_dir)
+                list_of_playlist.append(title)
 
-    make_welcome_page(list, list_of_playlist)
+        make_welcome_page(list, list_of_playlist,scraper_dir,title_html,color,background_color)
 
-    title_zim  = slugify.slugify(title_html)
-    create_zims(title_zim)
+        title_zim  = slugify.slugify(title_html)
+        create_zims(title_zim, lang_input,publisher,scraper_dir)
+
+if __name__ == '__main__':
+    run()
