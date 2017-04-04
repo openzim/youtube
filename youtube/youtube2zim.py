@@ -34,8 +34,6 @@ from dominantColor import *
 import re
 from docopt import docopt
 
-type = ""
-videos = []
 
 def get_list_item_info(url):
     """
@@ -108,15 +106,16 @@ def make_welcome_page(list, playlist,scraper_dir,title_html,color,background_col
     with open(index_path, 'w') as html_page:
         html_page.write(html)
 
-def welcome_page(title, author, id, description):
+def welcome_page(title, author, id, description,videos):
     videos.append({
         'id': id,
         'title': title.encode('utf-8', 'ignore'),
         'description': description.encode('utf-8', 'ignore'),
         'speaker': author.encode('utf-8', 'ignore'),
         'thumbnail': id+"/thumbnail.jpg".encode('utf-8', 'ignore')})
+    return videos
 
-def write_video_info(list, parametre,scraper_dir,background_color):
+def write_video_info(list, parametre,scraper_dir,background_color, videos):
     """
     Render static html pages from the scraped video data and
     save the pages in build/{video id}/index.html.
@@ -164,7 +163,7 @@ def write_video_info(list, parametre,scraper_dir,background_color):
                     index_path = os.path.join(video_directory, 'index.html')
                     with open(index_path, 'w') as html_page:
                         html_page.write(html)
-                    welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
+                    videos=welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'), videos)
             elif not os.path.exists(html_file):
                 date = item.get('upload_date')
                 id = item.get('id')
@@ -185,13 +184,14 @@ def write_video_info(list, parametre,scraper_dir,background_color):
                 index_path = os.path.join(video_directory, 'index.html')
                 with open(index_path, 'w') as html_page:
                     html_page.write(html)
-                welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
+                videos=welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'),videos)
 
             else:
-                print "Video directory " + video_directory + "already exists. Skipping."
-                welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'))
+                print "Video directory " + video_directory + " already exists. Skipping."
+                videos=welcome_page(item.get('title'), item.get('uploader'), title_clean, item.get('description'),videos)
         else:
             print "We can't get this video"
+    return videos
 
 def dump_data(videos, title,scraper_dir):
     """
@@ -486,7 +486,7 @@ def run():
         videos = []
         type, title , title_html, scraper_dir, color, background_color = prepare_folder(list)
         sorted_list = sort_list_by_view(list.get('entries'))
-        write_video_info(sorted_list,parametre,scraper_dir,background_color)
+        videos=write_video_info(sorted_list,parametre,scraper_dir,background_color,videos)
         dump_data(videos, "All",scraper_dir)
         playlist=get_playlist(sys.argv[1])
         list_of_playlist = []
@@ -495,7 +495,7 @@ def run():
             if list != None :
                 videos = []
                 sorted_list = sort_list_by_view(list.get('entries'))
-                write_video_info(sorted_list, parametre,scraper_dir,background_color)
+                vidoes=write_video_info(sorted_list, parametre,scraper_dir,background_color,videos)
                 title = slugify.slugify(list.get('title'))
                 title = re.sub(r'-', '_', title)
                 dump_data(videos, title,scraper_dir)
