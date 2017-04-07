@@ -6,11 +6,12 @@ Url format for playlist : https://www.youtube.com/playlist?list=PL1rRii_tzDcK47P
 Url format for user : https://www.youtube.com/channel/UC2gwowvVGh7NMYtHHeyzMmw 
 
 Usage:
-  youtube2zim <url> <lang> <publisher> [--lowquality]
+  youtube2zim <url> <lang> <publisher> [--lowquality] [--zimpath=<zimpath>]
 
 Options:
     -h --help  
     --lowquality  download in mp4 and re-encode aggressively in webm
+    --zimpath=<zimpath>   Final path of the zim file
 """
 
 import sys
@@ -336,12 +337,13 @@ def sort_list_by_view(list):
     list_sorted= sorted(list, key=sort_by_view_count,reverse=True)
     return list_sorted
 
-def create_zims(list_title, lang_input, publisher,scraper_dir):
+def create_zims(list_title, lang_input, publisher,scraper_dir,zim_path):
     print 'Creating ZIM files'
     # Check, if the folder exists. Create it, if it doesn't.
     html_dir = os.path.join(scraper_dir)
     lang_input_alpha2 = languageIso3ToIso2(lang_input)
-    zim_path = os.path.join("build/", "{title}_{lang}_all_{date}.zim".format(title=list_title.lower(),lang=lang_input_alpha2,date=datetime.datetime.now().strftime('%Y-%m')))
+    if zim_path == None:
+        zim_path = os.path.join("build/", "{title}_{lang}_all_{date}.zim".format(title=list_title.lower(),lang=lang_input_alpha2,date=datetime.datetime.now().strftime('%Y-%m')))
     title = list_title.replace("-", " ")
     description = "{title} videos".format(title=title)
     create_zim(html_dir, zim_path, title, description, list_title, lang_input, publisher)
@@ -504,7 +506,9 @@ def run():
         make_welcome_page(list, list_of_playlist,scraper_dir,title_html,color,background_color)
 
         title_zim  = slugify.slugify(title_html)
-        create_zims(title_zim, lang_input,publisher,scraper_dir)
+        create_zims(title_zim, lang_input,publisher,scraper_dir,arguments["--zimpath"])
+        shutil.rmtree(scraper_dir)
+
 
 if __name__ == '__main__':
     run()
