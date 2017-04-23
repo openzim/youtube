@@ -656,6 +656,7 @@ control positioning and full window mode. **
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  max-width:100%;
 }
 /* Playback technology elements expand to the width/height of the containing div
     <video> or <object> */

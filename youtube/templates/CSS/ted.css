@@ -42,6 +42,7 @@ hr {
     width: 480px;
     text-align: justify;
     text-justify: inter-word;
+    max-width:100%;
 }
 
 #description {
@@ -51,12 +52,14 @@ hr {
     font-size: 18px;
     text-align: justify;
     text-justify: inter-word;
+    max-width:100%;
 }
 
 #speaker {
     font-family: "RobotoLight";
     font-size: 20px;
     margin: 0px;
+    max-width:100%;
 }
 
 #title {
@@ -65,6 +68,7 @@ hr {
     font-size: 30px;
     text-align: left;
     text-justify: none;
+    max-width:100%;
 }
 
 #views {
@@ -106,6 +110,7 @@ hr {
 #date {
     text-align: right;
     width: 480px;
+    max-width:100%;
 }
 
 #backtolist {
@@ -113,3 +118,4 @@ hr {
     width: 80px;
     cursor: pointer;
 }
+
