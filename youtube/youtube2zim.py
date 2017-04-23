@@ -6,12 +6,13 @@ Url format for playlist : https://www.youtube.com/playlist?list=PL1rRii_tzDcK47P
 Url format for user : https://www.youtube.com/channel/UC2gwowvVGh7NMYtHHeyzMmw 
 
 Usage:
-  youtube2zim <url> <lang> <publisher> [--lowquality] [--zimpath=<zimpath>]
+  youtube2zim <url> <lang> <publisher> [--lowquality] [--zimpath=<zimpath>] [--nozim]
 
 Options:
     -h --help  
     --lowquality  download in mp4 and re-encode aggressively in webm
     --zimpath=<zimpath>   Final path of the zim file
+    --nozim  doesn't make zim file, output will be in build/[donwloaded name]/ in html (otherwise will produice a zim file)
 """
 
 import sys
@@ -152,11 +153,12 @@ def write_video_info(list, parametre,scraper_dir,background_color, videos):
                     id = item.get('id')
                     publication_date = date[6:8]+"/"+date[4:6]+"/"+date[0:4]
                     subtitles = download_video_thumbnail_subtitles(id, item.get('subtitles'), title_clean,scraper_dir)
+                    description=re.sub("\n","<br>", item.get('description'))
                     html = template.render(
                             title=item.get('title'),
                             author=item.get('uploader'),
                             vtt = subtitles,
-                            description=item.get('description'),
+                            description=description,
                             url=item.get('webpage_url'),
                             date=publication_date,
                             background_color=background_color)
@@ -506,8 +508,9 @@ def run():
         make_welcome_page(list, list_of_playlist,scraper_dir,title_html,color,background_color)
 
         title_zim  = slugify.slugify(title_html)
-        create_zims(title_zim, lang_input,publisher,scraper_dir,arguments["--zimpath"])
-        shutil.rmtree(scraper_dir)
+        if not arguments['--nozim']:
+            create_zims(title_zim, lang_input,publisher,scraper_dir,arguments["--zimpath"])
+            shutil.rmtree(scraper_dir)
 
 
 if __name__ == '__main__':
