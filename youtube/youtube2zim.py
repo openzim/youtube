@@ -171,7 +171,7 @@ def write_video_info(list, parametre,scraper_dir,background_color, videos):
                 date = item.get('upload_date')
                 id = item.get('id')
                 publication_date = date[6:8]+"/"+date[4:6]+"/"+date[0:4]
-                subtitles = download_video_thumbnail_subtitles(id, item.get('subtitles'), title_clean)
+                subtitles = download_video_thumbnail_subtitles(id, item.get('subtitles'), title_clean,scraper_dir)
 
                 html = template.render(
                         title=item.get('title'),
