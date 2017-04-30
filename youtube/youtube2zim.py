@@ -342,6 +342,32 @@ def sort_list_by_view(list):
     new_list= [ list_sorted[0] ] + list
     return new_list
 
+def sort_list_by_welcome(list,url):
+    """ Welcome video first, the rest does not change """
+    attempts = 0
+    while attempts < 5:
+        try:
+            api = urllib.urlopen(url).read()
+            break
+        except:
+            e = sys.exc_info()[0]
+            attempts += 1
+            print "error : " + str(e)
+            if attempts == 5:
+                sys.exit("Error during getting lsit of playlist")
+            print "We will re-try to get this in 10s"
+            time_to_wait = 60 * attempts
+            time.sleep(time_to_wait)
+
+    soup_api = BeautifulSoup.BeautifulSoup(api, "html.parser")
+    try:
+        welcome_id=soup_api.find('div', attrs={"class":u"c4-flexible-player-box", "id":u"upsell-video"}).get('data-video-id')
+        welcome_obj=(item for item in list if item["id"] == welcome_id).next()
+        list.remove(welcome_obj)
+        return [welcome_obj] + list
+    except: #if we doesn't find welcome video
+        return sort_list_by_view(list)
+
 def create_zims(list_title, lang_input, publisher,scraper_dir,zim_path):
     print 'Creating ZIM files'
     # Check, if the folder exists. Create it, if it doesn't.
@@ -494,7 +520,10 @@ def run():
     if list != None :
         videos = []
         type, title , title_html, scraper_dir, color, background_color = prepare_folder(list)
-        sorted_list = sort_list_by_view(list.get('entries'))
+        if not ".com/playlist?list=" in sys.argv[1]:
+            sorted_list = sort_list_by_welcome(list.get('entries'),sys.argv[1])
+        else:
+            sorted_list = sort_list_by_view(list.get('entries'))
         videos=write_video_info(sorted_list,parametre,scraper_dir,background_color,videos)
         dump_data(videos, "All",scraper_dir)
         playlist=get_playlist(sys.argv[1])
