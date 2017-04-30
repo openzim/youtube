@@ -336,8 +336,11 @@ def sort_by_view_count(k):
         return 0
 
 def sort_list_by_view(list):
+    """ The most seen video is first, the rest does not change """
     list_sorted= sorted(list, key=sort_by_view_count,reverse=True)
-    return list_sorted
+    list.remove(list_sorted[0])
+    new_list= [ list_sorted[0] ] + list
+    return new_list
 
 def create_zims(list_title, lang_input, publisher,scraper_dir,zim_path):
     print 'Creating ZIM files'
