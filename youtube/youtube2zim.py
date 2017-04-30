@@ -467,8 +467,10 @@ def run():
     if arguments["--lowquality"]:
         if bin_is_present("avconv"):
             parametre = {'preferredcodec': 'mp4',  'format' : 'mp4', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-qscale", "1", "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
-        else:
+        elif bin_is_present("ffmpeg"):
             parametre = {'preferredcodec': 'mp4',  'format' : 'mp4', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-quality", "best",  "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
+        else:
+            sys.exit("avconv and ffmpeg are not available, please install one.")
     else:
         parametre = {'preferredcodec': 'webm',  'format' : 'webm'}
 
