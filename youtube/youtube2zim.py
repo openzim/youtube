@@ -146,7 +146,7 @@ def write_video_info(list, parametre,scraper_dir,background_color, videos):
                             print "error : " + str(e)
                             if attempts == 5:
                                 sys.exit("Error during getting video")
-                            print "We will re-try to get this video in 10s"
+                            print "We will re-try to get this video " + url + " in 10s"
                             time_to_wait = 60 * attempts
                             time.sleep(time_to_wait)
                     date = item.get('upload_date')
@@ -495,9 +495,11 @@ def run():
         sys.exit("zimwriterfs is not available, please install it.")
     if arguments["--lowquality"]:
         if bin_is_present("avconv"):
-            parametre = {'preferredcodec': 'mp4',  'format' : 'mp4', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-qscale", "1", "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
+            print "avconv"
+            parametre = { 'prefer-avconv' : True, 'verbose': True, 'preferredcodec': 'mp4', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-qscale", "1", "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
         elif bin_is_present("ffmpeg"):
-            parametre = {'preferredcodec': 'mp4',  'format' : 'mp4', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-quality", "best",  "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
+            print "ffmpeg"
+            parametre = { 'prefer-ffmpeg' : True, 'preferredcodec': 'mp4', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-quality", "best",  "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
         else:
             sys.exit("avconv and ffmpeg are not available, please install one.")
     else:
