@@ -306,10 +306,13 @@ def get_user_pictures(api_key,scraper_dir,type):
             for property in rule.style:
                 if property.name == 'background-image':
                     urls = property.value
-    if urls[4] == '"':
-        url_user_header = "https:"+urls[5:-2]
+    if "playlist?list=" in url_channel:
+        url_user_header = "https://youtube.com" + urls[4:-1]
     else:
-        url_user_header = "https:"+urls[4:-2]
+        if urls[4] == '"':
+            url_user_header = "https:"+urls[5:-2]
+        else:
+            url_user_header = "https:"+urls[4:-2]
     download(url_user_header , scraper_dir+"CSS/img/header.png")
 
 def resize_image(image_path):
@@ -496,10 +499,10 @@ def run():
     if arguments["--lowquality"]:
         if bin_is_present("avconv"):
             print "avconv"
-            parametre = { 'prefer-avconv' : True, 'verbose': True, 'preferredcodec': 'mp4', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-qscale", "1", "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
+            parametre = { 'prefer-avconv' : True, 'preferredcodec': 'webm', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-qscale", "1", "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
         elif bin_is_present("ffmpeg"):
             print "ffmpeg"
-            parametre = { 'prefer-ffmpeg' : True, 'preferredcodec': 'mp4', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-quality", "best",  "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
+            parametre = { 'prefer-ffmpeg' : True, 'preferredcodec': 'webm', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-quality", "best",  "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
         else:
             sys.exit("avconv and ffmpeg are not available, please install one.")
     else:
