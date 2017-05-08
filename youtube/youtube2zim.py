@@ -117,6 +117,32 @@ def welcome_page(title, author, id, description,videos):
         'thumbnail': id+"/thumbnail.jpg".encode('utf-8', 'ignore')})
     return videos
 
+def hook_youtube_dl_ffmpeg(data):
+    if data["status"] == "finished":
+        tmp_path=os.path.join(os.path.dirname(data["filename"]), "tmp.webm")
+        final_path=os.path.join(os.path.dirname(data["filename"]) , "video.webm")
+        cmd="ffmpeg -y -i file:" + data["filename"] + " -codec:v libvpx -quality best -cpu-used 0 -b:v 300k -qmin 30 -qmax 42 -maxrate 300k -bufsize 1000k -threads 8 -vf scale=480:-1 -codec:a libvorbis -b:a 128k file:" + tmp_path
+        print "convert from " + data["filename"] + " to " + final_path
+        if exec_cmd(cmd) == 0:
+            os.remove(data["filename"])
+            os.rename(tmp_path,final_path)
+        else:
+            print "Convertion error"
+            raise Exception('Convertion error')
+
+def hook_youtube_dl_avconv(data):
+    if data["status"] == "finished":
+        tmp_path=os.path.join(os.path.dirname(data["filename"]), "tmp.webm")
+        final_path=os.path.join(os.path.dirname(data["filename"]) , "video.webm")
+        cmd="avconv -y -i file:" + data["filename"] + " -codec:v libvpx -qscale 1 -cpu-used 0 -b:v 300k -qmin 30 -qmax 42 -maxrate 300k -bufsize 1000k -threads 8 -vf scale=480:-1 -codec:a libvorbis -b:a 128k file:" +  tmp_path
+        print "convert from " + data["filename"] + " to " + final_path
+        if exec_cmd(cmd) == 0:
+            os.remove(data["filename"])
+            os.rename(tmp_path,final_path)
+        else:
+            print "Convertion error"
+            raise Exception('Convertion error')
+
 def write_video_info(list, parametre,scraper_dir,background_color, videos):
     """
     Render static html pages from the scraped video data and
@@ -496,13 +522,14 @@ def run():
     arguments = docopt(__doc__, version='youtube2zim 1.2.1')
     if not bin_is_present("zimwriterfs"):
         sys.exit("zimwriterfs is not available, please install it.")
+
     if arguments["--lowquality"]:
         if bin_is_present("avconv"):
             print "avconv"
-            parametre = { 'prefer-avconv' : True, 'preferredcodec': 'webm', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-qscale", "1", "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
+            parametre = { 'prefer_ffmpeg' : False, 'preferredcodec': 'mp4', 'format' : 'mp4', 'progress_hooks': [hook_youtube_dl_avconv] }
         elif bin_is_present("ffmpeg"):
             print "ffmpeg"
-            parametre = { 'prefer-ffmpeg' : True, 'preferredcodec': 'webm', 'postprocessors' : [ { "key" : "FFmpegVideoConvertor", "preferedformat" : "webm" } ], 'postprocessor_args' : ["-codec:v", "libvpx",  "-quality", "best",  "-cpu-used", "0",  "-b:v", "300k", "-qmin", "30", "-qmax", "42", "-maxrate", "300k", "-bufsize", "1000k", "-threads", "8", "-vf",  "scale=480:-1", "-codec:a", "libvorbis", "-b:a","128k"]}
+            parametre = { 'prefer_ffmpeg' : True, 'preferredcodec': 'mp4', 'format' : 'mp4', 'progress_hooks': [hook_youtube_dl_ffmpeg] }
         else:
             sys.exit("avconv and ffmpeg are not available, please install one.")
     else:
