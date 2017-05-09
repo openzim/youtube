@@ -406,7 +406,7 @@ def create_zims(list_title, lang_input, publisher,scraper_dir,zim_path):
         zim_path = os.path.join("build/", "{title}_{lang}_all_{date}.zim".format(title=list_title.lower(),lang=lang_input_alpha2,date=datetime.datetime.now().strftime('%Y-%m')))
     title = list_title.replace("-", " ")
     description = "{title} videos".format(title=title)
-    create_zim(html_dir, zim_path, title, description, list_title, lang_input, publisher)
+    return create_zim(html_dir, zim_path, title, description, list_title, lang_input, publisher)
 
 def create_zim(static_folder, zim_path, title, description, list_title, lang_input, publisher):
 
@@ -433,8 +433,10 @@ def create_zim(static_folder, zim_path, title, description, list_title, lang_inp
 
     if exec_cmd(cmd) == 0:
         print "Successfuly created ZIM file at {}".format(zim_path)
+        return True
     else:
         print "Unable to create ZIM file :("
+        return False
 
 def bin_is_present(binary):
     try:
@@ -519,7 +521,7 @@ def get_playlist(url):
     return playlist
 
 def run():
-    arguments = docopt(__doc__, version='youtube2zim 1.2.2')
+    arguments = docopt(__doc__, version='youtube2zim 1.2.3')
     if not arguments['--nozim'] and not bin_is_present("zimwriterfs"):
         sys.exit("zimwriterfs is not available, please install it.")
 
@@ -575,8 +577,9 @@ def run():
 
         title_zim  = slugify.slugify(title_html)
         if not arguments['--nozim']:
-            create_zims(title_zim, lang_input,publisher,scraper_dir,arguments["--zimpath"])
-            shutil.rmtree(scraper_dir)
+            done=create_zims(title_zim, lang_input,publisher,scraper_dir,arguments["--zimpath"])
+            if done == True:
+                shutil.rmtree(scraper_dir)
 
 
 if __name__ == '__main__':

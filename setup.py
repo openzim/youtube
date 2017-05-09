@@ -3,7 +3,7 @@ from pip.req import parse_requirements
 
 setup(
     name='youtube2zim',
-    version='1.2.2',
+    version='1.2.3',
     description="Make zimfile from youtube channel or playlist",
     long_description=open('README.md').read(),
     author='dattaz',
