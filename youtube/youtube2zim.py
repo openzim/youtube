@@ -61,19 +61,22 @@ def get_list_item_info(url):
 
     return result
 
-def prepare_folder(list):
+def prepare_folder(list, url):
     type = list['extractor_key']
-    if "www.youtube.com/user/" in sys.argv[1]:
+    if "www.youtube.com/user/" in url:
         type = "user"
 
     if type == "YoutubePlaylist":
-        title = slugify.slugify(list['title'])
-        title_html = list['title']
+        if "channel" in url:
+            title =  slugify.slugify(list.get('entries')[0].get('uploader'))
+            title_html = list.get('entries')[0].get('uploader')
+        else:
+            title = slugify.slugify(list['title'])
+            title_html = list['title']
     else:
         title =  slugify.slugify(list.get('entries')[0].get('uploader'))
         title_html = list.get('entries')[0].get('uploader')
-
-
+    
 
     scraper_dir = os.path.join( "build/", title) + "/"
 
@@ -547,13 +550,12 @@ def run():
         url = arguments["<url>"]
 
     script_dirname=(os.path.dirname(sys.argv[0]) or ".") + "/"
-    print script_dirname
     lang_input=arguments["<lang>"]
     publisher=arguments["<publisher>"]
     list=get_list_item_info(arguments["<url>"])
     if list != None :
         videos = []
-        type, title , title_html, scraper_dir, color, background_color = prepare_folder(list)
+        type, title , title_html, scraper_dir, color, background_color = prepare_folder(list,url)
         if not ".com/playlist?list=" in sys.argv[1]:
             sorted_list = sort_list_by_welcome(list.get('entries'),sys.argv[1])
         else:
