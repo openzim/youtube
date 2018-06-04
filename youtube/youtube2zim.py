@@ -425,7 +425,7 @@ def create_zim(static_folder, zim_path, title, description, list_title, lang_inp
         'favicon': 'favicon.png',
         'static': static_folder,
         'tags' : "youtube",
-        'name' : "kiwix.+title.encode("utf-8")
+        'name' : "kiwix."+title.encode("utf-8"),
         'zim': zim_path
     }
 
