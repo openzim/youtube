@@ -157,7 +157,7 @@ function firstVideos(pageData) {
     videoDetails.innerHTML = '';
     var video = pageData[0];
 
-    $("video:nth-child(1)").attr("src","../I/" + video['id'] + "/video.webm");
+    $("source").attr("src","../I/" + video['id'] + "/video.webm");
     $("#video").removeClass("vjs-playing").addClass("vjs-paused");
     $("#video").load();
     $("#div_video_html5_api").show();
