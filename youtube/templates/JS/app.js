@@ -137,7 +137,7 @@ function refreshVideos(pageData) {
       a.className = 'nostyle'
 
       var img = document.createElement('img');
-/*      img.src = video['id']+'/thumbnail.jpg';  */
+      /*img.src = video['id']+'/thumbnail.jpg';*/
       img.src = '../I/'+video['id']+'/thumbnail.jpg'; 
 
       var title = document.createElement('p');
@@ -157,11 +157,11 @@ function firstVideos(pageData) {
     videoDetails.innerHTML = '';
     var video = pageData[0];
 
-    $("source").attr("src","../I/" + video['id'] + "/video.webm");
-    $("#video").removeClass("vjs-playing").addClass("vjs-paused");
-    $("#video").load();
-    $("#div_video_html5_api").show();
-
+    var video_js = videojs("video");
+    /* video_js.src(video['id'] + "/video.webm"); */
+    video_js.src("../I/" + video['id'] + "/video.webm");
+    video_js.load();
+    video_js.play();
 
     var title = document.createElement('h4')
     title.id = 'title';
