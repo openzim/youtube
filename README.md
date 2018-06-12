@@ -24,7 +24,7 @@ Then install youtube2zim
 
     pip install youtube2zim
 
-You will aslo need ffmpeg to convert mp4 format to webm format (maybe ffmpeg is remplace by avconv in your distribution so you have to modify script)
+You will aslo need ffmpeg or avconv to convert mp4 format to webm format
 
 You also need zimwriterfs binary in this folder, zimwriterfs can be found at https://sourceforge.net/p/kiwix/other/ci/master/tree/zimwriterfs/
 
