@@ -1,6 +1,7 @@
 FROM openzim/zimwriterfs:latest
 
 # Install necessary packages
+RUN apt-get update -y
 RUN apt-get install -y python-pip
 RUN apt-get install -y ffmpeg
 
