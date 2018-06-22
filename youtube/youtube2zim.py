@@ -133,7 +133,8 @@ def hook_youtube_dl_ffmpeg(format,data):
         final_path=os.path.join(os.path.dirname(data["filename"]) , "video."+format)
 	codec_video={"mp4" : "h264", "webm" : "libvpx"}
 	codec_audio={"mp4" : "mp3", "webm": "libvorbis"}
-        cmd="ffmpeg -y -i file:" + data["filename"] + " -codec:v " + codec_video[format] + " -quality best -cpu-used 0 -b:v 300k -qmin 30 -qmax 42 -maxrate 300k -bufsize 1000k -threads 8 -vf scale=480:-1 -codec:a " + codec_audio[format] + " -b:a 128k file:" + tmp_path
+        additional_params={"mp4" : "-movflags +faststart", "webm": ""}
+        cmd="ffmpeg -y -i file:" + data["filename"] + " -codec:v " + codec_video[format] + " -quality best -cpu-used 0 -b:v 300k -qmin 30 -qmax 42 -maxrate 300k -bufsize 1000k -threads 8 -vf scale=480:-1 -codec:a " + codec_audio[format] + " -b:a 128k " + additional_params[format] + " file:" + tmp_path
         print "convert from " + data["filename"] + " to " + final_path
 	print cmd
         if exec_cmd(cmd) == 0:
@@ -149,7 +150,8 @@ def hook_youtube_dl_avconv(format,data):
         final_path=os.path.join(os.path.dirname(data["filename"]) , "video."+format)
 	codec_video={"mp4" : "h264", "webm" : "libvpx"}
 	codec_audio={"mp4" : "mp3", "webm": "libvorbis"}
-        cmd="avconv -y -i file:" + data["filename"] + " -codec:v " + codec_video[format] + " -qscale 1 -cpu-used 0 -b:v 300k -qmin 30 -qmax 42 -maxrate 300k -bufsize 1000k -threads 8 -vf scale=480:-1 -codec:a " + codec_audio[format] + " -b:a 128k file:" +  tmp_path
+        additional_params={"mp4" : "-movflags +faststart", "webm": ""}
+        cmd="avconv -y -i file:" + data["filename"] + " -codec:v " + codec_video[format] + " -qscale 1 -cpu-used 0 -b:v 300k -qmin 30 -qmax 42 -maxrate 300k -bufsize 1000k -threads 8 -vf scale=480:-1 -codec:a " + codec_audio[format] + " -b:a 128k " + additional_params[format] + " file:" +  tmp_path
         print "convert from " + data["filename"] + " to " + final_path
 	print cmd
         if exec_cmd(cmd) == 0:
