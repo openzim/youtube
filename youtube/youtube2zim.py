@@ -6,13 +6,14 @@ Url format for playlist : https://www.youtube.com/playlist?list=PL1rRii_tzDcK47P
 Url format for user : https://www.youtube.com/channel/UC2gwowvVGh7NMYtHHeyzMmw 
 
 Usage:
-  youtube2zim <url> <lang> <publisher> [--lowquality] [--zimpath=<zimpath>] [--nozim]
+  youtube2zim <url> <lang> <publisher> [--lowquality] [--zimpath=<zimpath>] [--nozim] [--transcode2webm]
 
 Options:
     -h --help  
     --lowquality  download in mp4 and re-encode aggressively in webm
     --zimpath=<zimpath>   Final path of the zim file
     --nozim  doesn't make zim file, output will be in build/[donwloaded name]/ in html (otherwise will produice a zim file)
+    --transcode2webm    Download or transcode videos to webm
 """
 
 import sys
@@ -35,7 +36,7 @@ import codecs
 from dominantColor import *
 import re
 from docopt import docopt
-
+from functools import partial
 
 def get_list_item_info(url):
     """
@@ -93,7 +94,7 @@ def prepare_folder(list, url):
     background_color = solarize_color(color);
     return [ type, title , title_html, scraper_dir, color, background_color ]
 
-def make_welcome_page(list, playlist,scraper_dir,title_html,color,background_color):
+def make_welcome_page(list, playlist,scraper_dir,title_html,color,background_color,format):
     if len(playlist) == 0:
         options = "<form name=\"playlist\" id=\"header-playlists\" style=\"display:none\">\n                        <select name=\"list\" onChange=\"genplaylist()\">"
     else:
@@ -110,6 +111,12 @@ def make_welcome_page(list, playlist,scraper_dir,title_html,color,background_col
     index_path = os.path.join(scraper_dir, 'index.html')
     with open(index_path, 'w') as html_page:
         html_page.write(html)
+    template = env.get_template(os.path.join("JS","app.js"))
+    js_app = template.render(format=format)
+    js_app = js_app.encode('utf-8')
+    jsapp_path = os.path.join(scraper_dir, "JS", "app.js")
+    with open(jsapp_path, 'w') as jsapp_file:
+        jsapp_file.write(js_app)
 
 def welcome_page(title, author, id, description,videos):
     videos.append({
@@ -120,12 +127,15 @@ def welcome_page(title, author, id, description,videos):
         'thumbnail': id+"/thumbnail.jpg".encode('utf-8', 'ignore')})
     return videos
 
-def hook_youtube_dl_ffmpeg(data):
+def hook_youtube_dl_ffmpeg(format,data):
     if data["status"] == "finished":
-        tmp_path=os.path.join(os.path.dirname(data["filename"]), "tmp.webm")
-        final_path=os.path.join(os.path.dirname(data["filename"]) , "video.webm")
-        cmd="ffmpeg -y -i file:" + data["filename"] + " -codec:v libvpx -quality best -cpu-used 0 -b:v 300k -qmin 30 -qmax 42 -maxrate 300k -bufsize 1000k -threads 8 -vf scale=480:-1 -codec:a libvorbis -b:a 128k file:" + tmp_path
+        tmp_path=os.path.join(os.path.dirname(data["filename"]), "tmp."+format)
+        final_path=os.path.join(os.path.dirname(data["filename"]) , "video."+format)
+	codec_video={"mp4" : "h264", "webm" : "libvpx"}
+	codec_audio={"mp4" : "mp3", "webm": "libvorbis"}
+        cmd="ffmpeg -y -i file:" + data["filename"] + " -codec:v " + codec_video[format] + " -quality best -cpu-used 0 -b:v 300k -qmin 30 -qmax 42 -maxrate 300k -bufsize 1000k -threads 8 -vf scale=480:-1 -codec:a " + codec_audio[format] + " -b:a 128k file:" + tmp_path
         print "convert from " + data["filename"] + " to " + final_path
+	print cmd
         if exec_cmd(cmd) == 0:
             os.remove(data["filename"])
             os.rename(tmp_path,final_path)
@@ -133,12 +143,15 @@ def hook_youtube_dl_ffmpeg(data):
             print "Convertion error"
             raise Exception('Convertion error')
 
-def hook_youtube_dl_avconv(data):
+def hook_youtube_dl_avconv(format,data):
     if data["status"] == "finished":
-        tmp_path=os.path.join(os.path.dirname(data["filename"]), "tmp.webm")
-        final_path=os.path.join(os.path.dirname(data["filename"]) , "video.webm")
-        cmd="avconv -y -i file:" + data["filename"] + " -codec:v libvpx -qscale 1 -cpu-used 0 -b:v 300k -qmin 30 -qmax 42 -maxrate 300k -bufsize 1000k -threads 8 -vf scale=480:-1 -codec:a libvorbis -b:a 128k file:" +  tmp_path
+        tmp_path=os.path.join(os.path.dirname(data["filename"]), "tmp."+format)
+        final_path=os.path.join(os.path.dirname(data["filename"]) , "video."+format)
+	codec_video={"mp4" : "h264", "webm" : "libvpx"}
+	codec_audio={"mp4" : "mp3", "webm": "libvorbis"}
+        cmd="avconv -y -i file:" + data["filename"] + " -codec:v " + codec_video[format] + " -qscale 1 -cpu-used 0 -b:v 300k -qmin 30 -qmax 42 -maxrate 300k -bufsize 1000k -threads 8 -vf scale=480:-1 -codec:a " + codec_audio[format] + " -b:a 128k file:" +  tmp_path
         print "convert from " + data["filename"] + " to " + final_path
+	print cmd
         if exec_cmd(cmd) == 0:
             os.remove(data["filename"])
             os.rename(tmp_path,final_path)
@@ -146,7 +159,7 @@ def hook_youtube_dl_avconv(data):
             print "Convertion error"
             raise Exception('Convertion error')
 
-def write_video_info(list, parametre,scraper_dir,background_color, videos):
+def write_video_info(list, parametre,scraper_dir,background_color, videos,format):
     """
     Render static html pages from the scraped video data and
     save the pages in build/{video id}/index.html.
@@ -190,7 +203,8 @@ def write_video_info(list, parametre,scraper_dir,background_color, videos):
                             description=description,
                             url=item.get('webpage_url'),
                             date=publication_date,
-                            background_color=background_color)
+                            background_color=background_color,
+                            format=format)
                     html = html.encode('utf-8')
                     index_path = os.path.join(video_directory, 'index.html')
                     with open(index_path, 'w') as html_page:
@@ -341,7 +355,7 @@ def get_user_pictures(api_key,scraper_dir,type):
         if urls[4] == '"':
             url_user_header = "https:"+urls[5:-2]
         else:
-            url_user_header = "https:"+urls[4:-2]
+            url_user_header = "https://youtube.com"+urls[4:-1]
     download(url_user_header , scraper_dir+"CSS/img/header.png")
 
 def resize_image(image_path):
@@ -530,17 +544,23 @@ def run():
     if not arguments['--nozim'] and not bin_is_present("zimwriterfs"):
         sys.exit("zimwriterfs is not available, please install it.")
 
+    if arguments["--transcode2webm"]:
+        preferredcodec = "webm"
+        format = "webm"
+    else:
+        preferredcodec = "mp4"
+        format = "mp4"
     if arguments["--lowquality"]:
         if bin_is_present("avconv"):
             print "avconv"
-            parametre = { 'prefer_ffmpeg' : False, 'preferredcodec': 'mp4', 'format' : 'mp4', 'progress_hooks': [hook_youtube_dl_avconv] }
+            parametre = { 'prefer_ffmpeg' : False, 'preferredcodec': preferredcodec, 'format' : format, 'progress_hooks': [partial(hook_youtube_dl_avconv,format)] }
         elif bin_is_present("ffmpeg"):
             print "ffmpeg"
-            parametre = { 'prefer_ffmpeg' : True, 'preferredcodec': 'mp4', 'format' : 'mp4', 'progress_hooks': [hook_youtube_dl_ffmpeg] }
+            parametre = { 'prefer_ffmpeg' : True, 'preferredcodec': preferredcodec, 'format' : format, 'progress_hooks': [partial(hook_youtube_dl_ffmpeg,format)] }
         else:
             sys.exit("avconv and ffmpeg are not available, please install one.")
     else:
-        parametre = {'preferredcodec': 'webm',  'format' : 'webm'}
+        parametre = {'preferredcodec': preferredcodec,  'format' : format}
 
     if arguments["<url>"][24:28] == "user" or arguments["<url>"][23:27] == "user" :
         get_page = urllib.urlopen(arguments["<url>"]).read()
@@ -562,7 +582,7 @@ def run():
             sorted_list = sort_list_by_welcome(list.get('entries'),sys.argv[1])
         else:
             sorted_list = sort_list_by_view(list.get('entries'))
-        videos=write_video_info(sorted_list,parametre,scraper_dir,background_color,videos)
+        videos=write_video_info(sorted_list,parametre,scraper_dir,background_color,videos,format)
         dump_data(videos, "All",scraper_dir)
         playlist=get_playlist(sys.argv[1])
         list_of_playlist = []
@@ -571,13 +591,13 @@ def run():
             if list != None :
                 videos = []
                 sorted_list = sort_list_by_view(list.get('entries'))
-                vidoes=write_video_info(sorted_list, parametre,scraper_dir,background_color,videos)
+                vidoes=write_video_info(sorted_list, parametre,scraper_dir,background_color,videos,format)
                 title = slugify.slugify(list.get('title'))
                 title = re.sub(r'-', '_', title)
                 dump_data(videos, title,scraper_dir)
                 list_of_playlist.append(title)
 
-        make_welcome_page(list, list_of_playlist,scraper_dir,title_html,color,background_color)
+        make_welcome_page(list, list_of_playlist,scraper_dir,title_html,color,background_color,format)
 
         title_zim  = slugify.slugify(title_html)
         if not arguments['--nozim']:

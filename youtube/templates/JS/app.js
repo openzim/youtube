@@ -158,8 +158,8 @@ function firstVideos(pageData) {
     var video = pageData[0];
 
     var video_js = videojs("video");
-    /* video_js.src(video['id'] + "/video.webm"); */
-    video_js.src("../I/" + video['id'] + "/video.webm");
+    /* video_js.src(video['id'] + "/video.{{ format }}"); */
+    video_js.src("../I/" + video['id'] + "/video.{{ format }}");
     video_js.load();
     video_js.play();
 
