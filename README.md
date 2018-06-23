@@ -1,30 +1,37 @@
-This script made a .zim file of video from youtube user or youtube playlist.
+Youtube2zim
+=============
 
-== Usage ==
+`youtube2zim` scrappes a Youtube channel, playlist or user videos to a ZIM file.
 
-    youtube2zim [your user url or playlist url] [lang of your zim archive] [publisher]
+Requirements
+------------
 
+You will need `ffmpeg` or `avconv` installed for video transcoding.
 
-    You can use --lowquality option that will download the video in mp4 and re-encode aggressively in webm
-== Building ==
+You will need `zimwriterfs` for ZIM file packaging. `zimwriterfs` can be found at https://github.com/openzim/zimwriterfs.
 
-It's advised, that you have `virtualenv` installed:
+Installation
+--------
+
+It's advised, that you have `virtualenv` installed. It is usually packaged, but if you have to install it manually
 
     sudo pip install virtualenv
 
-Up next you have to create a virtual enviroment in the kiwix-other/TED/ directory for the TED Scraper:
+Create your virtualenv
 
     virtualenv --no-site-packages venv 
 
-Activate the virtual enviroment:
+Activate the virtual environment
 
     source venv/bin/activate
 
 Then install youtube2zim
 
     pip install youtube2zim
+    
+Usage
+-----
 
-You will aslo need ffmpeg or avconv to convert mp4 format to webm format
+    youtube2zim YOUTUBE_URL ZIM_LANG PUBLISHER [OPTION]...
 
-You also need zimwriterfs binary in this folder, zimwriterfs can be found at https://sourceforge.net/p/kiwix/other/ci/master/tree/zimwriterfs/
-
+Start `youtube2zim` without any parameter to list all available options.
