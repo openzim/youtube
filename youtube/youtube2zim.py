@@ -352,8 +352,10 @@ def get_user_pictures(api_key,scraper_dir,type):
                 if property.name == 'background-image':
                     urls = property.value
     if "playlist?list=" in url_channel:
-        #url_user_header = "https://youtube.com" + urls[4:-1]
-        url_user_header = "https:" + urls[4:-1]
+        if urls[6] == "/":
+            url_user_header = "https:" + urls[5:-2]
+        else:
+            url_user_header = "https://youtube.com" + urls[4:-1]
     else:
         if urls[4] == '"':
             url_user_header = "https:"+urls[5:-2]
