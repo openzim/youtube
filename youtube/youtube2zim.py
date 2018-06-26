@@ -545,7 +545,7 @@ def get_playlist(url):
     return playlist
 
 def run():
-    arguments = docopt(__doc__, version='youtube2zim 1.2.6')
+    arguments = docopt(__doc__, version='youtube2zim 1.2.7')
     if not arguments['--nozim'] and not bin_is_present("zimwriterfs"):
         sys.exit("zimwriterfs is not available, please install it.")
 
