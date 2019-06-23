@@ -4,11 +4,11 @@ from pip._internal.req import parse_requirements
 setup(
     name='youtube2zim',
     version='1.2.7',
-    description="Make zimfile from youtube channel or playlist",
+    description="Make ZIM file from a Youtube channel or playlist",
     long_description=open('README.md').read(),
     author='dattaz',
     author_email='taz@dattaz.fr',
-    url='http://github.com/kiwix/youtube',
+    url='https://github.com/openzim/youtube',
     keywords="kiwix zim youtube offline",
     license="TODO",
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
