@@ -32,7 +32,7 @@ body {
 
 hr {
     margin-top: 25px;
-    margin-left: 0px;
+    margin-left: 0;
     text-align: left;
     width: 480px;
 }
@@ -55,10 +55,14 @@ hr {
     max-width:100%;
 }
 
+#description p {
+    white-space: pre-wrap;
+}
+
 #speaker {
     font-family: "RobotoLight";
     font-size: 20px;
-    margin: 0px;
+    margin: 0;
     max-width:100%;
 }
 
@@ -103,7 +107,7 @@ hr {
 
 #speaker_desc {
     width: 480px;
-    margin: 0px;
+    margin: 0;
     font-family: "RobotoLight";
 }
 
@@ -119,3 +123,8 @@ hr {
     cursor: pointer;
 }
 
+#video_container {
+    width: 100%;
+    max-width: 480px;
+    max-height: 270px;
+}

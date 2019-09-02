@@ -9,13 +9,13 @@ function(OGVDecoderVideoTheoraW) {
 if (typeof zim_fix_wasm_target === 'undefined') {
     IS_IN_ZIM = self.location.href.indexOf("/-/") != -1 || self.location.href.indexOf("/I/") != -1 || self.location.href.indexOf("/A/") != -1;
     ZIM_IMG_NS = (IS_IN_ZIM) ? '../../../I/' : '';
-    function hasImageNamespacePrefix(target) { return target.indexOf("/I/") != -1; }
-    function hasMetaNamespacePrefix(target) { return target.indexOf("/-/") != -1; }
-    function changeNamespacePrefix(target, new_ns) { return target.replace("/-/", "/I/"); }
-    function zim_fix_wasm_target(target) {
-        console.log("in-file zim_fix_wasm_target:", target);
+    hasImageNamespacePrefix = function(target) { return target.indexOf("/I/") != -1; }
+    hasMetaNamespacePrefix = function(target) { return target.indexOf("/-/") != -1; }
+    changeNamespacePrefix = function(target, new_ns) { return target.replace("/-/", new_ns); }
+    zim_fix_wasm_target = function(target) {
+        console.debug("in-file zim_fix_wasm_target:", target);
         if (!IS_IN_ZIM) {
-            console.log("..not in zim");
+            console.debug("..not in zim");
             return target;
         }
         if (hasImageNamespacePrefix(target)) {
@@ -29,7 +29,7 @@ if (typeof zim_fix_wasm_target === 'undefined') {
             // we lack the prefix, add it
             target = ZIM_IMG_NS + "assets/ogvjs/" + target;
         }
-        console.log("..target:", target);
+        console.debug("..target:", target);
         return target;
     }
   }

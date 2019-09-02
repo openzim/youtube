@@ -53,7 +53,7 @@ function setupLanguageFilter() {
 */
 function setupPagination() {
 
-    function handlePagination(shouldChange){
+    function handlePagination(){
         var data = videoDB.getPage(videoDB.getPageNumber());
         refreshVideos(data);
         refreshPagination();
@@ -63,7 +63,7 @@ function setupPagination() {
     for (var i = 0 ; i<2 ; i++) {
 	var leftArrow = document.getElementsByClassName('left-arrow')[i];
 	var rightArrow = document.getElementsByClassName('right-arrow')[i];
-	var pageText = document.getElementsByClassName('pagination-text')[i];
+    // var pageText = document.getElementsByClassName('pagination-text')[i];
 	
 	leftArrow.onclick = function() {
 	    videoDB.pageBackwards(function() {
@@ -166,6 +166,7 @@ function firstVideos(pageData) {
     videoDetails.appendChild(title);
 
     var description = document.createElement('p');
+    description.setAttribute("class", "description");
     description.innerHTML = video['description'];
     videoDetails.appendChild(description);
 

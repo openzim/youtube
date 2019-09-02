@@ -53,7 +53,7 @@ def save_file(url, fpath):
         fp.write(req.content)
 
 
-def get_colors(image_path):
+def get_colors(image_path, use_palette=True):
     """ (main, secondary) HTML color codes from an image path """
 
     def rgb_to_hex(r, g, b):
@@ -62,10 +62,12 @@ def get_colors(image_path):
 
     ct = colorthief.ColorThief(image_path)
     mr, mg, mb = ct.get_color(quality=1)
-    palette = ct.get_palette(color_count=2, quality=1)
 
-    # using the first two colors of the palette?
-    return rgb_to_hex(*palette[0]), rgb_to_hex(*palette[1])
+    if use_palette:
+        palette = ct.get_palette(color_count=2, quality=1)
+
+        # using the first two colors of the palette?
+        return rgb_to_hex(*palette[0]), rgb_to_hex(*palette[1])
 
     # calculate solarized color for main
     h, l, s = colorsys.rgb_to_hls(float(mr) / 256, float(mg) / 256, float(mb) / 256)

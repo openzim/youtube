@@ -394,12 +394,13 @@ class Youtube2Zim(object):
         with youtube_dl.YoutubeDL(options) as ydl:
             ydl.download(self.videos_ids)
 
-        # resize thumbnails. we use max width:248px
+        # resize thumbnails. we use max width:248x187px in listing
+        # but our posters are 480x270px
         for video_id in self.videos_ids:
             resize_image(
                 self.videos_dir.joinpath(video_id, "video.jpg"),
-                width=248,
-                height=187,
+                width=480,
+                height=270,
                 method="cover",
             )
 
@@ -526,7 +527,8 @@ class Youtube2Zim(object):
             ]
 
         env = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(str(self.templates_dir))
+            loader=jinja2.FileSystemLoader(str(self.templates_dir)),
+            autoescape=True
         )
 
         videos = load_json(self.cache_dir, "videos").values()
@@ -535,7 +537,7 @@ class Youtube2Zim(object):
             video_id = video["contentDetails"]["videoId"]
             title = video["snippet"]["title"]
             slug = get_slug(title)
-            description = video["snippet"]["description"].replace("\n", "<br />")
+            description = video["snippet"]["description"]
             publication_date = dt_parser.parse(
                 video["contentDetails"]["videoPublishedAt"]
             ).strftime("%Y-%m-%d - %H:%M")
@@ -585,7 +587,7 @@ class Youtube2Zim(object):
                 "id": video["contentDetails"]["videoId"],
                 "title": video["snippet"]["title"],
                 "slug": get_slug(video["snippet"]["title"]),
-                "description": video["snippet"]["description"].replace("\n", "<br />"),
+                "description": video["snippet"]["description"],
                 "thumbnail": str(
                     Path("videos").joinpath(
                         video["contentDetails"]["videoId"], "video.jpg"
