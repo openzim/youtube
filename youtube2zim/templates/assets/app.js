@@ -54,10 +54,10 @@ function setupLanguageFilter() {
 function setupPagination() {
 
     function handlePagination(shouldChange){
-	var data = videoDB.getPage(videoDB.getPageNumber());
-	refreshVideos(data);
-	refreshPagination();
-	window.scrollTo(0, 0);
+        var data = videoDB.getPage(videoDB.getPageNumber());
+        refreshVideos(data);
+        refreshPagination();
+        window.scrollTo(0, 0);
     }
 
     for (var i = 0 ; i<2 ; i++) {
@@ -133,12 +133,11 @@ function refreshVideos(pageData) {
       var li = document.createElement('li');
       
       var a = document.createElement('a')
-      a.href =  video['id']+'/index.html';
+      a.href =  video['slug'] + ".html";
       a.className = 'nostyle'
 
       var img = document.createElement('img');
-      /*img.src = video['id']+'/thumbnail.jpg';*/
-      img.src = '../I/'+video['id']+'/thumbnail.jpg'; 
+      img.src = ZIM_IMG_NS + "videos/" + video['id'] + "/video.jpg";
 
       var title = document.createElement('p');
       title.id = 'title';
@@ -152,16 +151,14 @@ function refreshVideos(pageData) {
 }
 
 
-function firstVideos(pageData) {  
+function firstVideos(pageData) {
     var videoDetails = document.getElementById('video-details');
     videoDetails.innerHTML = '';
     var video = pageData[0];
 
-    var video_js = videojs("video");
-    /* video_js.src(video['id'] + "/video.{{ format }}"); */
-    video_js.src("../I/" + video['id'] + "/video.{{ format }}");
-    video_js.load();
-    video_js.play();
+    var video_container = document.getElementById("video");
+    video_container.setAttribute("poster", ZIM_IMG_NS + "videos/" + video['id'] + "/video.jpg");
+    video_container.innerHTML = '<source src="' + ZIM_IMG_NS + "videos/" + video['id'] + '/video.{{ video_format }}" type="video/{{ video_format }}" />';
 
     var title = document.createElement('h4')
     title.id = 'title';

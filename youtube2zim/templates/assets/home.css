@@ -44,7 +44,6 @@ a {
 
 #top-link {
     position: absolute;
-    padding: 5px;
 }
 
 #header {
@@ -52,16 +51,27 @@ a {
     border-style: solid;
     border-width: 0 1px 1px 1px;
     background: white;
-    background-image: url('img/header.png');
-    height: 250px;
+    background-image: url(../banner.jpg);
+    height: 205px;
     background-repeat: no-repeat;
     background-size: contain;
     background-position: 0 0;
     margin: 0 0 1em 0;
+
+    height: 205px;
+    /*background-size: cover;*/
+    background-color: #333;
+    /*background-position: center center;*/
+    background-repeat: repeat-x;
+    box-sizing: border-box;
 }
 
 #header-profile {
     margin: 0 0 0 1em;
+    width: 100px;
+    height: 100px;
+    background-color: #e9ecee;
+    box-shadow: 0 1px 1px rgba(0,0,0,.4);
 }
 
 #header-line {
@@ -69,10 +79,22 @@ a {
     margin: 0xp;
     font-size: 30px;
     font-weight: bold;
+
+    position: relative;
+    line-height: 18px;
+    height: 30px;
+    vertical-align: middle;
+    padding: 7px 15px;
+    top: 175px;
+    background-color: white;
+    box-sizing: border-box;
 }
 
 #header-playlists {
     float: right;
+    position: relative;
+    top: 182px;
+    z-index: 100;
 }
 
 #author {
