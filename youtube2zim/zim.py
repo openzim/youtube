@@ -4,8 +4,8 @@
 
 import subprocess
 
-from constants import SCRAPER, logger
-from utils import nicer_args_join
+from .constants import SCRAPER, logger
+from .utils import nicer_args_join
 
 
 class ZimInfo(object):

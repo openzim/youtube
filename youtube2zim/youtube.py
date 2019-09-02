@@ -4,8 +4,8 @@
 
 import requests
 
-from constants import logger, YOUTUBE
-from utils import save_json, load_json, save_file, resize_image, get_slug
+from .constants import logger, YOUTUBE
+from .utils import save_json, load_json, save_file, resize_image, get_slug
 
 
 YOUTUBE_API = "https://www.googleapis.com/youtube/v3"

@@ -5,8 +5,8 @@
 import logging
 import argparse
 
-from constants import NAME, SCRAPER, CHANNEL, PLAYLIST, USER, logger, YOUTUBE
-from scraper import Youtube2Zim
+from .constants import NAME, SCRAPER, CHANNEL, PLAYLIST, USER, logger, YOUTUBE
+from .scraper import Youtube2Zim
 
 
 def main():

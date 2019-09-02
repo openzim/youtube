@@ -19,8 +19,8 @@ import iso639
 import youtube_dl
 from dateutil import parser as dt_parser
 
-from zim import ZimInfo, make_zim_file
-from utils import (
+from .zim import ZimInfo, make_zim_file
+from .utils import (
     clean_text,
     resize_image,
     load_json,
@@ -30,7 +30,7 @@ from utils import (
     get_colors,
     is_hex_color,
 )
-from youtube import (
+from .youtube import (
     get_channel_json,
     credentials_ok,
     Playlist,
@@ -39,8 +39,8 @@ from youtube import (
     get_videos_authors_info,
     save_channel_branding,
 )
-from converter import hook_youtube_dl_ffmpeg
-from constants import logger, ROOT_DIR, CHANNEL, PLAYLIST, USER
+from .converter import hook_youtube_dl_ffmpeg
+from .constants import logger, ROOT_DIR, CHANNEL, PLAYLIST, USER
 
 
 class Youtube2Zim(object):

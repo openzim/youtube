@@ -1,38 +1,45 @@
-from setuptools import setup, find_packages
-from pip._internal.req import parse_requirements
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# vim: ai ts=4 sts=4 et sw=4 nu
+
+import pathlib
+from setuptools import setup
+
+from youtube2zim.constants import NAME, VERSION
+
+ROOT_DIR = pathlib.Path(__file__).parent
+
+with open(ROOT_DIR.joinpath("requirements.txt"), "r") as fp:
+    requirements = [
+        line.strip() for line in fp.readlines() if not line.strip().startswith("#")
+    ]
+
+with open(ROOT_DIR.joinpath("README.md"), "r") as fp:
+    long_description = fp.read()
 
 setup(
-    name='youtube2zim',
-    version='1.2.7',
-    description="Make ZIM file from a Youtube channel or playlist",
-    long_description=open('README.md').read(),
-    author='dattaz',
-    author_email='taz@dattaz.fr',
-    url='https://github.com/openzim/youtube',
+    name=NAME,
+    version=VERSION,
+    description="Make ZIM file from a Youtube channel, user or playlist(s)",
+    long_description=long_description,
+    author="dattaz",
+    author_email="taz@dattaz.fr",
+    url="https://github.com/openzim/youtube",
     keywords="kiwix zim youtube offline",
-    license="TODO",
-    packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
-    install_requires=[
-       'youtube-dl',
-       'requests',
-       'jinja2',
-       'pillow',
-       'envoy',
-       'beautifulsoup4',
-       'cssutils',
-       'awesome-slugify',
-       'docopt'
-        ],
+    license="GPLv3+",
+    packages=["youtube2zim"],
+    install_requires=requirements,
     zip_safe=False,
-    platforms='Linux',
+    platforms="Linux",
     include_package_data=True,
-    entry_points={
-            'console_scripts': ['youtube2zim=youtube.youtube2zim:run'],
-    },
+    entry_points={"console_scripts": ["youtube2zim=youtube2zim.__main__:main"]},
     classifiers=[
-        'Development Status :: 4 - Beta',
-        'Intended Audience :: Developers',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7'
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     ],
+    python_requires=">=3.6",
 )

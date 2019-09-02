@@ -5,8 +5,8 @@
 import pathlib
 import subprocess
 
-from constants import logger
-from utils import nicer_args_join
+from .constants import logger
+from .utils import nicer_args_join
 
 
 def hook_youtube_dl_ffmpeg(video_format, data):

@@ -4,7 +4,6 @@
 
 import re
 import json
-import hashlib
 import colorsys
 
 import PIL
