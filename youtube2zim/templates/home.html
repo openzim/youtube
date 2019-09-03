@@ -10,37 +10,9 @@
     <link href="assets/chosen.css" rel="stylesheet" type="text/css">
     <link href="assets/videojs/video-js.min.css" rel="stylesheet">
     <style type="text/css">
-    a:hover {
-      color: {{ color }}
-    }
-    a.nostyle:hover {
-      background-color: {{ color }};
-    }
-    body {
-      background: {{ background_color }};
-    }
-    #video-intro {
-      margin:2%;
-      text-align: center;
-    }
-    #video {
-      display:inline-block;
-    }
-    #video-details { 
-      display:inline-block;
-      vertical-align: top; 
-    }
-    #video-items{
-      /*border: medium solid black;*/
-    }
-    #grid-container {
-      display:block;
-      text-align: center;
-    }
-
-    #video-items img {
-        width: 248px;
-    }
+    a:hover { color: {{ color }}; }
+    a.nostyle:hover { background-color: {{ color }}; }
+    body { background: {{ background_color }}; }
     </style>
     <link id="favicon" rel="shortcut icon" href="profile.jpg" type="image/jpeg">
     <script src="assets/zim_prefix.js"></script>
@@ -53,12 +25,14 @@
     <div class="container">
       <div id="header">
         <a href="home.html" id="top-link"><img id="header-profile" src="profile.jpg"></a>
-        <form name="playlist" id="header-playlists"><select name="list" onChange="genplaylist()">
-            {% for playlist in playlists %}<option value="{{ playlist.slug }}">{{ playlist.title }}</option>{% endfor %}</select></form>
-        <div id="header-line"><p>{{ title }}</p>
-    </div>
       </div>
-      <table style="width: 100%;">
+      <div id="header-line"><p>{{ title }}</p></div>
+      <div class="header-playlists">
+        <form name="playlist" id="header-playlists"><select name="list" onChange="genplaylist()">
+        {% for playlist in playlists %}<option value="{{ playlist.slug }}">{{ playlist.title }}</option>{% endfor %}</select>
+        </form>
+      </div>
+      <table>
         <tr>
           <td>
             <div class="pagination">
@@ -82,9 +56,7 @@
         </div>
      <ul id="video-items" class="rig grid"></ul>
     </div>
-    <div class="backtotop" onclick="$('html, body').animate({ scrollTop: 0 }, 'slow');">
-      <span style="margin: auto;">Back to the top</span>
-    </div>
+    <div class="backtotop" onclick="$('html, body').animate({ scrollTop: 0 }, 'slow');"><span>Back to the top</span></div>
     <div class="pagination bottom">
       <div class="left-arrow">&#10096;</div>
       <span class="pagination-text"></span>
