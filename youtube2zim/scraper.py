@@ -15,7 +15,6 @@ from pathlib import Path
 from functools import partial
 
 import jinja2
-import iso639
 import youtube_dl
 from dateutil import parser as dt_parser
 
@@ -29,6 +28,8 @@ from .utils import (
     save_file,
     get_colors,
     is_hex_color,
+    get_hash,
+    get_language_details,
 )
 from .youtube import (
     get_channel_json,
@@ -59,7 +60,7 @@ class Youtube2Zim(object):
         keep_build_dir,
         skip_download,
         youtube_store,
-        lang,
+        language,
         tags,
         title=None,
         description=None,
@@ -82,8 +83,8 @@ class Youtube2Zim(object):
 
         # options & zim params
         self.all_subtitles = all_subtitles
-        self.fname = Path(fname)
-        self.lang = lang
+        self.fname = fname
+        self.language = language
         self.tags = tags
         self.title = title
         self.description = description
@@ -111,7 +112,7 @@ class Youtube2Zim(object):
 
         # store ZIM-related info
         self.zim_info = ZimInfo(
-            language=lang,
+            language=language,
             tags=tags,
             title=title,
             description=description,
@@ -228,6 +229,7 @@ class Youtube2Zim(object):
 
         # make zim file
         if not self.no_zim:
+            self.fname = Path(self.fname if self.fname else f"{self.name}.zim")
             logger.info("building ZIM file")
             make_zim_file(self.build_dir, self.output_dir, self.fname, self.zim_info)
             logger.info("removing HTML folder")
@@ -341,12 +343,27 @@ class Youtube2Zim(object):
             Playlist.from_id(playlist_id) for playlist_id in list(set(playlist_ids))
         ]
 
+    def build_identifier(self):
+        """ set self.ident to a unique yet representative identifier of the request """
+        ident = "youtube"
+        if self.is_user:
+            ident = self.youtube_id
+        elif self.is_channel:
+            ident = f"channel-{self.youtube_id}"
+        elif self.is_playlist:
+            if len(self.playlists) > 1:
+                plhash = get_hash(",".join(self.playlists_ids))
+                ident = f"playlists-{plhash}"
+            else:
+                ident = f"playlist-{self.youtube_id}"
+        self.ident = ident.replace("_", "-")
+
     def extract_videos_list(self):
 
         all_videos = load_json(self.cache_dir, "videos")
         if all_videos is None:
             all_videos = {}
-            # videos_ids = []
+
             # we only return video_ids that we'll use later on. per-playlist JSON stored
             for playlist in self.playlists:
                 all_videos.update(
@@ -355,10 +372,6 @@ class Youtube2Zim(object):
                         for v in get_videos_json(playlist.playlist_id)
                     }
                 )
-                # videos_ids += [
-                #     v["contentDetails"]["videoId"]
-                #     for v in get_videos_json(playlist.playlist_id)
-                # ]
 
             # self.videos_ids = list(set(videos_ids))
             save_json(self.cache_dir, "videos", all_videos)
@@ -442,7 +455,11 @@ class Youtube2Zim(object):
                 )
         self.publisher = self.publisher or "Kiwix"
 
-        self.name = "youtube-{ident}_{lang}_all"
+        self.build_identifier()
+
+        self.name = "youtube-{ident}_{lang}_all".format(
+            ident=self.ident, lang=get_language_details(self.language)["iso-639-1"]
+        )
         self.tags = self.tags or ["youtube"]
         if "_videos:yes" not in self.tags:
             self.tags.append("_videos:yes")
@@ -501,34 +518,11 @@ class Youtube2Zim(object):
                 for x in video_dir.iterdir()
                 if x.is_file() and x.name.endswith(".vtt")
             ]
-            non_iso_langs = {
-                "zh-Hans": {
-                    "code": "zh-Hans",
-                    "english": "Simplified Chinese",
-                    "native": "简化字",
-                },
-                "zh-Hant": {
-                    "code": "zh-Hant",
-                    "english": "Traditional Chinese",
-                    "native": "正體字",
-                },
-                "iw": {"code": "iw", "english": "Hebrew", "native": "עברית"},
-            }
 
-            return [
-                non_iso_langs.get(language)
-                if language in non_iso_langs.keys()
-                else {
-                    "code": language,
-                    "english": iso639.to_name(language),
-                    "native": iso639.to_native(language),
-                }
-                for language in languages
-            ]
+            return [get_language_details(language) for language in languages]
 
         env = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(str(self.templates_dir)),
-            autoescape=True
+            loader=jinja2.FileSystemLoader(str(self.templates_dir)), autoescape=True
         )
 
         videos = load_json(self.cache_dir, "videos").values()
@@ -611,17 +605,3 @@ class Youtube2Zim(object):
                         ),
                     )
                 )
-
-            # # write another playlist containing all videos
-            # # ordered by publication date DESC
-            # all_videos = sorted(
-            #     videos,
-            #     key=lambda v: dt_parser.parse(v["snippet"]["publishedAt"]),
-            #     reverse=True,
-            # )
-            # fp.write(
-            #     "var json_{slug} = {json_str};\n".format(
-            #         slug="all",
-            #         json_str=json.dumps(list(map(to_data_js, all_videos)), indent=4),
-            #     )
-            # )

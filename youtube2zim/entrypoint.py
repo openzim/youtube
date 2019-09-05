@@ -60,11 +60,13 @@ def main():
         default=False,
     )
     parser.add_argument(
-        "--zim-file", help="ZIM file name", default="youtube.zim", dest="fname"
+        "--zim-file",
+        help="ZIM file name (based on --name if not provided)",
+        dest="fname",
     )
 
     parser.add_argument(
-        "--lang", help="ISO-639-3 (3 chars) language code of content", default="eng"
+        "--language", help="ISO-639-3 (3 chars) language code of content", default="eng"
     )
     parser.add_argument(
         "--title",

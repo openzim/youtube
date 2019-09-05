@@ -4,9 +4,11 @@
 
 import re
 import json
+import hashlib
 import colorsys
 
 import PIL
+import iso639
 import requests
 import colorthief
 from slugify import slugify
@@ -16,7 +18,7 @@ from resizeimage import resizeimage
 def get_slug(text, js_safe=True):
     """ slug from text to build URL parts """
     if js_safe:
-        return slugify(text, regex_pattern=r'[^-a-z0-9_]+').replace("-", "_")
+        return slugify(text, regex_pattern=r"[^-a-z0-9_]+").replace("-", "_")
     return slugify(text)
 
 
@@ -96,7 +98,7 @@ def resize_image(fpath, width, height=None, to=None, method="width"):
 
 def is_hex_color(text):
     """ whether supplied text is a valid hex-formated color code """
-    return re.search(r'^#(?:[0-9a-fA-F]{3}){1,2}$', text)
+    return re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", text)
 
 
 def nicer_args_join(args):
@@ -105,3 +107,36 @@ def nicer_args_join(args):
     for arg in args[1:]:
         nargs.append(arg if arg.startswith("-") else '"{}"'.format(arg))
     return " ".join(nargs)
+
+
+def get_hash(text):
+    """ simple hash (md5) of a longer string """
+    return hashlib.md5(text.encode("utf-8")).hexdigest()
+
+
+def get_language_details(iso_639_3):
+    """ dict container iso639-2, name and native name for an iso-639-3 code """
+    non_iso_langs = {
+        "zh-Hans": {
+            "code": "zh-Hans",
+            "english": "Simplified Chinese",
+            "native": "简化字",
+        },
+        "zh-Hant": {
+            "code": "zh-Hant",
+            "english": "Traditional Chinese",
+            "native": "正體字",
+        },
+        "iw": {"code": "iw", "english": "Hebrew", "native": "עברית"},
+    }
+
+    return (
+        non_iso_langs.get(iso_639_3)
+        if iso_639_3 in non_iso_langs.keys()
+        else {
+            "code": iso_639_3,
+            "iso-639-1": iso639.to_iso639_1(iso_639_3),
+            "english": iso639.to_name(iso_639_3),
+            "native": iso639.to_native(iso_639_3),
+        }
+    )
