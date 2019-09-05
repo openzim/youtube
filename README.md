@@ -48,6 +48,15 @@ To get an API:
 youtube2zim --api-key "<your-api-key>" --type user --id "Vsauce"
 ```
 
+## Notes
+
+* Your API_KEY is subject to usage quotas (10,000 requests/day) so use `--keep --skip-download` when adjusting parameters and branding to not *waste your quota*.
+* On macOS, the locale setting is buggy. You need to launch it with `LANGUAGE` environment variable (as ISO-639-1) for the translations to work.
+
+```
+LANGUAGE=fr youtube2zim --language fra
+```
+
 # Developers note
 
 In order to support all platform, we default to `webm` video format. `mp4` one (h264), is not available in Webview on most platform due to patent restrictions.
@@ -62,3 +71,16 @@ We thus use `ogv.js`, to play webm videos on browsers that don't support it. Usi
 * [ZIM](https://wiki.openzim.org/wiki/ZIM_file_format) places JS files under the `/-/` namespace and binary ones under the `/I/` one. Dynamically loading of JS and WASM files within `ogv.js` requires us to tweak it to introduce some ZIM-specific logic. See `fix_ogvjs_dist.py`.
 
 Because the pagination system is implemented in JS, we also need to generate links there. For that to work both in static HTML and in-ZIM, we detect it using a `<link id="favicon">` in HTML files. This link needs to be present and parsed before loading the help `zim_prefix.js` script.
+
+
+## i18n
+
+`youtube2zim` has very minimal non-content text but still uses gettext through [babel]() to internationalize.
+
+To add a new locale (`fr` in this example, use only ISO-639-1):
+
+1. init for your locale: `pybabel init -d locale -l fr`
+2. make sure the POT is up to date `pybabel extract -o youtube2zim/locale/messages.pot youtube2zim`
+3. update your locale's catalog `pybabel update -d youtube2zim/locale/ -l fr -i youtube2zim/locale/messages.pot`
+3. translate the PO file ([poedit](https://poedit.net/) is your friend)
+4. compile updated translation `pybabel compile -d youtube2zim/locale -l fr`

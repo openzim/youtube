@@ -10,13 +10,18 @@
 
 import os
 import json
+import locale
 import shutil
+import gettext
 from pathlib import Path
 from functools import partial
+from gettext import gettext as _
 
+import babel
 import jinja2
 import youtube_dl
 from dateutil import parser as dt_parser
+from babel.dates import format_datetime
 
 from .zim import ZimInfo, make_zim_file
 from .utils import (
@@ -125,6 +130,12 @@ class Youtube2Zim(object):
         youtube_store.update(
             build_dir=self.build_dir, api_key=self.api_key, cache_dir=self.cache_dir
         )
+
+        locale.setlocale(
+            locale.LC_ALL, (get_language_details(self.language)["iso-639-1"], "UTF-8")
+        )
+        gettext.bindtextdomain("messages", str(ROOT_DIR.joinpath("locale")))
+        gettext.textdomain("messages")
 
     @property
     def root_dir(self):
@@ -521,6 +532,7 @@ class Youtube2Zim(object):
 
             return [get_language_details(language) for language in languages]
 
+        locale = babel.Locale(get_language_details(self.language)["iso-639-1"])
         env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(str(self.templates_dir)), autoescape=True
         )
@@ -534,7 +546,7 @@ class Youtube2Zim(object):
             description = video["snippet"]["description"]
             publication_date = dt_parser.parse(
                 video["contentDetails"]["videoPublishedAt"]
-            ).strftime("%Y-%m-%d - %H:%M")
+            )
             author = videos_channels[video_id]
             subtitles = get_subtitles(video_id)
             video_url = f"https://www.youtube.com/watch?v={video_id}"
@@ -545,7 +557,7 @@ class Youtube2Zim(object):
                 author=author,
                 title=title,
                 description=description,
-                date=publication_date,
+                date=format_datetime(publication_date, format="medium"),
                 subtitles=subtitles,
                 url=video_url,
                 channel_id=video["snippet"]["channelId"],
@@ -565,6 +577,8 @@ class Youtube2Zim(object):
             description=self.description,
             color=self.main_color,
             background_color=self.secondary_color,
+            page_label=_("Page {current}/{total}"),
+            back_label=_("Back to top"),
         )
         with open(self.build_dir.joinpath("home.html"), "w", encoding="utf-8") as fp:
             fp.write(html)

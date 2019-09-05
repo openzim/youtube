@@ -37,7 +37,7 @@
           <td>
             <div class="pagination">
               <div class="left-arrow">&#10096;</div>
-              <span class="pagination-text"></span>
+              <span class="pagination-text" data-format="{{ page_label }}"></span>
               <div class="right-arrow">&#10097;</div>
             </div>
           </td>
@@ -56,10 +56,10 @@
         </div>
      <ul id="video-items" class="rig grid"></ul>
     </div>
-    <div class="backtotop" onclick="$('html, body').animate({ scrollTop: 0 }, 'slow');"><span>Back to the top</span></div>
+    <div class="backtotop" onclick="$('html, body').animate({ scrollTop: 0 }, 'slow');"><span>{{ back_label }}</span></div>
     <div class="pagination bottom">
       <div class="left-arrow">&#10096;</div>
-      <span class="pagination-text"></span>
+      <span class="pagination-text" data-format="{{ page_label }}"></span>
       <div class="right-arrow">&#10097;</div>
     </div>
   </div>
