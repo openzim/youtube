@@ -26,25 +26,26 @@ function genplaylist() {
  * subtitles in the selected language.
  */
 function setupLanguageFilter() {
-  $('.chosen-select').chosen({width: "380px"}).change(function(){
-    language = arguments[1].selected;
+	return; // disable for now
+  // $('.chosen-select').chosen({width: "380px"}).change(function(){
+  //   language = arguments[1].selected;
 
-    // If 'lang-all' is selected the user wants to
-    // display videos in all languages. 
-    // This removes the previously set filter (if any).
-    if (language == 'lang-all') {
-      language = undefined;
-    }
+  //   // If 'lang-all' is selected the user wants to
+  //   // display videos in all languages. 
+  //   // This removes the previously set filter (if any).
+  //   if (language == 'lang-all') {
+  //     language = undefined;
+  //   }
 
-    // Load the data for the selected language and 
-    // generate the video list.
-    videoDB.resetPage();
-    videoDB.loadData(language, function() {
-      var data = videoDB.getPage(videoDB.getPageNumber());
-      refreshVideos(data);
-      refreshPagination();
-    });
-  });
+  //   // Load the data for the selected language and 
+  //   // generate the video list.
+  //   videoDB.resetPage();
+  //   videoDB.loadData(language, function() {
+  //     var data = videoDB.getPage(videoDB.getPageNumber());
+  //     refreshVideos(data);
+  //     refreshPagination();
+  //   });
+  // });
 }
 
 /**

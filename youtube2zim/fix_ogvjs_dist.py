@@ -102,6 +102,23 @@ def main():
         with open(fpath, "w") as fp:
             fp.write(before + our_fix + after)
 
+    logger.info("fixing videosjs-ogvjs.js")
+    plugin_path = root.joinpath("templates", "assets", "videojs-ogvjs.js")
+    with open(plugin_path, "r") as fp:
+        content = fp.read()
+
+    content = content.replace(
+        "_OGVLoader2['default'].base = options.base;",
+        "_OGVLoader2['default'].base = ZIM_META_NS + options.base;",
+    )
+    content = content.replace(
+        "return type.indexOf('/ogg') !== -1 ? 'maybe' : '';",
+        "return (type.indexOf('/webm') !== -1 || type.indexOf('/ogg') !== -1) ? 'maybe' : '';",
+    )
+
+    with open(plugin_path, "w") as fp:
+        fp.write(content)
+
     logger.info("all done.")
 
 

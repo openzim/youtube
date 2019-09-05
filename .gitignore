@@ -66,3 +66,10 @@ dl-cache
 *.zip
 build/
 dist/
+
+# JS deps
+youtube2zim/templates/assets/chosen/
+youtube2zim/templates/assets/jquery.min.js
+youtube2zim/templates/assets/ogvjs/
+youtube2zim/templates/assets/videojs-ogvjs.js
+youtube2zim/templates/assets/videojs/
