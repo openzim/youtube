@@ -119,15 +119,23 @@ def get_language_details(iso_639_3):
     non_iso_langs = {
         "zh-Hans": {
             "code": "zh-Hans",
+            "iso-639-1": "zh",
             "english": "Simplified Chinese",
             "native": "简化字",
         },
         "zh-Hant": {
             "code": "zh-Hant",
+            "iso-639-1": "zh",
             "english": "Traditional Chinese",
             "native": "正體字",
         },
-        "iw": {"code": "iw", "english": "Hebrew", "native": "עברית"},
+        "iw": {"code": "iw", "iso-639-1": "he", "english": "Hebrew", "native": "עברית"},
+        "multi": {
+            "code": "mul",
+            "iso-639-1": "en",
+            "english": "Multiple Languages",
+            "native": "Multiple Languages",
+        },
     }
 
     return (
