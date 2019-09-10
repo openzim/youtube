@@ -619,3 +619,9 @@ class Youtube2Zim(object):
                         ),
                     )
                 )
+
+        # write a metadata.json file with some content-related data
+        with open(
+            self.build_dir.joinpath("metadata.json"), "w", encoding="utf-8"
+        ) as fp:
+            json.dump({"video_format": self.video_format}, fp, indent=4)
