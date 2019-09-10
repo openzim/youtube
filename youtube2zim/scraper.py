@@ -363,7 +363,7 @@ class Youtube2Zim(object):
             ident = f"channel-{self.youtube_id}"
         elif self.is_playlist:
             if len(self.playlists) > 1:
-                plhash = get_hash(",".join(self.playlists_ids))
+                plhash = get_hash(",".join([p.playlist_id for p in self.playlists]))
                 ident = f"playlists-{plhash}"
             else:
                 ident = f"playlist-{self.youtube_id}"
