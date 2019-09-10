@@ -66,7 +66,14 @@ def get_channel_json(channel_id, for_username=False):
             },
         )
         req.raise_for_status()
-        channel_json = req.json()["items"][0]
+        try:
+            channel_json = req.json()["items"][0]
+        except IndexError:
+            if for_username:
+                logger.error(f"Invalid username `{channel_id}`: Not Found")
+            else:
+                logger.error(f"Invalid channelId `{channel_id}`: Not Found")
+            raise
         save_json(YOUTUBE.cache_dir, fname, channel_json)
     return channel_json
 
@@ -116,7 +123,11 @@ def get_playlist_json(playlist_id):
             params={"id": playlist_id, "part": "snippet", "key": YOUTUBE.api_key},
         )
         req.raise_for_status()
-        playlist_json = req.json()["items"][0]
+        try:
+            playlist_json = req.json()["items"][0]
+        except IndexError:
+            logger.error(f"Invalid playlistId `{playlist_id}`: Not Found")
+            raise
         save_json(YOUTUBE.cache_dir, fname, playlist_json)
     return playlist_json
 
