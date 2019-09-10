@@ -1,7 +1,7 @@
 FROM openzim/zimwriterfs:1.3.5
 
 # Install necessary packages
-RUN apt-get update -y && apt-get install -y %% \
+RUN apt-get update -y && apt-get install -y && \
     --no-install-recommends python3-pip ffmpeg aria2 && \
     && \
     apt-get clean && \
