@@ -139,6 +139,9 @@ table { width: 100%; }
 #video-details {
   display:inline-block;
   vertical-align: top;
+
+  padding: .5em;
+  box-sizing: border-box;
 }
 
 #video-items img {

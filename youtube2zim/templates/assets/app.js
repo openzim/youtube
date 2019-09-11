@@ -153,22 +153,7 @@ function refreshVideos(pageData) {
 
 
 function firstVideos(pageData) {
-    var videoDetails = document.getElementById('video-details');
-    videoDetails.innerHTML = '';
     var video = pageData[0];
-
-    var video_container = document.getElementById("video");
-    video_container.setAttribute("poster", ZIM_IMG_NS + "videos/" + video['id'] + "/video.jpg");
-    video_container.innerHTML = '<source src="' + ZIM_IMG_NS + "videos/" + video['id'] + '/video.{{ video_format }}" type="video/{{ video_format }}" />';
-
-    var title = document.createElement('h4')
-    title.id = 'title';
-    title.innerHTML = video['title'];
-    videoDetails.appendChild(title);
-
-    var description = document.createElement('p');
-    description.setAttribute("class", "description");
-    description.innerHTML = video['description'];
-    videoDetails.appendChild(description);
-
+    var videoIntro = document.getElementById('video-intro');
+    videoIntro.innerHTML = '<video id="video" class="video-js vjs-default-skin" width="480px" height="270px" crossorigin data-setup=\'{"techOrder": ["html5", "ogvjs"], "ogvjs": {"base": "assets/ogvjs"}, "autoplay": false, "preload": true, "controls": true}\' poster="videos/' + video['id'] + '/video.jpg"><source src="videos/' + video['id'] + '/video.webm" type="video/webm" /></video><div id="video-details"><h4 id="title">' + video['title'] + '</h4><p class="description">' + video['description'] + '</p></div>';
 }
