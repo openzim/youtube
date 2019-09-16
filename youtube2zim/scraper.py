@@ -244,7 +244,8 @@ class Youtube2Zim(object):
             logger.info("building ZIM file")
             make_zim_file(self.build_dir, self.output_dir, self.fname, self.zim_info)
             logger.info("removing HTML folder")
-            # shutil.rmtree(self.build_dir, ignore_errors=True)
+            if not self.keep_build_dir:
+                shutil.rmtree(self.build_dir, ignore_errors=True)
 
         logger.info("all done!")
 
@@ -468,9 +469,11 @@ class Youtube2Zim(object):
 
         self.build_identifier()
 
-        self.name = "youtube-{ident}_{lang}_all".format(
+        auto_name = "youtube-{ident}_{lang}_all".format(
             ident=self.ident, lang=get_language_details(self.language)["iso-639-1"]
         )
+        self.name = self.name or auto_name
+
         self.tags = self.tags or ["youtube"]
         if "_videos:yes" not in self.tags:
             self.tags.append("_videos:yes")
@@ -532,7 +535,7 @@ class Youtube2Zim(object):
 
             return [get_language_details(language) for language in languages]
 
-        locale = babel.Locale(get_language_details(self.language)["iso-639-1"])
+        # locale = babel.Locale(get_language_details(self.language)["iso-639-1"])
         env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(str(self.templates_dir)), autoescape=True
         )
