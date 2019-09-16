@@ -28,7 +28,6 @@
                     poster="videos/{{ video_id }}/video.jpg"
                     controls preload="auto"
                     width="480px" height="270px"
-                    crossorigin
                     data-setup='{"techOrder": ["html5", "ogvjs"], "ogvjs": {"base": "assets/ogvjs"}, "autoplay": true, "preload": true}'>
                 <source src="videos/{{ video_id }}/video.{{ video_format }}" type="video/{{ video_format }}" />{% if subtitles %}
                 {% for language in subtitles %}<track kind="subtitles" src="videos/{{ video_id }}/video.{{ language.code }}.vtt" srclang="{{ language.code }}" label="{{ language.native }}" />

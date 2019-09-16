@@ -130,10 +130,11 @@ table { width: 100%; }
     margin: 0 auto;
 }
 
-#video {
+#video_container {
     display:inline-block;
     width: 100%;
     max-width: 480px;
+    height: 270px;
 }
 
 #video-details {
@@ -193,6 +194,7 @@ ul.rig {
     list-style: none;
     font-size: 0;
     margin-left: -2.5%;
+    padding: 0;
 }
 ul.rig li {
     display: inline-block;
@@ -393,7 +395,6 @@ p.description {
 
 .container { width: auto; padding: 0; }
 #header { width: 100%; }
-/*#video { max-width: 200px; }*/
 ul.rig { margin: 0; }
 #video-intro { margin: 0; }
 
@@ -447,5 +448,5 @@ ul.rig { margin: 0; }
     #header-profile { width: 100px; height: 100px; }
     #header { width: 1060px; height: 175px; }
     .container { width: 1060px; }
-    #video { max-width: 480px; }
+    #video_container { max-width: 480px; }
 }

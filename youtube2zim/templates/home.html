@@ -6,9 +6,9 @@
     <meta content="utf-8" http-equiv="encoding">
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="assets/home.css" rel="stylesheet" type="text/css">
     <link href="assets/chosen/chosen.min.css" rel="stylesheet" type="text/css">
     <link href="assets/videojs/video-js.min.css" rel="stylesheet">
+    <link href="assets/home.css" rel="stylesheet" type="text/css">
     <style type="text/css">
     a:hover { color: {{ color }}; }
     a.nostyle:hover { background-color: {{ color }}; }
@@ -45,14 +45,6 @@
       </table>
       <div id="grid-container"> 
         <div id="video-intro" class="rig grid">
-            <video  id="video" class="video-js vjs-default-skin"
-                    controls preload="auto"
-                    width="480px" height="270px"
-                    crossorigin
-                    data-setup='{"techOrder": ["html5", "ogvjs"], "ogvjs": {"base": "assets/ogvjs"}, "autoplay": true, "preload": true}'>
-            </video>
-          <div id="video-details" >
-          </div>
         </div>
      <ul id="video-items" class="rig grid"></ul>
     </div>
