@@ -22,7 +22,7 @@ def hook_youtube_dl_ffmpeg(video_format, data):
     dst_path = src_path.parent.joinpath("video.{fmt}".format(fmt=video_format))
 
     video_codecs = {"mp4": "h264", "webm": "libvpx"}
-    audio_codecs = {"mp4": "mp3", "webm": "libvorbis"}
+    audio_codecs = {"mp4": "aac", "webm": "libvorbis"}
     params = {"mp4": ["-movflags", "+faststart"], "webm": []}
     args = [
         "ffmpeg",
