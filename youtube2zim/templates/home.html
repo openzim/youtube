@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ title }}</title>
+    <meta charset="utf-8">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="assets/chosen/chosen.min.css" rel="stylesheet" type="text/css">
+    <link href="assets/videojs/video-js.min.css" rel="stylesheet">
+    <link href="assets/home.css" rel="stylesheet" type="text/css">
+    <style type="text/css">
+    a:hover { color: {{ color }}; }
+    a.nostyle:hover { background-color: {{ color }}; }
+    body { background: {{ background_color }}; }
+    </style>
+    <link id="favicon" rel="shortcut icon" href="profile.jpg" type="image/jpeg">
+    <script src="assets/zim_prefix.js"></script>
+    <script src="assets/videojs/video.min.js"></script>
+    <script src="assets/ogvjs/ogv-support.js"></script>
+    <script src="assets/ogvjs/ogv.js"></script>
+    <script src="assets/videojs-ogvjs.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div id="header">
+        <a href="home.html" id="top-link"><img id="header-profile" src="profile.jpg"></a>
+      </div>
+      <div id="header-line"><p>{{ title }}</p></div>
+      <div class="header-playlists">
+        <form name="playlist" id="header-playlists"><select class="chosen-select" name="list" onChange="genplaylist()">
+        {% for playlist in playlists %}<option value="{{ playlist.slug }}">{{ playlist.title }}</option>{% endfor %}</select>
+        </form>
+      </div>
+      <table>
+        <tr>
+          <td>
+            <div class="pagination">
+              <div class="left-arrow">&#10096;</div>
+              <span class="pagination-text" data-format="{{ page_label }}"></span>
+              <div class="right-arrow">&#10097;</div>
+            </div>
+          </td>
+        </tr>
+      </table>
+      <div id="grid-container"> 
+        <div id="video-intro" class="rig grid">
+        </div>
+     <ul id="video-items" class="rig grid"></ul>
+    </div>
+    <div class="backtotop" onclick="$('html, body').animate({ scrollTop: 0 }, 'slow');"><span>{{ back_label }}</span></div>
+    <div class="pagination bottom">
+      <div class="left-arrow">&#10096;</div>
+      <span class="pagination-text" data-format="{{ page_label }}"></span>
+      <div class="right-arrow">&#10097;</div>
+    </div>
+  </div>
+  <script src="assets/jquery.min.js" type="text/javascript"></script>
+  <script src="assets/chosen/chosen.jquery.js" type="text/javascript"></script>
+  <script src="assets/data.js"></script>
+  <script src="assets/db.js"></script>
+  <script src="assets/app.js"></script>
+  <script type="text/javascript">$(".chosen-select").chosen({disable_search: true});</script>
+</body>
+</html>

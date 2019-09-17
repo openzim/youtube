@@ -1,0 +1,10 @@
+iso639==0.1.4
+python-slugify==3.0.3
+requests==2.22.0
+# youtube-dl should be updated as frequently as possible
+youtube_dl
+colorthief==0.2.1
+python-dateutil==2.8.0
+python-resize-image==1.1.19
+jinja2==2.10.1
+babel==2.7.0

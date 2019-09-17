@@ -1,3 +1,38 @@
+Version 2.0 (August 2019):
+  Rewrote scraper script
+   - using Youtube API instead of parsing DOM
+   - simpler code (less)
+   - using youtube-dl to download video, thumbnail, subtitles
+   - faster (bundled download for video, thumbnail and subtitles – single ytdl call)
+   - option to use auto-generated subtitles
+   - added favicon in HTML (for kiwix-serve use)
+   - kept FFMPEF options code for lower-quality
+   - kept UI: html, css, js.
+   - updated videojs
+   - added support for webm in all browsers via ogv.js and videosjs-ogvjs
+   - defaults to webm
+   - made sure video are included only once (even if on multiple playlists)
+   - Dockerfile runs current code, not a pypi version
+   - improved UI on mobile/responsive
+   - translatable UI-texts, using --language (supports EN,FR atm.)
+   - fixed audio in low-quality mp4 files on quicktime-based platforms
+  Known bugs:
+   - --all-subtitles is slow #38
+   - Safari (iOS/macOS) via kiwix-serve:
+       -  Fullscreen is broken in Safari #33
+   - firefox/chromium via kiwix-serve:
+       - Controls buggy in firefox/chrome #34
+       - Fullscreen-exit is broken in firefox/chrome #35
+   - android:
+       - No fullscreen support in android #36
+       - exit rotation is buggy on android #37
+   - iOS:
+       - fullscreen is broken on iOS #39
+   - macOS:
+       - not working on macOS #40
+   - desktop (linux/windows):
+       - no fullscreen support on kiwix-desktop #42
+       - subtitles don't work on kiwix-desktop #41
 Version 1.1 (04 April 2017):
   Make it as python package
 Version 1.0 (23 June 2016):

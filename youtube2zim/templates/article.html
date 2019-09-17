@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{ title }}</title>
+        <meta charset="utf-8">
+        <meta content="utf-8" http-equiv="encoding">
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="assets/videojs/video-js.min.css" rel="stylesheet">
+        <link href="assets/article.css" rel="stylesheet" type="text/css">
+        <style type="text/css">
+           body {background: {{ background_color }};}
+        </style>
+        <link id="favicon" rel="shortcut icon" href="profile.jpg" type="image/jpeg">
+        <script src="assets/zim_prefix.js"></script>
+        <script src="assets/videojs/video.min.js"></script>
+        <script src="assets/ogvjs/ogv-support.js"></script>
+        <script src="assets/ogvjs/ogv.js"></script>
+        <script src="assets/videojs-ogvjs.js"></script>
+    </head>
+    <body>
+        <div id="content">
+            <a href="home.html"><img id="backtolist" src="channels/{{ author.channelId }}/profile.jpg" title="Back to the list" /></a>
+            <p id="speaker">{{ author.channelTitle }}</p>
+            <p id="title">{{ title }}</p>
+            <video  class="video-js vjs-default-skin"
+                    id="video_container"
+                    poster="videos/{{ video_id }}/video.jpg"
+                    controls preload="auto"
+                    width="480px" height="270px"
+                    data-setup='{"techOrder": ["html5", "ogvjs"], "ogvjs": {"base": "assets/ogvjs"}, "autoplay": true, "preload": true}'>
+                <source src="videos/{{ video_id }}/video.{{ video_format }}" type="video/{{ video_format }}" />{% if subtitles %}
+                {% for language in subtitles %}<track kind="subtitles" src="videos/{{ video_id }}/video.{{ language.code }}.vtt" srclang="{{ language.code }}" label="{{ language.native }}" />
+                {% endfor %}{% endif %}
+            </video>
+            <div id="description">
+                <p>{{ description }}</p>
+            </div>
+            <div id="date">{{ date }}</div>
+        </div>
+    </body>
+</html>

@@ -1,13 +1,14 @@
-FROM openzim/zimwriterfs:latest
+FROM openzim/zimwriterfs:1.3.5
 
 # Install necessary packages
-RUN apt-get update -y
-RUN apt-get install -y python-pip
-RUN apt-get install -y ffmpeg
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends python3-pip ffmpeg aria2 curl unzip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+RUN pip3 install setuptools
 
-# Install sotoki
-RUN locale-gen "en_US.UTF-8"
-RUN pip install youtube2zim
+COPY . /src
+RUN cd /src/ && python3 ./setup.py install
 
 # Boot commands
-CMD youtube2zim ; /bin/bash
+CMD youtube2zim --help
