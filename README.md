@@ -18,7 +18,7 @@ It downloads the video (webm or mp4 format – optionnaly recompress them in low
 ## docker
 
 ```
-docker run -v my_dir:/output openzim/youtube2zim youtube2zim --help
+docker run -v my_dir:/output openzim/youtube youtube2zim --help
 ```
 
 ## pip
