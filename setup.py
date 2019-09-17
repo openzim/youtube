@@ -28,6 +28,7 @@ setup(
     version=VERSION,
     description="Make ZIM file from a Youtube channel, user or playlist(s)",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     author="dattaz",
     author_email="taz@dattaz.fr",
     url="https://github.com/openzim/youtube",
