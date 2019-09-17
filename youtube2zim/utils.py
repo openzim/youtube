@@ -55,7 +55,7 @@ def save_file(url, fpath):
         fp.write(req.content)
 
 
-def get_colors(image_path, use_palette=True):
+def get_colors(image_path, use_palette=False):
     """ (main, secondary) HTML color codes from an image path """
 
     def rgb_to_hex(r, g, b):
