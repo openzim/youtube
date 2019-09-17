@@ -185,6 +185,12 @@ class Youtube2Zim(object):
     def is_playlist(self):
         return self.collection_type == PLAYLIST
 
+    @property
+    def is_single_channel(self):
+        if self.is_channel or self.is_user:
+            return True
+        return len(list(set([pl.creator_id for pl in self.playlists]))) == 1
+
     def run(self):
         """ execute the scrapper step by step """
         logger.info(
@@ -242,6 +248,7 @@ class Youtube2Zim(object):
         if not self.no_zim:
             self.fname = Path(self.fname if self.fname else f"{self.name}.zim")
             logger.info("building ZIM file")
+            print(self.zim_info.to_zimwriterfs_args())
             make_zim_file(self.build_dir, self.output_dir, self.fname, self.zim_info)
             logger.info("removing HTML folder")
             if not self.keep_build_dir:
@@ -455,16 +462,16 @@ class Youtube2Zim(object):
             if self.is_playlist and len(self.playlists) == 1
             else clean_text(main_channel_json["snippet"]["description"])
         )
-        self.title = self.title or auto_title
-        self.description = self.description or auto_description
+        self.title = self.title or auto_title or "-"
+        self.description = self.description or auto_description or "-"
 
         if self.creator is None:
-            if self.is_playlist:
-                self.creator = "Youtube Channels"
-            else:
-                self.creator = "Youtube Channel “{}”".format(
-                    main_channel_json["snippet"]["title"]
+            if self.is_single_channel:
+                self.creator = _("Youtube Channel “{title}”").format(
+                    title=main_channel_json["snippet"]["title"]
                 )
+            else:
+                self.creator = _("Youtube Channels")
         self.publisher = self.publisher or "Kiwix"
 
         self.build_identifier()
