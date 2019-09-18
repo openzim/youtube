@@ -44,6 +44,7 @@ from .youtube import (
     get_videos_json,
     get_videos_authors_info,
     save_channel_branding,
+    skip_deleted_videos,
 )
 from .converter import hook_youtube_dl_ffmpeg
 from .constants import logger, ROOT_DIR, CHANNEL, PLAYLIST, USER
@@ -380,7 +381,6 @@ class Youtube2Zim(object):
         self.ident = ident.replace("_", "-")
 
     def extract_videos_list(self):
-
         all_videos = load_json(self.cache_dir, "videos")
         if all_videos is None:
             all_videos = {}
@@ -390,7 +390,9 @@ class Youtube2Zim(object):
                 all_videos.update(
                     {
                         v["contentDetails"]["videoId"]: v
-                        for v in get_videos_json(playlist.playlist_id)
+                        for v in filter(
+                            skip_deleted_videos, get_videos_json(playlist.playlist_id)
+                        )
                     }
                 )
 
@@ -619,8 +621,14 @@ class Youtube2Zim(object):
         with open(self.assets_dir.joinpath("data.js"), "w", encoding="utf-8") as fp:
             # write all playlists as they are
             for playlist in self.playlists:
-                playlist_videos = load_json(
-                    self.cache_dir, f"playlist_{playlist.playlist_id}_videos"
+                # retrieve list of videos for PL, filtering-out missing ones
+                playlist_videos = list(
+                    filter(
+                        skip_deleted_videos,
+                        load_json(
+                            self.cache_dir, f"playlist_{playlist.playlist_id}_videos"
+                        ),
+                    )
                 )
                 playlist_videos.sort(key=lambda v: v["snippet"]["position"])
 

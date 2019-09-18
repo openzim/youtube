@@ -235,3 +235,11 @@ def save_channel_branding(channels_dir, channel_id, save_banner=False):
         banner_path = channels_dir.joinpath(channel_id, "banner.jpg")
         if not banner_path.exists():
             save_file(banner, banner_path)
+
+
+def skip_deleted_videos(item):
+    """ filter func to filter-out deleted videos from list """
+    return (
+        item["snippet"]["title"] != "Deleted video"
+        and item["snippet"]["description"] != "This video is unavailable."
+    )
