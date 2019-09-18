@@ -95,7 +95,7 @@ def main():
         before = content[0:bracket_pos]
         after = content[bracket_pos:]
         equal_pos = before[::-1].index("=")
-        variable = before[::-1][equal_pos + 1 : equal_pos + 2]
+        variable = before[::-1][equal_pos + 1: equal_pos + 2]
         our_fix = ";{var}=zim_fix_wasm_target({var});".format(var=variable)
 
         # nfpath = fpath.parent.joinpath(fpath.name + ".tmp")
@@ -117,6 +117,16 @@ def main():
     )
 
     with open(plugin_path, "w") as fp:
+        fp.write(content)
+
+    logger.info("hack video.min.js (TEMP FIX to work aroung Qt bug in reader)")
+    videojs_path = root.joinpath("templates", "assets", "videojs", "video.min.js")
+    with open(videojs_path, "r") as fp:
+        content = fp.read()
+
+    content = content.replace(";return 0!==e?(t=", ";return (0!==e || IS_IN_ZIM)?(t=")
+
+    with open(videojs_path, "w") as fp:
         fp.write(content)
 
     logger.info("all done.")
