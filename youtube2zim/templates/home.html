@@ -28,7 +28,7 @@
       </div>
       <div id="header-line"><p>{{ title }}</p></div>
       <div class="header-playlists">
-        <form name="playlist" id="header-playlists"><select class="chosen-select" name="list" onChange="genplaylist()">
+        <form name="playlist" id="header-playlists" class="{% if playlists|length < 2 %}hidden{% endif %}"><select class="chosen-select" name="list" onChange="genplaylist()">
         {% for playlist in playlists %}<option value="{{ playlist.slug }}">{{ playlist.title }}</option>{% endfor %}</select>
         </form>
       </div>
@@ -60,6 +60,6 @@
   <script src="assets/data.js"></script>
   <script src="assets/db.js"></script>
   <script src="assets/app.js"></script>
-  <script type="text/javascript">$(".chosen-select").chosen({disable_search: true});</script>
+  <script type="text/javascript">$(".chosen-select").chosen({disable_search: true, width: 'auto'});</script>
 </body>
 </html>

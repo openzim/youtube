@@ -102,6 +102,10 @@ table { width: 100%; }
     margin: .5em 0 .5em;
 }
 
+.hidden {
+    display: none;
+}
+
 #author {
     font-family: "RobotoLight";
     font-size: 15px;
