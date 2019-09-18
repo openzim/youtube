@@ -46,6 +46,12 @@ def main():
         action="store_true",
         default=False,
     )
+    parser.add_argument(
+        "--autoplay",
+        help="Enable autoplay on video articles (home never have autoplay). Behavior differs on platforms/browsers.",
+        action="store_true",
+        default=False,
+    )
 
     parser.add_argument(
         "--output",

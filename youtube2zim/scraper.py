@@ -58,6 +58,7 @@ class Youtube2Zim(object):
         video_format,
         low_quality,
         all_subtitles,
+        autoplay,
         output_dir,
         no_zim,
         fname,
@@ -88,6 +89,7 @@ class Youtube2Zim(object):
 
         # options & zim params
         self.all_subtitles = all_subtitles
+        self.autoplay = autoplay
         self.fname = fname
         self.language = language
         self.tags = tags
@@ -573,6 +575,7 @@ class Youtube2Zim(object):
                 channel_id=video["snippet"]["channelId"],
                 color=self.main_color,
                 background_color=self.secondary_color,
+                autoplay=self.autoplay,
             )
             with open(
                 self.build_dir.joinpath(f"{slug}.html"), "w", encoding="utf-8"
