@@ -13,11 +13,11 @@ import json
 import locale
 import shutil
 import gettext
+import datetime
 from pathlib import Path
 from functools import partial
 from gettext import gettext as _
 
-import babel
 import jinja2
 import youtube_dl
 from dateutil import parser as dt_parser
@@ -249,7 +249,8 @@ class Youtube2Zim(object):
 
         # make zim file
         if not self.no_zim:
-            self.fname = Path(self.fname if self.fname else f"{self.name}.zim")
+            period = datetime.datetime.now().strftime("%Y-%m")
+            self.fname = Path(self.fname if self.fname else f"{self.name}_{period}.zim")
             logger.info("building ZIM file")
             print(self.zim_info.to_zimwriterfs_args())
             make_zim_file(self.build_dir, self.output_dir, self.fname, self.zim_info)
@@ -546,7 +547,6 @@ class Youtube2Zim(object):
 
             return [get_language_details(language) for language in languages]
 
-        # locale = babel.Locale(get_language_details(self.language)["iso-639-1"])
         env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(str(self.templates_dir)), autoescape=True
         )
