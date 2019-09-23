@@ -1,3 +1,12 @@
+Version 2.0.1
+ Fixed not working with too much videos (URI too long)
+ Secondary color now using 2nd most used color in profile picture
+ Display playlists select only if there is multiple playlists
+ Added --autoplay option
+ Added kiwix-desktop workaround (no status check on XHR)
+ Added support for playlists with missing videos
+ Added period (YYYY-MM) to filename
+
 Version 2.0 (August 2019):
   Rewrote scraper script
    - using Youtube API instead of parsing DOM

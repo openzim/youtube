@@ -399,7 +399,7 @@ class Youtube2Zim(object):
 
             # self.videos_ids = list(set(videos_ids))
             save_json(self.cache_dir, "videos", all_videos)
-        self.videos_ids = all_videos.keys()
+        self.videos_ids = [*all_videos.keys()]  # unpacking so it's subscriptable
 
     def download_video_files(self):
 

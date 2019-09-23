@@ -15,6 +15,7 @@ CHANNEL_SECTIONS_API = f"{YOUTUBE_API}/channelSections"
 CHANNELS_API = f"{YOUTUBE_API}/channels"
 SEARCH_API = f"{YOUTUBE_API}/search"
 VIDEOS_API = f"{YOUTUBE_API}/videos"
+MAX_VIDEOS_PER_REQUEST = 130  # for VIDEOS_API
 RESULTS_PER_PAGE = 50  # max: 50
 
 
@@ -182,32 +183,45 @@ def get_videos_authors_info(videos_ids):
     )
 
     items = {}
-    page_token = None
-    while True:
-        req = requests.get(
-            VIDEOS_API,
-            params={
-                "id": ",".join(videos_ids),
-                "part": "snippet",
-                "key": YOUTUBE.api_key,
-                "maxResults": RESULTS_PER_PAGE,
-                "pageToken": page_token,
-            },
-        )
-        req.raise_for_status()
-        videos_json = req.json()
-        for item in videos_json["items"]:
-            items.update(
-                {
-                    item["id"]: {
-                        "channelId": item["snippet"]["channelId"],
-                        "channelTitle": item["snippet"]["channelTitle"],
-                    }
-                }
+
+    def retrieve_videos_for(videos_ids):
+        """ {videoId: {channelId: channelTitle}} for all videos_ids """
+        return {}
+        req_items = {}
+        page_token = None
+        while True:
+            req = requests.get(
+                VIDEOS_API,
+                params={
+                    "id": ",".join(videos_ids),
+                    "part": "snippet",
+                    "key": YOUTUBE.api_key,
+                    "maxResults": RESULTS_PER_PAGE,
+                    "pageToken": page_token,
+                },
             )
-        page_token = videos_json.get("nextPageToken")
-        if not page_token:
-            break
+            req.raise_for_status()
+            videos_json = req.json()
+            for item in videos_json["items"]:
+                req_items.update(
+                    {
+                        item["id"]: {
+                            "channelId": item["snippet"]["channelId"],
+                            "channelTitle": item["snippet"]["channelTitle"],
+                        }
+                    }
+                )
+            page_token = videos_json.get("nextPageToken")
+            if not page_token:
+                break
+        return req_items
+
+    # split it over n requests so that each request includes
+    # as most MAX_VIDEOS_PER_REQUEST videoId to avoid too-large URI issue
+    for interv in range(0, len(videos_ids) - 1, MAX_VIDEOS_PER_REQUEST):
+        items.update(
+            retrieve_videos_for(videos_ids[interv : interv + MAX_VIDEOS_PER_REQUEST])
+        )
 
     save_json(YOUTUBE.cache_dir, "videos_channels", items)
 
