@@ -130,6 +130,12 @@ def get_language_details(iso_639_3):
             "native": "正體字",
         },
         "iw": {"code": "iw", "iso-639-1": "he", "english": "Hebrew", "native": "עברית"},
+        "es-419": {
+            "code": "es-419",
+            "iso-639-1": "es-419",
+            "english": "Spanish",
+            "native": "Español",
+        },
         "multi": {
             "code": "mul",
             "iso-639-1": "en",
@@ -138,13 +144,21 @@ def get_language_details(iso_639_3):
         },
     }
 
-    return (
-        non_iso_langs.get(iso_639_3)
-        if iso_639_3 in non_iso_langs.keys()
-        else {
+    try:
+        return (
+            non_iso_langs.get(iso_639_3)
+            if iso_639_3 in non_iso_langs.keys()
+            else {
+                "code": iso_639_3,
+                "iso-639-1": iso639.to_iso639_1(iso_639_3),
+                "english": iso639.to_name(iso_639_3),
+                "native": iso639.to_native(iso_639_3),
+            }
+        )
+    except iso639.NonExistentLanguageError:
+        return {
             "code": iso_639_3,
-            "iso-639-1": iso639.to_iso639_1(iso_639_3),
-            "english": iso639.to_name(iso_639_3),
-            "native": iso639.to_native(iso_639_3),
+            "iso_639_3": iso_639_3,
+            "english": iso_639_3,
+            "native": iso_639_3,
         }
-    )
