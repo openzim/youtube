@@ -58,6 +58,7 @@ class Youtube2Zim(object):
         api_key,
         video_format,
         low_quality,
+        nb_videos_per_page,
         all_subtitles,
         autoplay,
         output_dir,
@@ -89,6 +90,7 @@ class Youtube2Zim(object):
         self.low_quality = low_quality
 
         # options & zim params
+        self.nb_videos_per_page = nb_videos_per_page
         self.all_subtitles = all_subtitles
         self.autoplay = autoplay
         self.fname = fname
@@ -408,6 +410,7 @@ class Youtube2Zim(object):
             "writethumbnail": True,
             "write_all_thumbnails": True,
             "writesubtitles": True,
+            "allsubtitles": True,
             "subtitlesformat": "vtt",
             "keepvideo": False,
             "external_downloader": "aria2c",
@@ -417,7 +420,7 @@ class Youtube2Zim(object):
             "format": self.video_format,
         }
         if self.all_subtitles:
-            options.update({"writeautomaticsub": True, "allsubtitles": True})
+            options.update({"writeautomaticsub": True})
 
         if self.low_quality:
             options.update(
@@ -602,6 +605,14 @@ class Youtube2Zim(object):
         with open(self.assets_dir.joinpath("app.js"), "w", encoding="utf-8") as fp:
             fp.write(
                 env.get_template("assets/app.js").render(video_format=self.video_format)
+            )
+
+        # rewrite app.js including `pagination`
+        with open(self.assets_dir.joinpath("db.js"), "w", encoding="utf-8") as fp:
+            fp.write(
+                env.get_template("assets/db.js").render(
+                    NB_VIDEOS_PER_PAGE=self.nb_videos_per_page
+                )
             )
 
         # write list of videos in data.js

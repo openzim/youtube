@@ -6,6 +6,9 @@ Version 2.0.1
  Added kiwix-desktop workaround (no status check on XHR)
  Added support for playlists with missing videos
  Added period (YYYY-MM) to filename
+ Fixed crash if using subtitles with non-iso language code
+ Fixed missing subtitles (non-auto-generated)
+ Added --pagination option to set max number of videos per page
 
 Version 2.0 (August 2019):
   Rewrote scraper script

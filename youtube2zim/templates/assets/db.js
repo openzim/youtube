@@ -3,7 +3,7 @@
  * and managing the video data from the data.js file.
  */
 var videoDB = (function() {
-  var ITEMS_PER_PAGE = 40;
+  var ITEMS_PER_PAGE = {{ NB_VIDEOS_PER_PAGE }};
   var db = {};
   var data;
   var page;

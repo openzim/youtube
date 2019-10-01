@@ -47,6 +47,13 @@ def main():
         default=False,
     )
     parser.add_argument(
+        "--pagination",
+        help="Number of videos per page",
+        type=int,
+        dest="nb_videos_per_page",
+        default=40,
+    )
+    parser.add_argument(
         "--autoplay",
         help="Enable autoplay on video articles (home never have autoplay). Behavior differs on platforms/browsers.",
         action="store_true",
