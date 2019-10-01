@@ -186,7 +186,6 @@ def get_videos_authors_info(videos_ids):
 
     def retrieve_videos_for(videos_ids):
         """ {videoId: {channelId: channelTitle}} for all videos_ids """
-        return {}
         req_items = {}
         page_token = None
         while True:
