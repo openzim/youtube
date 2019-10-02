@@ -124,6 +124,13 @@ function refreshVideos(pageData) {
 function firstVideos(pageData) {
     var video = pageData[0];
     var videoIntro = document.getElementById('video-intro');
+    var subtitles = '';
+    if (video['subtitles'].length > 0) {
+        for (i in video['subtitles']) {
+            var subtitle = video['subtitles'][i];
+            subtitles += '<track kind="subtitles" src="videos/' + video['id'] + '/video.' + subtitle['code'] + '.vtt" srclang="' + subtitle['code'] + '" label="' + subtitle['native'] + '" />';
+        }
+    }
     videoIntro.innerHTML = '' +
         '<video id="video_container" class="video-js vjs-default-skin" ' +
                'width="480px" height="270px" crossorigin ' +
@@ -132,7 +139,7 @@ function firstVideos(pageData) {
                                       '"preload": true, "controls": true}\' ' +
                'poster="' + ZIM_IMG_NS + 'videos/' + video['id'] + '/video.jpg">' +
             '<source src="' + ZIM_IMG_NS + 'videos/' + video['id'] + '/video.{{ video_format}}" ' +
-                    'type="video/{{ video_format}}" /></video>' +
+                    'type="video/{{ video_format}}" />' + subtitles + '</video>' +
             '<div id="video-details">' +
                 '<h4 id="title">' + video['title'] + '</h4>' + 
                 '<p class="description">' + video['description'] + '</p>' +

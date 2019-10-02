@@ -9,6 +9,7 @@ Version 2.0.1
  Fixed crash if using subtitles with non-iso language code
  Fixed missing subtitles (non-auto-generated)
  Added --pagination option to set max number of videos per page
+ Added subtitles to welcome video as well
 
 Version 2.0 (August 2019):
   Rewrote scraper script

@@ -622,6 +622,7 @@ class Youtube2Zim(object):
                 "title": video["snippet"]["title"],
                 "slug": get_slug(video["snippet"]["title"]),
                 "description": video["snippet"]["description"],
+                "subtitles": get_subtitles(video["contentDetails"]["videoId"]),
                 "thumbnail": str(
                     Path("videos").joinpath(
                         video["contentDetails"]["videoId"], "video.jpg"
