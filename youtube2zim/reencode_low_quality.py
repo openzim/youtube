@@ -43,7 +43,7 @@ def main(build_path):
         logger.info(video_path)
 
         hook_youtube_dl_ffmpeg(
-            video_format, {"status": "finished", "filename": str(video_path)}
+            video_format, True, {"status": "finished", "filename": str(video_path)}
         )
 
     logger.info("all done.")

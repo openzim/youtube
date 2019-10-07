@@ -417,20 +417,14 @@ class Youtube2Zim(object):
             "external_downloader_args": None,
             "outtmpl": str(self.videos_dir.joinpath("%(id)s", "video.%(ext)s")),
             "preferredcodec": self.video_format,
-            "format": self.video_format,
+            "format": "{fmt}/best".format(fmt=self.video_format),
+            "progress_hooks": [
+                partial(hook_youtube_dl_ffmpeg, self.video_format, self.low_quality)
+            ],
         }
         if self.all_subtitles:
             options.update({"writeautomaticsub": True})
 
-        if self.low_quality:
-            options.update(
-                {
-                    "prefer_ffmpeg": True,
-                    "progress_hooks": [
-                        partial(hook_youtube_dl_ffmpeg, self.video_format)
-                    ],
-                }
-            )
         with youtube_dl.YoutubeDL(options) as ydl:
             ydl.download(self.videos_ids)
 
