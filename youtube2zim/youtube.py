@@ -106,10 +106,10 @@ def get_channel_playlists_json(channel_id):
         req.raise_for_status()
         channel_playlists_json = req.json()
         items += channel_playlists_json["items"]
+        save_json(YOUTUBE.cache_dir, fname, items)
         page_token = channel_playlists_json.get("nextPageToken")
         if not page_token:
             break
-        save_json(YOUTUBE.cache_dir, fname, items)
     return items
 
 
