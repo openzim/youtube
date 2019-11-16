@@ -62,18 +62,25 @@ def get_colors(image_path, use_palette=True):
         """ hexadecimal HTML-friendly color code for RGB tuple """
         return "#{}{}{}".format(*[str(hex(x)[2:]).zfill(2) for x in (r, g, b)]).upper()
 
+    def solarize(r, g, b):
+        # calculate solarized color for main
+        h, l, s = colorsys.rgb_to_hls(float(r) / 256, float(g) / 256, float(b) / 256)
+        r2, g2, b2 = [int(x * 256) for x in colorsys.hls_to_rgb(h, 0.95, s)]
+        return r2, g2, b2
+
     ct = colorthief.ColorThief(image_path)
-    mr, mg, mb = ct.get_color(quality=1)
 
     if use_palette:
+        # extract two main colors from palette, solarizing second as background
         palette = ct.get_palette(color_count=2, quality=1)
 
         # using the first two colors of the palette?
-        return rgb_to_hex(*palette[0]), rgb_to_hex(*palette[1])
-
-    # calculate solarized color for main
-    h, l, s = colorsys.rgb_to_hls(float(mr) / 256, float(mg) / 256, float(mb) / 256)
-    sr, sg, sb = [int(x) for x in colorsys.hls_to_rgb(h, 0.95, s)]
+        mr, mg, mb = palette[0]
+        sr, sg, sb = solarize(*palette[1])
+    else:
+        # extract main color from image and solarize it as background
+        mr, mg, mb = ct.get_color(quality=1)
+        sr, sg, sb = solarize(mr, mg, mb)
 
     return rgb_to_hex(mr, mg, mb), rgb_to_hex(sr, sg, sb)
 
