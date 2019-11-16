@@ -110,6 +110,7 @@ class Youtube2Zim(object):
         # process-related
         self.output_dir = Path(output_dir)
         self.playlists = []
+        self.uploads_playlist_id = None
         self.videos_ids = []
         self.main_channel_id = None  # use for branding
         self.only_test_branding = only_test_branding
@@ -197,6 +198,31 @@ class Youtube2Zim(object):
         if self.is_channel or self.is_user:
             return True
         return len(list(set([pl.creator_id for pl in self.playlists]))) == 1
+
+    @property
+    def sorted_playlists(self):
+        """ sorted list of playlists (by title) but with Uploads one at first if any """
+        if len(self.playlists) < 2:
+            return self.playlists
+
+        sorted_playlists = sorted(self.playlists, key=lambda x: x.title)
+        index = 0
+        # make sure our Uploads, special playlist is first
+        if self.uploads_playlist_id:
+            try:
+                index = [
+                    index
+                    for index, p in enumerate(sorted_playlists)
+                    if p.playlist_id == self.uploads_playlist_id
+                ][-1]
+            except Exception:
+                index = 0
+        return (
+            [sorted_playlists[index]]
+            + sorted_playlists[0:index]
+            + sorted_playlists[index + 1 :]
+        )
+        return self.playlists
 
     def run(self):
         """ execute the scrapper step by step """
@@ -370,6 +396,7 @@ class Youtube2Zim(object):
             playlist_ids += [
                 channel_json["contentDetails"]["relatedPlaylists"]["uploads"]
             ]
+            self.uploads_playlist_id = playlist_ids[-1]
         elif self.is_playlist:
             playlist_ids = self.youtube_id.split(",")
             self.main_channel_id = Playlist.from_id(playlist_ids[0]).creator_id
@@ -548,7 +575,7 @@ class Youtube2Zim(object):
         )
 
         html = env.get_template("home.html").render(
-            playlists=self.playlists,
+            playlists=self.sorted_playlists,
             video_format=self.video_format,
             title=self.title,
             description=self.description,
@@ -581,7 +608,8 @@ class Youtube2Zim(object):
             ]
             fp.write(
                 "var json_{slug} = {json_str};\n".format(
-                    slug=self.playlists[0].slug, json_str=json.dumps(videos, indent=4)
+                    slug=self.sorted_playlists[0].slug,
+                    json_str=json.dumps(videos, indent=4),
                 )
             )
 
