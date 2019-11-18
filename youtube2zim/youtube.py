@@ -62,7 +62,7 @@ def get_channel_json(channel_id, for_username=False):
             CHANNELS_API,
             params={
                 "forUsername" if for_username else "id": channel_id,
-                "part": "brandingSettings,snippet,localizations,contentDetails",
+                "part": "brandingSettings,snippet,contentDetails",
                 "key": YOUTUBE.api_key,
             },
         )
@@ -219,7 +219,7 @@ def get_videos_authors_info(videos_ids):
     # as most MAX_VIDEOS_PER_REQUEST videoId to avoid too-large URI issue
     for interv in range(0, len(videos_ids) - 1, MAX_VIDEOS_PER_REQUEST):
         items.update(
-            retrieve_videos_for(videos_ids[interv : interv + MAX_VIDEOS_PER_REQUEST])
+            retrieve_videos_for(videos_ids[interv: interv + MAX_VIDEOS_PER_REQUEST])
         )
 
     save_json(YOUTUBE.cache_dir, "videos_channels", items)
