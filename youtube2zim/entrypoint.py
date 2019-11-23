@@ -140,11 +140,19 @@ def main():
         dest="skip_download",
     )
     parser.add_argument(
+        "--concurrency",
+        help="Number of concurrent threads to use",
+        type=int,
+        dest="max_concurrency",
+        default=3,
+    )
+    parser.add_argument(
         "--only_test_branding",
         help="Just generate a fake home.html to check branding (images and colors)",
         default=False,
         action="store_true",
-        dest="only_test_branding")
+        dest="only_test_branding",
+    )
     parser.add_argument(
         "--version",
         help="Display scraper version and exit",
@@ -156,6 +164,8 @@ def main():
     logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
 
     try:
+        if args.max_concurrency < 1:
+            raise ValueError(f"Invalid concurrency value: {args.max_concurrency}")
         scraper = Youtube2Zim(**dict(args._get_kwargs()), youtube_store=YOUTUBE)
         scraper.run()
     except Exception as exc:
