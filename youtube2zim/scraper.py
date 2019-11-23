@@ -15,6 +15,7 @@ import shutil
 import gettext
 import datetime
 from pathlib import Path
+import concurrent.futures
 from functools import partial
 from gettext import gettext as _
 
@@ -67,6 +68,7 @@ class Youtube2Zim(object):
         debug,
         keep_build_dir,
         skip_download,
+        max_concurrency,
         youtube_store,
         language,
         tags,
@@ -120,6 +122,7 @@ class Youtube2Zim(object):
         self.debug = debug
         self.keep_build_dir = keep_build_dir
         self.skip_download = skip_download
+        self.max_concurrency = max_concurrency
 
         self.build_dir = self.output_dir.joinpath("build")
 
@@ -268,12 +271,14 @@ class Youtube2Zim(object):
         logger.info(".. {} videos.".format(len(self.videos_ids)))
 
         # download videos (and recompress)
-        logger.info("downloading all videos, subtitles and thumbnails")
+        logger.info(
+            f"downloading all videos, subtitles and thumbnails (concurrency={self.max_concurrency})"
+        )
         logger.info(f"  format: {self.video_format}")
         logger.info(f"  recompress: {self.low_quality}")
         logger.info(f"  generated-subtitles: {self.all_subtitles}")
         if not self.skip_download:
-            self.download_video_files()
+            self.download_video_files(max_concurrency=3)
 
         logger.info("retrieve channel-info for all videos (author details)")
         get_videos_authors_info(self.videos_ids)
@@ -442,8 +447,9 @@ class Youtube2Zim(object):
             save_json(self.cache_dir, "videos", all_videos)
         self.videos_ids = [*all_videos.keys()]  # unpacking so it's subscriptable
 
-    def download_video_files(self):
+    def download_video_files(self, max_concurrency):
 
+        # prepare options which are shared with every downloader
         options = {
             "cachedir": self.videos_dir,
             "writethumbnail": True,
@@ -452,8 +458,12 @@ class Youtube2Zim(object):
             "allsubtitles": True,
             "subtitlesformat": "vtt",
             "keepvideo": False,
-            "external_downloader": "aria2c",
-            "external_downloader_args": None,
+            "ignoreerrors": False,
+            "retries": 20,
+            "fragment-retries": 50,
+            "skip-unavailable-fragments": True,
+            # "external_downloader": "aria2c",
+            # "external_downloader_args": ["--max-tries=20", "--retry-wait=30"],
             "outtmpl": str(self.videos_dir.joinpath("%(id)s", "video.%(ext)s")),
             "preferredcodec": self.video_format,
             "format": "{fmt}/best".format(fmt=self.video_format),
@@ -464,14 +474,56 @@ class Youtube2Zim(object):
         if self.all_subtitles:
             options.update({"writeautomaticsub": True})
 
+        # find number of actuall parallel workers
+        nb_videos = len(self.videos_ids)
+        concurrency = nb_videos if nb_videos < max_concurrency else max_concurrency
+
+        # prepare out videos_ids batches
+        def get_slot():
+            n = 0
+            while True:
+                yield n
+                n += 1
+                if n >= concurrency:
+                    n = 0
+
+        batches = [[] for _ in range(0, concurrency)]
+        slot = get_slot()
+        for video_id in self.videos_ids:
+            batches[next(slot)].append(video_id)
+
+        # execute the batches concurrently
+        with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as executor:
+            fs = [
+                executor.submit(self.download_video_files_batch, options, videos_ids)
+                for videos_ids in batches
+            ]
+            done, not_done = concurrent.futures.wait(
+                fs, return_when=concurrent.futures.FIRST_EXCEPTION
+            )
+
+            # we have some `not_done` batches, indicating errors within
+            if not_done:
+                logger.critical(
+                    "Not all video-processing batches completed. Cancelling…"
+                )
+                for future in not_done:
+                    exc = future.exception()
+                    if exc:
+                        logger.exception(exc)
+                        raise exc
+
+    @staticmethod
+    def download_video_files_batch(options, videos_ids):
+
         with youtube_dl.YoutubeDL(options) as ydl:
-            ydl.download(self.videos_ids)
+            ydl.download(videos_ids)
 
         # resize thumbnails. we use max width:248x187px in listing
         # but our posters are 480x270px
-        for video_id in self.videos_ids:
+        for video_id in videos_ids:
             resize_image(
-                self.videos_dir.joinpath(video_id, "video.jpg"),
+                options["cachedir"].joinpath(video_id, "video.jpg"),
                 width=480,
                 height=270,
                 method="cover",

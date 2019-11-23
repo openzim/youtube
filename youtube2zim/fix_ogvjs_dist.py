@@ -95,7 +95,7 @@ def main():
         before = content[0:bracket_pos]
         after = content[bracket_pos:]
         equal_pos = before[::-1].index("=")
-        variable = before[::-1][equal_pos + 1: equal_pos + 2]
+        variable = before[::-1][equal_pos + 1 : equal_pos + 2]
         our_fix = ";{var}=zim_fix_wasm_target({var});".format(var=variable)
 
         # nfpath = fpath.parent.joinpath(fpath.name + ".tmp")

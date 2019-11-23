@@ -10,5 +10,7 @@ RUN pip3 install setuptools
 COPY . /src
 RUN cd /src/ && python3 ./setup.py install
 
-# Boot commands
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["entrypoint.sh"]
 CMD youtube2zim --help
