@@ -503,7 +503,7 @@ class Youtube2Zim(object):
             )
 
             # we have some `not_done` batches, indicating errors within
-            if len(not_done):
+            if not_done:
                 logger.critical(
                     "Not all video-processing batches completed. Cancelling…"
                 )
