@@ -110,7 +110,7 @@ class Youtube2Zim(object):
         self.secondary_color = secondary_color
 
         # process-related
-        self.output_dir = Path(output_dir)
+        self.output_dir = Path(output_dir).expanduser().resolve()
         self.playlists = []
         self.uploads_playlist_id = None
         self.videos_ids = []
@@ -278,7 +278,7 @@ class Youtube2Zim(object):
         logger.info(f"  recompress: {self.low_quality}")
         logger.info(f"  generated-subtitles: {self.all_subtitles}")
         if not self.skip_download:
-            self.download_video_files(max_concurrency=3)
+            self.download_video_files(max_concurrency=self.max_concurrency)
 
         logger.info("retrieve channel-info for all videos (author details)")
         get_videos_authors_info(self.videos_ids)
@@ -478,6 +478,11 @@ class Youtube2Zim(object):
         nb_videos = len(self.videos_ids)
         concurrency = nb_videos if nb_videos < max_concurrency else max_concurrency
 
+        # short-circuit concurency if we have only one thread (can help debug)
+        if concurrency <= 1:
+            self.download_video_files_batch(options, self.videos_ids)
+            return
+
         # prepare out videos_ids batches
         def get_slot():
             n = 0
@@ -518,16 +523,6 @@ class Youtube2Zim(object):
 
         with youtube_dl.YoutubeDL(options) as ydl:
             ydl.download(videos_ids)
-
-        # resize thumbnails. we use max width:248x187px in listing
-        # but our posters are 480x270px
-        for video_id in videos_ids:
-            resize_image(
-                options["cachedir"].joinpath(video_id, "video.jpg"),
-                width=480,
-                height=270,
-                method="cover",
-            )
 
     def download_authors_branding(self):
         videos_channels_json = load_json(self.cache_dir, "videos_channels")

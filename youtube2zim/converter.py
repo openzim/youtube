@@ -6,7 +6,7 @@ import pathlib
 import subprocess
 
 from .constants import logger
-from .utils import nicer_args_join
+from .utils import nicer_args_join, resize_image
 
 
 def hook_youtube_dl_ffmpeg(video_format, low_quality, data):
@@ -23,6 +23,15 @@ def hook_youtube_dl_ffmpeg(video_format, low_quality, data):
         "video.tmp.{fmt}".format(src=src_path.name, fmt=video_format)
     )
     dst_path = src_path.parent.joinpath("video.{fmt}".format(fmt=video_format))
+
+    # resize thumbnail. we use max width:248x187px in listing
+    # but our posters are 480x270px
+    resize_image(
+        src_path.parent.joinpath("video.jpg"),
+        width=480,
+        height=270,
+        method="cover",
+    )
 
     # don't reencode if not requesting low-quality and received wanted format
     if not low_quality and src_path.suffix[1:] == video_format:

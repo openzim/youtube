@@ -144,7 +144,7 @@ def main():
         help="Number of concurrent threads to use",
         type=int,
         dest="max_concurrency",
-        default=3,
+        default=1,
     )
     parser.add_argument(
         "--only_test_branding",
