@@ -45,6 +45,8 @@ def credentials_ok():
     req = requests.get(
         SEARCH_API, params={"part": "snippet", "maxResults": 1, "key": YOUTUBE.api_key}
     )
+    if req.status_code > 400:
+        logger.error(f"HTTP {req.status_code} Error response: {req.text}")
     try:
         req.raise_for_status()
         return bool(req.json()["items"])
@@ -66,6 +68,8 @@ def get_channel_json(channel_id, for_username=False):
                 "key": YOUTUBE.api_key,
             },
         )
+        if req.status_code > 400:
+            logger.error(f"HTTP {req.status_code} Error response: {req.text}")
         req.raise_for_status()
         try:
             channel_json = req.json()["items"][0]
@@ -103,6 +107,8 @@ def get_channel_playlists_json(channel_id):
                 "pageToken": page_token,
             },
         )
+        if req.status_code > 400:
+            logger.error(f"HTTP {req.status_code} Error response: {req.text}")
         req.raise_for_status()
         channel_playlists_json = req.json()
         items += channel_playlists_json["items"]
@@ -123,6 +129,8 @@ def get_playlist_json(playlist_id):
             PLAYLIST_API,
             params={"id": playlist_id, "part": "snippet", "key": YOUTUBE.api_key},
         )
+        if req.status_code > 400:
+            logger.error(f"HTTP {req.status_code} Error response: {req.text}")
         req.raise_for_status()
         try:
             playlist_json = req.json()["items"][0]
@@ -159,6 +167,8 @@ def get_videos_json(playlist_id):
                 "pageToken": page_token,
             },
         )
+        if req.status_code > 400:
+            logger.error(f"HTTP {req.status_code} Error response: {req.text}")
         req.raise_for_status()
         videos_json = req.json()
         items += videos_json["items"]
@@ -199,6 +209,8 @@ def get_videos_authors_info(videos_ids):
                     "pageToken": page_token,
                 },
             )
+            if req.status_code > 400:
+                logger.error(f"HTTP {req.status_code} Error response: {req.text}")
             req.raise_for_status()
             videos_json = req.json()
             for item in videos_json["items"]:
