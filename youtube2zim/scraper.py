@@ -22,7 +22,7 @@ from gettext import gettext as _
 import jinja2
 import youtube_dl
 from dateutil import parser as dt_parser
-from babel.dates import format_datetime
+from babel.dates import format_date
 
 from .zim import ZimInfo, make_zim_file
 from .utils import (
@@ -706,7 +706,11 @@ class Youtube2Zim(object):
                 author=author,
                 title=title,
                 description=description,
-                date=format_datetime(publication_date, format="medium"),
+                date=format_date(
+                    publication_date,
+                    format="medium",
+                    locale=get_language_details(self.language)["iso-639-1"],
+                ),
                 subtitles=subtitles,
                 url=video_url,
                 channel_id=video["snippet"]["channelId"],
