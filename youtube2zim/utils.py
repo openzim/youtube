@@ -117,8 +117,8 @@ def nicer_args_join(args):
 
 
 def get_hash(text):
-    """ simple hash (md5) of a longer string """
-    return hashlib.md5(text.encode("utf-8")).hexdigest()
+    """ simple hash (sha256) of a longer string """
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def get_language_details(iso_639_3):
