@@ -225,7 +225,6 @@ class Youtube2Zim(object):
             + sorted_playlists[0:index]
             + sorted_playlists[index + 1 :]
         )
-        return self.playlists
 
     def run(self):
         """ execute the scrapper step by step """
