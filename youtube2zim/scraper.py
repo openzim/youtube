@@ -222,7 +222,7 @@ class Youtube2Zim(object):
         return (
             [sorted_playlists[index]]
             + sorted_playlists[0:index]
-            + sorted_playlists[index + 1:]
+            + sorted_playlists[index + 1 :]
         )
 
     def run(self):
