@@ -229,7 +229,7 @@ def get_videos_authors_info(videos_ids):
 
     # split it over n requests so that each request includes
     # as most MAX_VIDEOS_PER_REQUEST videoId to avoid too-large URI issue
-    for interv in range(0, len(videos_ids) - 1, MAX_VIDEOS_PER_REQUEST):
+    for interv in range(0, len(videos_ids), MAX_VIDEOS_PER_REQUEST):
         items.update(
             retrieve_videos_for(videos_ids[interv : interv + MAX_VIDEOS_PER_REQUEST])
         )

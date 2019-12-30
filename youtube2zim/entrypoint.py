@@ -26,6 +26,11 @@ def main():
         "--id", help="Youtube ID of the collection", required=True, dest="youtube_id"
     )
     parser.add_argument("--api-key", help="Youtube API Token", required=True)
+    parser.add_argument(
+        "--name",
+        help="ZIM name. Used as identifier and filename (date will be appended)",
+        required=True,
+    )
 
     parser.add_argument(
         "--format",
@@ -87,7 +92,7 @@ def main():
     )
     parser.add_argument(
         "--description",
-        help="Custom title for your project and ZIM. Default to Channel name (of first video if playlists)",
+        help="Custom description for your project and ZIM. Default to Channel name (of first video if playlists)",
     )
     parser.add_argument(
         "--creator",
@@ -96,12 +101,10 @@ def main():
     parser.add_argument(
         "--publisher", help="Custom publisher name (ZIM metadata)", default="Kiwix"
     )
-    parser.add_argument("--name", help="Custom ZIM name. Otherwise built from request.")
     parser.add_argument(
         "--tags",
-        help="List of Tags for the ZIM file. _videos:yes added automatically",
-        default=["youtube"],
-        nargs="*",
+        help="List of comma-separated Tags for the ZIM file. _videos:yes added automatically",
+        default="youtube",
     )
     parser.add_argument(
         "--profile",

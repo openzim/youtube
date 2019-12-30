@@ -34,7 +34,6 @@ from .utils import (
     save_file,
     get_colors,
     is_hex_color,
-    get_hash,
     get_language_details,
 )
 from .youtube import (
@@ -98,7 +97,7 @@ class Youtube2Zim(object):
         self.autoplay = autoplay
         self.fname = fname
         self.language = language
-        self.tags = tags
+        self.tags = [t.strip() for t in tags.split(",")]
         self.title = title
         self.description = description
         self.creator = creator
@@ -225,7 +224,6 @@ class Youtube2Zim(object):
             + sorted_playlists[0:index]
             + sorted_playlists[index + 1 :]
         )
-        return self.playlists
 
     def run(self):
         """ execute the scrapper step by step """
@@ -412,21 +410,6 @@ class Youtube2Zim(object):
             Playlist.from_id(playlist_id) for playlist_id in list(set(playlist_ids))
         ]
 
-    def build_identifier(self):
-        """ set self.ident to a unique yet representative identifier of the request """
-        ident = "youtube"
-        if self.is_user:
-            ident = self.youtube_id
-        elif self.is_channel:
-            ident = f"channel-{self.youtube_id}"
-        elif self.is_playlist:
-            if len(self.playlists) > 1:
-                plhash = get_hash(",".join([p.playlist_id for p in self.playlists]))
-                ident = f"playlists-{plhash}"
-            else:
-                ident = f"playlist-{self.youtube_id}"
-        self.ident = ident.replace("_", "-")
-
     def extract_videos_list(self):
         all_videos = load_json(self.cache_dir, "videos")
         if all_videos is None:
@@ -561,13 +544,6 @@ class Youtube2Zim(object):
             else:
                 self.creator = _("Youtube Channels")
         self.publisher = self.publisher or "Kiwix"
-
-        self.build_identifier()
-
-        auto_name = "youtube-{ident}_{lang}_all".format(
-            ident=self.ident, lang=get_language_details(self.language)["iso-639-1"]
-        )
-        self.name = self.name or auto_name
 
         self.tags = self.tags or ["youtube"]
         if "_videos:yes" not in self.tags:
