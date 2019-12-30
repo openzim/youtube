@@ -97,7 +97,7 @@ class Youtube2Zim(object):
         self.autoplay = autoplay
         self.fname = fname
         self.language = language
-        self.tags = tags
+        self.tags = [t.strip() for t in tags.split(",")]
         self.title = title
         self.description = description
         self.creator = creator
@@ -222,7 +222,7 @@ class Youtube2Zim(object):
         return (
             [sorted_playlists[index]]
             + sorted_playlists[0:index]
-            + sorted_playlists[index + 1 :]
+            + sorted_playlists[index + 1:]
         )
 
     def run(self):

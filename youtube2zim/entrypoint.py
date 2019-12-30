@@ -103,9 +103,8 @@ def main():
     )
     parser.add_argument(
         "--tags",
-        help="List of Tags for the ZIM file. _videos:yes added automatically",
-        default=["youtube"],
-        nargs="*",
+        help="List of comma-separated Tags for the ZIM file. _videos:yes added automatically",
+        default="youtube",
     )
     parser.add_argument(
         "--profile",
