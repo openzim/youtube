@@ -87,7 +87,7 @@ def main():
     )
     parser.add_argument(
         "--description",
-        help="Custom title for your project and ZIM. Default to Channel name (of first video if playlists)",
+        help="Custom description for your project and ZIM. Default to Channel name (of first video if playlists)",
     )
     parser.add_argument(
         "--creator",
