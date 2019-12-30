@@ -116,11 +116,6 @@ def nicer_args_join(args):
     return " ".join(nargs)
 
 
-def get_hash(text):
-    """ simple hash (sha256) of a longer string """
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
 def get_language_details(iso_639_3):
     """ dict container iso639-2, name and native name for an iso-639-3 code """
     non_iso_langs = {
