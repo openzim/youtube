@@ -281,10 +281,17 @@ class Youtube2Zim(object):
         logger.info(f"  recompress: {self.low_quality}")
         logger.info(f"  generated-subtitles: {self.all_subtitles}")
         if not self.skip_download:
-            self.download_video_files(max_concurrency=self.max_concurrency)
+            succeeded, failed = self.download_video_files(
+                max_concurrency=self.max_concurrency
+            )
+            if failed:
+                logger.error(f"{len(failed)} video(s) failed to download: {failed}")
+                if len(failed) >= len(succeeded):
+                    logger.critical("More than half of videos failed. exiting")
+                    raise IOError("Too much videos failed to download")
 
         logger.info("retrieve channel-info for all videos (author details)")
-        get_videos_authors_info(self.videos_ids)
+        get_videos_authors_info(succeeded)
 
         logger.info("download all author's profile pictures")
         self.download_authors_branding()
@@ -293,7 +300,7 @@ class Youtube2Zim(object):
         self.update_metadata()
 
         logger.info("creating HTML files")
-        self.make_html_files()
+        self.make_html_files(succeeded)
 
         # make zim file
         if not self.no_zim:
@@ -468,8 +475,7 @@ class Youtube2Zim(object):
 
         # short-circuit concurency if we have only one thread (can help debug)
         if concurrency <= 1:
-            self.download_video_files_batch(options, self.videos_ids)
-            return
+            return self.download_video_files_batch(options, self.videos_ids)
 
         # prepare out videos_ids batches
         def get_slot():
@@ -485,6 +491,8 @@ class Youtube2Zim(object):
         for video_id in self.videos_ids:
             batches[next(slot)].append(video_id)
 
+        overall_succeeded = []
+        overall_failed = []
         # execute the batches concurrently
         with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as executor:
             fs = [
@@ -492,7 +500,7 @@ class Youtube2Zim(object):
                 for videos_ids in batches
             ]
             done, not_done = concurrent.futures.wait(
-                fs, return_when=concurrent.futures.FIRST_EXCEPTION
+                fs, return_when=concurrent.futures.ALL_COMPLETED
             )
 
             # we have some `not_done` batches, indicating errors within
@@ -506,11 +514,32 @@ class Youtube2Zim(object):
                         logger.exception(exc)
                         raise exc
 
+            # retrieve our list of successful/failed video_ids
+            for future in done:
+                succeeded, failed = future.result()
+                overall_succeeded += succeeded
+                overall_failed += failed
+
+        # remove left-over files for failed downloads
+        logger.debug(f"removing left-over files of {len(overall_failed)} failed videos")
+        for video_id in overall_failed:
+            shutil.rmtree(self.videos_dir.joinpath(video_id), ignore_errors=True)
+
+        return overall_succeeded, overall_failed
+
     @staticmethod
     def download_video_files_batch(options, videos_ids):
 
+        succeeded = []
+        failed = []
         with youtube_dl.YoutubeDL(options) as ydl:
-            ydl.download(videos_ids)
+            for video_id in videos_ids:
+                try:
+                    ydl.download([video_id])
+                    succeeded.append(video_id)
+                except youtube_dl.utils.DownloadError:
+                    failed.append(video_id)
+        return succeeded, failed
 
     def download_authors_branding(self):
         videos_channels_json = load_json(self.cache_dir, "videos_channels")
@@ -641,7 +670,7 @@ class Youtube2Zim(object):
                 )
             )
 
-    def make_html_files(self):
+    def make_html_files(self, actual_videos_ids):
         """ make up HTML structure to read the content
 
         /home.html                                  Homepage
@@ -652,6 +681,10 @@ class Youtube2Zim(object):
             - videos/<videoId>/video.<lang>.vtt     subtititle(s)
             - videos/<videoId>/video.jpg            template
         """
+
+        def is_present(video):
+            """ whether this video has actually been succeffuly downloaded """
+            return video["contentDetails"]["videoId"] in actual_videos_ids
 
         def get_subtitles(video_id):
             video_dir = self.videos_dir.joinpath(video_id)
@@ -668,6 +701,8 @@ class Youtube2Zim(object):
         )
 
         videos = load_json(self.cache_dir, "videos").values()
+        # filter videos so we only include the ones we could retrieve
+        videos = list(filter(is_present, videos))
         videos_channels = load_json(self.cache_dir, "videos_channels")
         for video in videos:
             video_id = video["contentDetails"]["videoId"]
@@ -746,15 +781,14 @@ class Youtube2Zim(object):
         with open(self.assets_dir.joinpath("data.js"), "w", encoding="utf-8") as fp:
             # write all playlists as they are
             for playlist in self.playlists:
-                # retrieve list of videos for PL, filtering-out missing ones
-                playlist_videos = list(
-                    filter(
-                        skip_deleted_videos,
-                        load_json(
-                            self.cache_dir, f"playlist_{playlist.playlist_id}_videos"
-                        ),
-                    )
+                # retrieve list of videos for PL
+                playlist_videos = load_json(
+                    self.cache_dir, f"playlist_{playlist.playlist_id}_videos"
                 )
+                # filtering-out missing ones (deleted or not downloaded)
+                playlist_videos = list(filter(skip_deleted_videos, playlist_videos))
+                playlist_videos = list(filter(is_present, playlist_videos))
+                # sorting them based on playlist
                 playlist_videos.sort(key=lambda v: v["snippet"]["position"])
 
                 fp.write(
