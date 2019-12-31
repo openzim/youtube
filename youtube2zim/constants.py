@@ -33,8 +33,8 @@ log_format = "[%(asctime)s] %(levelname)s:%(message)s"
 stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setFormatter(logging.Formatter(log_format))
 stdout_handler.addFilter(LessThanFilter(logging.WARNING))
-logger.addHandler(stdout_handler)
 stdout_handler.setLevel(logging.DEBUG)
+logger.addHandler(stdout_handler)
 
 stderr_handler = logging.StreamHandler(sys.stderr)
 stdout_handler.setFormatter(logging.Formatter(log_format))
