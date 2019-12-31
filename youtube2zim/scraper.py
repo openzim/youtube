@@ -12,7 +12,6 @@ import os
 import json
 import locale
 import shutil
-import gettext
 import datetime
 from pathlib import Path
 import concurrent.futures
@@ -35,6 +34,7 @@ from .utils import (
     get_colors,
     is_hex_color,
     get_language_details,
+    setlocale,
 )
 from .youtube import (
     get_channel_json,
@@ -70,6 +70,7 @@ class Youtube2Zim(object):
         max_concurrency,
         youtube_store,
         language,
+        locale_name,
         tags,
         title=None,
         description=None,
@@ -141,11 +142,15 @@ class Youtube2Zim(object):
             build_dir=self.build_dir, api_key=self.api_key, cache_dir=self.cache_dir
         )
 
-        locale.setlocale(
-            locale.LC_ALL, (get_language_details(self.language)["iso-639-1"], "UTF-8")
-        )
-        gettext.bindtextdomain("messages", str(ROOT_DIR.joinpath("locale")))
-        gettext.textdomain("messages")
+        # set and record locale for translations
+        locale_name = locale_name or get_language_details(self.language)["iso-639-1"]
+        try:
+            self.locale = setlocale(locale_name)
+        except locale.Error:
+            logger.error(
+                f"No locale for {locale_name}. Use --locale to specify it. defaulting to en_US"
+            )
+            self.locale = setlocale("en")
 
     @property
     def root_dir(self):
@@ -682,11 +687,7 @@ class Youtube2Zim(object):
                 author=author,
                 title=title,
                 description=description,
-                date=format_date(
-                    publication_date,
-                    format="medium",
-                    locale=get_language_details(self.language)["iso-639-1"],
-                ),
+                date=format_date(publication_date, format="medium", locale=self.locale),
                 subtitles=subtitles,
                 url=video_url,
                 channel_id=video["snippet"]["channelId"],

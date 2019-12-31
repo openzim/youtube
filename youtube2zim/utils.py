@@ -4,7 +4,8 @@
 
 import re
 import json
-import hashlib
+import locale
+import gettext
 import colorsys
 
 import PIL
@@ -13,6 +14,8 @@ import requests
 import colorthief
 from slugify import slugify
 from resizeimage import resizeimage
+
+from .constants import ROOT_DIR
 
 
 def get_slug(text, js_safe=True):
@@ -164,3 +167,10 @@ def get_language_details(iso_639_3):
             "english": iso_639_3,
             "native": iso_639_3,
         }
+
+
+def setlocale(locale_name):
+    computed = locale.setlocale(locale.LC_ALL, (locale_name.split(".")[0], "UTF-8"))
+    gettext.bindtextdomain("messages", str(ROOT_DIR.joinpath("locale")))
+    gettext.textdomain("messages")
+    return computed

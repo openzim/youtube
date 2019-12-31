@@ -87,6 +87,11 @@ def main():
         "--language", help="ISO-639-3 (3 chars) language code of content", default="eng"
     )
     parser.add_argument(
+        "--locale",
+        help="Locale name to use for translations (if avail) and time representations. Defaults to --language or English.",
+        dest="locale_name",
+    )
+    parser.add_argument(
         "--title",
         help="Custom title for your project and ZIM. Default to Channel name (of first video if playlists)",
     )
