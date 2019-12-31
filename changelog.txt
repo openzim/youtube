@@ -1,4 +1,4 @@
-Version 2.0.1
+Version 2.1.0
  Fixed not working with too much videos (URI too long)
  Secondary color now using 2nd most used color in profile picture
  Display playlists select only if there is multiple playlists
@@ -10,6 +10,25 @@ Version 2.0.1
  Fixed missing subtitles (non-auto-generated)
  Added --pagination option to set max number of videos per page
  Added subtitles to welcome video as well
+ Use (and convert from) `best` format if chosen (mp4|webm) not available
+ Fixed colors assignation
+ Added --only-test-branding option to generate a fake home page to test branding/colors
+ Fixed playlists list for channels not saved to cache
+ Removed `chosen` style on playlist select element (back to native)
+ Playlists now sorted by title. First playlist remains `Uploads` one though.
+ Docker container auto-updates youtube-dl on start
+ Added concurrency via --concurrency (defaults to none)
+ Fixed date formatting: localized medium-sized version as in Youtube
+ Displaying error messages from youtube on API errors
+ Fixed API requests for large number of videos in playlist
+ Made --name mandatory
+ Tags now specified as comma-separated list
+ Fixed channel info retrieval in some cases
+ Don't fail on non-matching language-to-locale (defaults to EN)
+ Added --locale to specify locale to use for translations/dates
+ Splitted logs into stdout and stderr
+ Failed to download videos don't stop the process. Nb of failed displayed on stderr
+
 
 Version 2.0 (August 2019):
   Rewrote scraper script

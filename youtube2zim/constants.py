@@ -7,7 +7,7 @@ import pathlib
 import logging
 
 NAME = pathlib.Path(__file__).parent.name
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 SCRAPER = f"{NAME} {VERSION}"
 
 CHANNEL = "channel"
