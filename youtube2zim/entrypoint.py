@@ -113,12 +113,12 @@ def main():
     )
     parser.add_argument(
         "--profile",
-        help="Custom profile image. Squared. Will be resized to 100x100px",
+        help="Custom profile image (path or URL). Squared. Will be resized to 100x100px",
         dest="profile_image",
     )
     parser.add_argument(
         "--banner",
-        help="Custom banner image. Will be resized to 1060x175px",
+        help="Custom banner image (path or URL). Will be resized to 1060x175px",
         dest="banner_image",
     )
     parser.add_argument(
