@@ -55,5 +55,9 @@ rm -f v1.3.1.zip
 echo "getting jquery.js"
 curl -L -o $ASSETS_PATH/jquery.min.js https://code.jquery.com/jquery-1.12.4.min.js
 
-echo "fixing JS files"
-python3 $SCRIPT_PATH/youtube2zim/fix_ogvjs_dist.py
+if command -v fix_ogvjs_dist > /dev/null; then
+    echo "fixing JS files"
+    fix_ogvjs_dist $ASSETS_PATH "assets"
+else
+    echo "NOT fixing JS files (zimscraperlib not installed)"
+fi

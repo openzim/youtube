@@ -5,8 +5,10 @@
 import pathlib
 import subprocess
 
+from zimscraperlib.logging import nicer_args_join
+from zimscraperlib.imaging import resize_image
+
 from .constants import logger
-from .utils import nicer_args_join, resize_image
 
 
 def hook_youtube_dl_ffmpeg(video_format, low_quality, data):

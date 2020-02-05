@@ -20,22 +20,14 @@ from gettext import gettext as _
 
 import jinja2
 import youtube_dl
-from dateutil import parser as dt_parser
 from babel.dates import format_date
+from dateutil import parser as dt_parser
+from zimscraperlib.download import save_file
+from zimscraperlib.zim import ZimInfo, make_zim_file
+from zimscraperlib.fix_ogvjs_dist import fix_source_dir
+from zimscraperlib.imaging import resize_image, get_colors, is_hex_color
+from zimscraperlib.i18n import get_language_details, setlocale
 
-from .zim import ZimInfo, make_zim_file
-from .utils import (
-    clean_text,
-    resize_image,
-    load_json,
-    save_json,
-    get_slug,
-    save_file,
-    get_colors,
-    is_hex_color,
-    get_language_details,
-    setlocale,
-)
 from .youtube import (
     get_channel_json,
     credentials_ok,
@@ -47,7 +39,8 @@ from .youtube import (
     skip_deleted_videos,
 )
 from .converter import hook_youtube_dl_ffmpeg
-from .constants import logger, ROOT_DIR, CHANNEL, PLAYLIST, USER
+from .utils import (clean_text, load_json, save_json, get_slug)
+from .constants import logger, ROOT_DIR, CHANNEL, PLAYLIST, USER, SCRAPER
 
 
 class Youtube2Zim(object):
@@ -135,6 +128,8 @@ class Youtube2Zim(object):
             creator=creator,
             publisher=publisher,
             name=name,
+            scraper=SCRAPER,
+            favicon="favicon.jpg",
         )
 
         # update youtube credentials store
@@ -145,12 +140,12 @@ class Youtube2Zim(object):
         # set and record locale for translations
         locale_name = locale_name or get_language_details(self.language)["iso-639-1"]
         try:
-            self.locale = setlocale(locale_name)
+            self.locale = setlocale(ROOT_DIR, locale_name)
         except locale.Error:
             logger.error(
                 f"No locale for {locale_name}. Use --locale to specify it. defaulting to en_US"
             )
-            self.locale = setlocale("en")
+            self.locale = setlocale(ROOT_DIR, "en")
 
     @property
     def root_dir(self):
@@ -231,7 +226,7 @@ class Youtube2Zim(object):
         )
 
     def run(self):
-        """ execute the scrapper step by step """
+        """ execute the scraper step by step """
         logger.info(
             f"starting youtube scraper for {self.collection_type}#{self.youtube_id}"
         )
@@ -325,6 +320,8 @@ class Youtube2Zim(object):
         if self.assets_dir.exists():
             shutil.rmtree(self.assets_dir)
         shutil.copytree(self.assets_src_dir, self.assets_dir)
+
+        fix_source_dir(self.assets_dir, "assets")
 
         # cache folder to store youtube-api results
         self.cache_dir.mkdir(exist_ok=True)

@@ -1,3 +1,6 @@
+Version 2.1.1
+ Using zimscraperlib
+
 Version 2.1.0
  Fixed not working with too much videos (URI too long)
  Secondary color now using 2nd most used color in profile picture
