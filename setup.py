@@ -6,28 +6,23 @@ import pathlib
 import subprocess
 from setuptools import setup
 
-from youtube2zim.constants import NAME, VERSION
+root_dir = pathlib.Path(__file__).parent
 
-ROOT_DIR = pathlib.Path(__file__).parent
+def read(*names, **kwargs):
+    with open(root_dir.joinpath(*names), "r") as fh:
+        return fh.read()
 
-with open(ROOT_DIR.joinpath("requirements.txt"), "r") as fp:
-    requirements = [
-        line.strip() for line in fp.readlines() if not line.strip().startswith("#")
-    ]
-
-with open(ROOT_DIR.joinpath("README.md"), "r") as fp:
-    long_description = fp.read()
 
 print("Downloading and fixing JS dependencies...")
-ps = subprocess.run(["/bin/sh", str(ROOT_DIR.joinpath("get_js_deps.sh"))])
+ps = subprocess.run([str(root_dir.joinpath("get_js_deps.sh").resolve())])
 ps.check_returncode()
 
 
 setup(
-    name=NAME,
-    version=VERSION,
+    name="youtube2zim",
+    version=read("youtube2zim", "VERSION").strip(),
     description="Make ZIM file from a Youtube channel, user or playlist(s)",
-    long_description=long_description,
+    long_description=read("README.md"),
     long_description_content_type="text/markdown",
     author="dattaz",
     author_email="taz@dattaz.fr",
@@ -35,9 +30,12 @@ setup(
     keywords="kiwix zim youtube offline",
     license="GPLv3+",
     packages=["youtube2zim"],
-    install_requires=requirements,
+    install_requires=[
+        line.strip()
+        for line in read("requirements.txt").splitlines()
+        if not line.strip().startswith("#")
+    ],
     zip_safe=False,
-    platforms="Linux",
     include_package_data=True,
     entry_points={"console_scripts": ["youtube2zim=youtube2zim.__main__:main"]},
     classifiers=[
@@ -46,6 +44,7 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     ],
     python_requires=">=3.6",

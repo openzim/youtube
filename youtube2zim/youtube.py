@@ -3,9 +3,11 @@
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 import requests
+from zimscraperlib.download import save_file
+from zimscraperlib.imaging import resize_image
 
 from .constants import logger, YOUTUBE
-from .utils import save_json, load_json, save_file, resize_image, get_slug
+from .utils import save_json, load_json, get_slug
 
 
 YOUTUBE_API = "https://www.googleapis.com/youtube/v3"
