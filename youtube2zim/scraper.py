@@ -65,6 +65,7 @@ class Youtube2Zim(object):
         language,
         locale_name,
         tags,
+        dateafter,
         title=None,
         description=None,
         creator=None,
@@ -80,6 +81,7 @@ class Youtube2Zim(object):
         self.collection_type = collection_type
         self.youtube_id = youtube_id
         self.api_key = api_key
+        self.dateafter = youtube_dl.DateRange(dateafter)
 
         # video-encoding info
         self.video_format = video_format
@@ -454,6 +456,7 @@ class Youtube2Zim(object):
             "retries": 20,
             "fragment-retries": 50,
             "skip-unavailable-fragments": True,
+            "daterange": self.dateafter,
             # "external_downloader": "aria2c",
             # "external_downloader_args": ["--max-tries=20", "--retry-wait=30"],
             "outtmpl": str(self.videos_dir.joinpath("%(id)s", "video.%(ext)s")),

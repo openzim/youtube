@@ -167,6 +167,10 @@ def main():
         action="version",
         version=SCRAPER,
     )
+    parser.add_argument(
+        "--dateafter",
+        help="Custom filter to download videos uploaded on or after specified date. Format: YYYYMMDD or (now|today)[+-][0-9](day|week|month|year)(s)?"
+    )
 
     args = parser.parse_args()
     logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
