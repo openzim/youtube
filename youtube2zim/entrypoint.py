@@ -181,7 +181,7 @@ def main():
         scraper = Youtube2Zim(**dict(args._get_kwargs()), youtube_store=YOUTUBE)
         scraper.run()
     except Exception as exc:
-        logger.error(f"FAILED. An error occured: {exc}")
+        logger.error(f"FAILED. An error occurred: {exc}")
         if args.debug:
             logger.exception(exc)
         raise SystemExit(1)
