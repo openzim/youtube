@@ -228,10 +228,11 @@ class Youtube2Zim(object):
         )
 
     def run(self):
-        """ validate dateafter input """
+        """ execute the scraper step by step """
+
+        # validate dateafter input
         self.validate_dateafter_input()
 
-        """ execute the scraper step by step """
         logger.info(
             f"starting youtube scraper for {self.collection_type}#{self.youtube_id}"
         )
