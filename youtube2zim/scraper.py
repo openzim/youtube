@@ -272,7 +272,7 @@ class Youtube2Zim(object):
         logger.info("compute list of videos")
         self.extract_videos_list()
         logger.info(".. {} videos.".format(len(self.videos_ids)))
-        logger.info(f"videos in date range: {self.dateafter.start} - {self.dateafter.end}")
+        logger.info(f"videos in date range: {self.dateafter.start} - {datetime.datetime.today().strftime('%Y-%m-%d')}")
         # download videos (and recompress)
         logger.info(
             f"downloading all videos, subtitles and thumbnails (concurrency={self.max_concurrency})"
@@ -400,7 +400,7 @@ class Youtube2Zim(object):
         """ prepare a list of Playlist from user request
 
             USER: we fetch the hidden channel associate to it
-            CHANNEL (and USER): we grab all playlistFs + `uploads` playlist
+            CHANNEL (and USER): we grab all playlists + `uploads` playlist
             PLAYLIST: we retrieve from the playlist Id(s) """
 
         if self.is_user or self.is_channel:
