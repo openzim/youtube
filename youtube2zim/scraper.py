@@ -13,6 +13,7 @@ import json
 import locale
 import shutil
 import datetime
+import functools
 from pathlib import Path
 import concurrent.futures
 from functools import partial
@@ -37,9 +38,10 @@ from .youtube import (
     get_videos_authors_info,
     save_channel_branding,
     skip_deleted_videos,
+    skip_outofrange_videos,
 )
 from .converter import hook_youtube_dl_ffmpeg
-from .utils import (clean_text, load_json, save_json, get_slug)
+from .utils import clean_text, load_json, save_json, get_slug
 from .constants import logger, ROOT_DIR, CHANNEL, PLAYLIST, USER, SCRAPER
 
 
@@ -271,8 +273,14 @@ class Youtube2Zim(object):
 
         logger.info("compute list of videos")
         self.extract_videos_list()
-        logger.info(".. {} videos.".format(len(self.videos_ids)))
-        logger.info(f"videos in date range: {self.dateafter.start} - {datetime.datetime.today().strftime('%Y-%m-%d')}")
+
+        nb_videos_msg = f".. {len(self.videos_ids)} videos"
+        if self.dateafter.start.year != 1:
+            nb_videos_msg += (
+                f" in date range: {self.dateafter.start} - {datetime.date.today()}"
+            )
+        logger.info(f"{nb_videos_msg}.")
+
         # download videos (and recompress)
         logger.info(
             f"downloading all videos, subtitles and thumbnails (concurrency={self.max_concurrency})"
@@ -318,10 +326,12 @@ class Youtube2Zim(object):
     def validate_dateafter_input(self):
         try:
             self.dateafter = youtube_dl.DateRange(self.dateafter)
-        except Exception as e:
-            logger.error(f"Invalid dateafter input. Valid dateafter format: "
-                         f"YYYYMMDD or (now|today)[+-][0-9](day|week|month|year)(s).")
-            raise SystemExit(1)
+        except Exception as exc:
+            logger.error(
+                f"Invalid dateafter input. Valid dateafter format: "
+                f"YYYYMMDD or (now|today)[+-][0-9](day|week|month|year)(s)."
+            )
+            raise ValueError(f"Invalid dateafter input: {exc}")
 
     def make_build_folder(self):
         """ prepare build folder before we start downloading data """
@@ -441,13 +451,13 @@ class Youtube2Zim(object):
             for playlist in self.playlists:
                 videos_json = get_videos_json(playlist.playlist_id)
                 # filter in videos within date range and filter away deleted videos
-                filter_videos = self.filter_videos_not_within_date_range(videos_json)
+                skip_outofrange = functools.partial(
+                    skip_outofrange_videos, self.dateafter
+                )
+                filter_videos = filter(skip_outofrange, videos_json)
                 filter_videos = filter(skip_deleted_videos, filter_videos)
                 all_videos.update(
-                    {
-                        v["contentDetails"]["videoId"]: v
-                        for v in filter_videos
-                    }
+                    {v["contentDetails"]["videoId"]: v for v in filter_videos}
                 )
             save_json(self.cache_dir, "videos", all_videos)
         self.videos_ids = [*all_videos.keys()]  # unpacking so it's subscriptable
@@ -815,11 +825,3 @@ class Youtube2Zim(object):
             self.build_dir.joinpath("metadata.json"), "w", encoding="utf-8"
         ) as fp:
             json.dump({"video_format": self.video_format}, fp, indent=4)
-
-    def filter_videos_not_within_date_range(self, json_videos):
-        """ filter func to filter-out videos that are not within specified date range"""
-        return [v for v in json_videos
-                if datetime.datetime.strptime(
-                    v["snippet"]["publishedAt"],
-                    "%Y-%m-%dT%H:%M:%S.%fZ"
-                ).date() in self.dateafter]

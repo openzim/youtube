@@ -3,6 +3,7 @@
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 import requests
+from dateutil import parser as dt_parser
 from zimscraperlib.download import save_file
 from zimscraperlib.imaging import resize_image
 
@@ -270,3 +271,8 @@ def skip_deleted_videos(item):
         item["snippet"]["title"] != "Deleted video"
         and item["snippet"]["description"] != "This video is unavailable."
     )
+
+
+def skip_outofrange_videos(date_range, item):
+    """ filter func to filter-out videos that are not within specified date range"""
+    return dt_parser.parse(item["snippet"]["publishedAt"]).date() in date_range
