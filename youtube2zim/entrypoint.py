@@ -169,7 +169,7 @@ def main():
     )
     parser.add_argument(
         "--dateafter",
-        help="Custom filter to download videos uploaded on or after specified date. Format: YYYYMMDD or (now|today)[+-][0-9](day|week|month|year)(s)?"
+        help="Custom filter to download videos uploaded on or after specified date. Format: YYYYMMDD or (now|today)[+-][0-9](day|week|month|year)(s)?",
     )
 
     args = parser.parse_args()

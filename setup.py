@@ -8,6 +8,7 @@ from setuptools import setup
 
 root_dir = pathlib.Path(__file__).parent
 
+
 def read(*names, **kwargs):
     with open(root_dir.joinpath(*names), "r") as fh:
         return fh.read()
