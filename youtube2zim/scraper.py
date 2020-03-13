@@ -464,6 +464,10 @@ class Youtube2Zim(object):
 
     def download_video_files(self, max_concurrency):
 
+        audext, vidext = {"webm": ("webm", "webm"), "mp4": ("m4a", "mp4")}[
+            self.video_format
+        ]
+
         # prepare options which are shared with every downloader
         options = {
             "cachedir": self.videos_dir,
@@ -481,7 +485,7 @@ class Youtube2Zim(object):
             # "external_downloader_args": ["--max-tries=20", "--retry-wait=30"],
             "outtmpl": str(self.videos_dir.joinpath("%(id)s", "video.%(ext)s")),
             "preferredcodec": self.video_format,
-            "format": "{fmt}/best".format(fmt=self.video_format),
+            "format": f"best[ext={vidext}]/bestvideo[ext={vidext}]+bestaudio[ext={audext}]/best",
             "progress_hooks": [
                 partial(hook_youtube_dl_ffmpeg, self.video_format, self.low_quality)
             ],
