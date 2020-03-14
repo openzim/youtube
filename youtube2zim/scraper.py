@@ -16,7 +16,6 @@ import datetime
 import functools
 from pathlib import Path
 import concurrent.futures
-from functools import partial
 from gettext import gettext as _
 
 import jinja2
@@ -40,7 +39,7 @@ from .youtube import (
     skip_deleted_videos,
     skip_outofrange_videos,
 )
-from .converter import hook_youtube_dl_ffmpeg
+from .converter import post_process_video
 from .utils import clean_text, load_json, save_json, get_slug
 from .constants import logger, ROOT_DIR, CHANNEL, PLAYLIST, USER, SCRAPER
 
@@ -486,9 +485,9 @@ class Youtube2Zim(object):
             "outtmpl": str(self.videos_dir.joinpath("%(id)s", "video.%(ext)s")),
             "preferredcodec": self.video_format,
             "format": f"best[ext={vidext}]/bestvideo[ext={vidext}]+bestaudio[ext={audext}]/best",
-            "progress_hooks": [
-                partial(hook_youtube_dl_ffmpeg, self.video_format, self.low_quality)
-            ],
+            "y2z_video_format": self.video_format,
+            "y2z_low_quality": self.low_quality,
+            "y2z_videos_dir": self.videos_dir,
         }
         if self.all_subtitles:
             options.update({"writeautomaticsub": True})
@@ -560,8 +559,14 @@ class Youtube2Zim(object):
             for video_id in videos_ids:
                 try:
                     ydl.download([video_id])
+                    post_process_video(
+                        options["y2z_videos_dir"].joinpath(video_id),
+                        video_id,
+                        options["y2z_video_format"],
+                        options["y2z_low_quality"],
+                    )
                     succeeded.append(video_id)
-                except youtube_dl.utils.DownloadError:
+                except (youtube_dl.utils.DownloadError, FileNotFoundError):
                     failed.append(video_id)
         return succeeded, failed
 

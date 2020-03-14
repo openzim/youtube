@@ -21,10 +21,31 @@ def hook_youtube_dl_ffmpeg(video_format, low_quality, data):
         return
 
     src_path = pathlib.Path(data["filename"])
-    tmp_path = src_path.parent.joinpath(
-        "video.tmp.{fmt}".format(src=src_path.name, fmt=video_format)
+    post_process_video(
+        video_dir=src_path.parent,
+        video_id=src_path.stem,
+        video_format=video_format,
+        low_quality=low_quality,
     )
-    dst_path = src_path.parent.joinpath("video.{fmt}".format(fmt=video_format))
+
+
+def post_process_video(video_dir, video_id, video_format, low_quality):
+    """ apply custom post-processing to downloaded video
+
+        - resize thumbnail
+        - recompress video if incorrect video_format or low_quality requested """
+
+    # find downloaded video from video_dir
+    files = [p for p in video_dir.iterdir() if p.stem == "video" and p.suffix != ".jpg"]
+    if len(files) == 0:
+        logger.error(f"Video file missing in {video_dir} for {video_id}")
+        logger.debug(list(video_dir.iterdir()))
+        raise FileNotFoundError(f"Missing video file in {video_dir}")
+    if len(files) > 1:
+        logger.warning(
+            f"Multiple video file candidates for {video_id} in {video_dir}. Picking {files[0]} out of {files}"
+        )
+    src_path = files[0]
 
     # resize thumbnail. we use max width:248x187px in listing
     # but our posters are 480x270px
@@ -36,11 +57,21 @@ def hook_youtube_dl_ffmpeg(video_format, low_quality, data):
     if not low_quality and src_path.suffix[1:] == video_format:
         return
 
+    dst_path = src_path.parent.joinpath(f"video.{video_format}")
+
+    recompress_video(src_path, dst_path, video_format, low_quality)
+
+
+def recompress_video(src_path, dst_path, video_format, low_quality):
+    """ re-encode a video file in-place (via a temp file) for format and quality """
+
+    tmp_path = src_path.parent.joinpath(f"video.tmp.{video_format}")
+
     video_codecs = {"mp4": "h264", "webm": "libvpx"}
     audio_codecs = {"mp4": "aac", "webm": "libvorbis"}
     params = {"mp4": ["-movflags", "+faststart"], "webm": []}
 
-    args = ["ffmpeg", "-y", "-i", "file:{}".format(str(src_path))]
+    args = ["ffmpeg", "-y", "-i", f"file:{src_path}"]
 
     if low_quality:
         args += [
@@ -85,11 +116,9 @@ def hook_youtube_dl_ffmpeg(video_format, low_quality, data):
             audio_codecs[video_format],
         ]
     args += params[video_format]
-    args += ["file:{}".format(str(tmp_path))]
+    args += [f"file:{tmp_path}"]
 
-    logger.info(
-        "  converting {src} into {dst}".format(src=str(src_path), dst=str(dst_path))
-    )
+    logger.info(f"recompress {src_path} -> {dst_path} {video_format=} {low_quality=}")
     logger.debug(nicer_args_join(args))
 
     ffmpeg = subprocess.run(args)

@@ -5,7 +5,7 @@
 
 __Note__: make sure you've installed non-python dependencies first, as mentioned in the [README](README.md).
 
-Then, setup a python `virtualenv` using `python 3.6+` and install our python dependencies using `pip`:
+Then, setup a python `virtualenv` using `python 3.8+` and install our python dependencies using `pip`:
 
 ```bash
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
