@@ -29,7 +29,7 @@ def main(build_path):
 
     # import youtube2zim hook
     sys.path = [str(pathlib.Path(__file__).parent.parent.resolve())] + sys.path
-    from youtube2zim.converter import hook_youtube_dl_ffmpeg
+    from youtube2zim.converter import recompress_video
 
     # retrieve source video_format
     with open(build_dir.joinpath("metadata.json"), "r") as fp:
@@ -42,9 +42,7 @@ def main(build_path):
         video_path = build_dir.joinpath("videos", video_id, f"video.{video_format}")
         logger.info(video_path)
 
-        hook_youtube_dl_ffmpeg(
-            video_format, True, {"status": "finished", "filename": str(video_path)}
-        )
+        recompress_video(video_path, video_path, video_format, True)
 
     logger.info("all done.")
 
