@@ -97,6 +97,8 @@ def recompress_video(src_path, dst_path, video_format, low_quality):
             "scale='480:trunc(ow/a/2)*2'",
             "-codec:a",
             audio_codecs[video_format],
+            "-ar",
+            "44100",
             "-b:a",
             "128k",
         ]
