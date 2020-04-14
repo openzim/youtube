@@ -22,6 +22,7 @@ import jinja2
 import youtube_dl
 from babel.dates import format_date
 from dateutil import parser as dt_parser
+from .storage import KiwixStorage
 from zimscraperlib.download import save_file
 from zimscraperlib.zim import ZimInfo, make_zim_file
 from zimscraperlib.fix_ogvjs_dist import fix_source_dir
@@ -67,6 +68,8 @@ class Youtube2Zim(object):
         locale_name,
         tags,
         dateafter,
+        use_any_optimized_version,
+        s3_url_with_credentials,
         title=None,
         description=None,
         creator=None,
@@ -113,6 +116,10 @@ class Youtube2Zim(object):
         self.main_channel_id = None  # use for branding
         self.only_test_branding = only_test_branding
 
+        # Optimization-cache
+        self.s3_url_with_credentials = s3_url_with_credentials
+        self.use_any_optimized_version = use_any_optimized_version
+
         # debug/devel options
         self.no_zim = no_zim
         self.debug = debug
@@ -139,6 +146,8 @@ class Youtube2Zim(object):
         youtube_store.update(
             build_dir=self.build_dir, api_key=self.api_key, cache_dir=self.cache_dir
         )
+
+        self.s3_storage = KiwixStorage(self.s3_url_with_credentials)
 
         # set and record locale for translations
         locale_name = locale_name or get_language_details(self.language)["iso-639-1"]
@@ -463,9 +472,7 @@ class Youtube2Zim(object):
 
     def download_video_files(self, max_concurrency):
 
-        audext, vidext = {"webm": ("webm", "webm"), "mp4": ("m4a", "mp4")}[
-            self.video_format
-        ]
+        audext, vidext = {"webm": ("webm", "webm"), "mp4": ("m4a", "mp4")}[self.video_format]
 
         # prepare options which are shared with every downloader
         options = {
@@ -550,24 +557,65 @@ class Youtube2Zim(object):
 
         return overall_succeeded, overall_failed
 
-    @staticmethod
-    def download_video_files_batch(options, videos_ids):
+    def s3_cache_found(self, video_id, local_video_path):
+        """
+        Download file if present
+        return True if cache is found
+        else return False
+        """
+        if not self.s3_url_with_credentials:
+            logger.debug(f"optimization cache not requested")
+            return False
+        os.makedirs(local_video_path, exist_ok=True)
+        local_video = os.path.join(local_video_path, f'video.{self.video_format}')
+        video_quality = "low" if self.low_quality else "high"
+        s3_key = f"{self.video_format}/{video_quality}/{video_id}"
+        try:
+            self.s3_storage.download_file(s3_key, local_video)
+            logger.info(f"downloaded video file at {local_video} from {self.s3_storage.bucket_name}/{s3_key}")
+            return True
+        except Exception as ex:
+            logger.info(f"cache {s3_key} not found in {self.s3_storage.bucket_name} bucket")
+            return False
 
+    def s3_cache_upload(self, video_id, local_video_path):
+        """
+        Uploads video to S3 for cache
+        returns None
+        """
+        if not self.s3_url_with_credentials:
+            logger.debug(f"optimization cache not requested")
+            return
+        video_quality = "low" if self.low_quality else "high"
+        s3_key = f"{self.video_format}/{video_quality}/{video_id}"
+        try:
+            self.s3_storage.upload_file(os.path.join(local_video_path, f'video.{self.video_format}'), s3_key)
+            logger.info(f"cached video to {self.s3_storage.bucket_name} bucket ({s3_key})")
+        except Exception as ex:
+            logger.error(f"caching {s3_key} to {self.s3_storage.bucket_name} bucket failed due to {str(ex)}")
+
+    def download_video_files_batch(self, options, videos_ids):
         succeeded = []
         failed = []
-        with youtube_dl.YoutubeDL(options) as ydl:
-            for video_id in videos_ids:
-                try:
+        for video_id in videos_ids:
+            local_video_path = options["y2z_videos_dir"].joinpath(video_id)
+            try:
+                cache_present = self.s3_cache_found(video_id, local_video_path)
+                if cache_present:
+                    options['skip_download'] = True
+                with youtube_dl.YoutubeDL(options) as ydl:
                     ydl.download([video_id])
-                    post_process_video(
-                        options["y2z_videos_dir"].joinpath(video_id),
-                        video_id,
-                        options["y2z_video_format"],
-                        options["y2z_low_quality"],
-                    )
-                    succeeded.append(video_id)
-                except (youtube_dl.utils.DownloadError, FileNotFoundError):
-                    failed.append(video_id)
+                if not cache_present:
+                    self.s3_cache_upload(video_id, local_video_path)
+                post_process_video(
+                    local_video_path,
+                    video_id,
+                    options["y2z_video_format"],
+                    options["y2z_low_quality"],
+                )
+                succeeded.append(video_id)
+            except (youtube_dl.utils.DownloadError, FileNotFoundError):
+                failed.append(video_id)
         return succeeded, failed
 
     def download_authors_branding(self):

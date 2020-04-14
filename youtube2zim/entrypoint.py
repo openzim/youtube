@@ -172,6 +172,20 @@ def main():
         help="Custom filter to download videos uploaded on or after specified date. Format: YYYYMMDD or (now|today)[+-][0-9](day|week|month|year)(s)?",
     )
 
+    parser.add_argument(
+        "--optimization-cache",
+        help="URL with credentials to S3 for using as optimization cache",
+        dest="s3_url_with_credentials",
+        default=False
+    )
+
+    parser.add_argument(
+        "--use-any-optimized-version",
+        help="Do not compare the in-code encoder-version with the version stored in the optimization cache",
+        default=False,
+        type=bool
+    )
+
     args = parser.parse_args()
     logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
 
