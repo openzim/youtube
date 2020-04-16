@@ -29,7 +29,7 @@ def hook_youtube_dl_ffmpeg(video_format, low_quality, data):
     )
 
 
-def post_process_video(video_dir, video_id, video_format, low_quality):
+def post_process_video(video_dir, video_id, video_format, low_quality, recompress=True):
     """ apply custom post-processing to downloaded video
 
         - resize thumbnail
@@ -59,7 +59,10 @@ def post_process_video(video_dir, video_id, video_format, low_quality):
 
     dst_path = src_path.parent.joinpath(f"video.{video_format}")
 
-    recompress_video(src_path, dst_path, video_format, low_quality)
+    if recompress:
+        recompress_video(src_path, dst_path, video_format, low_quality)
+    else:
+        logger.info("Skipping recompression")
 
 
 def recompress_video(src_path, dst_path, video_format, low_quality):

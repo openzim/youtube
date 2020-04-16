@@ -42,7 +42,15 @@ from .youtube import (
 )
 from .converter import post_process_video
 from .utils import clean_text, load_json, save_json, get_slug
-from .constants import logger, ROOT_DIR, CHANNEL, PLAYLIST, USER, SCRAPER
+from .constants import (
+    logger,
+    ROOT_DIR,
+    CHANNEL,
+    PLAYLIST,
+    USER,
+    SCRAPER,
+    ENCODER_VERSION,
+)
 
 
 class Youtube2Zim(object):
@@ -299,7 +307,7 @@ class Youtube2Zim(object):
             f"downloading all videos, subtitles and thumbnails (concurrency={self.max_concurrency})"
         )
         logger.info(f"  format: {self.video_format}")
-        logger.info(f"  recompress: {self.low_quality}")
+        logger.info(f"  quality: {self.video_quality}")
         logger.info(f"  generated-subtitles: {self.all_subtitles}")
         if not self.skip_download:
             succeeded, failed = self.download_video_files(
@@ -566,22 +574,34 @@ class Youtube2Zim(object):
 
     def download_s3_cache(self, s3_key, local_video_path):
         """returns True if successfully downloaded cache, otherwise False"""
-        os.makedirs(os.path.dirname(local_video_path), exist_ok=True)
         try:
-            if self.s3_storage.has_object(s3_key, self.bucket_name):
-                self.s3_storage.download_file(s3_key, local_video_path)
-                logger.info(
-                    f"cache ({self.bucket_name}/{s3_key}) downloaded {local_video_path}"
-                )
-                return True
+            if self.use_any_optimized_version:
+                if not self.s3_storage.has_object(s3_key, self.bucket_name):
+                    return False
+            else:
+                if not self.s3_storage.has_object_matching_meta(
+                    s3_key,
+                    tag="encoding_version",
+                    value=ENCODER_VERSION,
+                    bucket_name=self.bucket_name,
+                ):
+                    return False
+            os.makedirs(os.path.dirname(local_video_path), exist_ok=True)
+            self.s3_storage.download_file(s3_key, local_video_path)
         except Exception as ex:
             logger.error(f"{self.bucket_name}/{s3_key} download failed with {str(ex)}")
-        return False
+            return False
+        logger.info(
+            f"cache ({self.bucket_name}/{s3_key}) downloaded {local_video_path}"
+        )
+        return True
 
     def upload_s3_cache(self, s3_key, local_video_path):
         """returns True if video uploaded to S3 for cache otherwise None"""
         try:
-            self.s3_storage.upload_file(local_video_path, s3_key)
+            self.s3_storage.upload_file(
+                local_video_path, s3_key, meta={"encoding_version": ENCODER_VERSION}
+            )
             logger.info(f"cached video to {self.bucket_name} bucket ({s3_key})")
             return True
         except Exception as ex:
@@ -609,6 +629,7 @@ class Youtube2Zim(object):
                     video_id,
                     options["y2z_video_format"],
                     options["y2z_low_quality"],
+                    recompress=not cache_present,
                 )
                 succeeded.append(video_id)
             except (youtube_dl.utils.DownloadError, FileNotFoundError):

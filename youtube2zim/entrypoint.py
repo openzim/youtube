@@ -176,14 +176,14 @@ def main():
         "--optimization-cache",
         help="URL with credentials to S3 for using as optimization cache",
         dest="s3_url_with_credentials",
-        default=False
+        default=False,
     )
 
     parser.add_argument(
         "--use-any-optimized-version",
         help="Do not compare the in-code encoder-version with the version stored in the optimization cache",
         default=False,
-        type=bool
+        action="store_true",
     )
 
     args = parser.parse_args()
