@@ -265,6 +265,7 @@ class Youtube2Zim(object):
             raise ValueError("Unable to connect to Youtube API v3. check `API_KEY`.")
 
         if self.s3_url_with_credentials:
+            logger.info("testing S3 Optimization Cache credentials")
             self.s3_storage = KiwixStorage(self.s3_url_with_credentials)
             if not self.s3_storage.check_credentials(list_buckets=True, failsafe=True):
                 raise ValueError(
@@ -312,9 +313,8 @@ class Youtube2Zim(object):
         logger.info(f"  quality: {self.video_quality}")
         logger.info(f"  generated-subtitles: {self.all_subtitles}")
         if self.s3_storage:
-            netloc = self.s3_storage.url.netloc
             logger.info(
-                f"  using cache: {netloc}  bucket: {self.s3_storage.bucket_name}"
+                f"  using cache: {self.s3_storage.url.netloc}  bucket: {self.s3_storage.bucket_name}"
             )
         if not self.skip_download:
             succeeded, failed = self.download_video_files(
@@ -614,8 +614,6 @@ class Youtube2Zim(object):
         succeeded = []
         failed = []
         for video_id in videos_ids:
-            # Lets make copy of options dictionary so that changes made in it
-            # is not shared across concurrent events
             options_copy = options.copy()
             video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
             cache_downloaded = None
@@ -634,7 +632,7 @@ class Youtube2Zim(object):
                     video_id,
                     options_copy["y2z_video_format"],
                     options_copy["y2z_low_quality"],
-                    recompress=not cache_downloaded,  # no need for re-compressing for cached videos
+                    recompress=not cache_downloaded,
                 )
                 succeeded.append(video_id)
             except (youtube_dl.utils.DownloadError, FileNotFoundError):
