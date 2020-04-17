@@ -17,12 +17,13 @@ import functools
 from pathlib import Path
 import concurrent.futures
 from gettext import gettext as _
+from urllib.parse import urlparse
 
 import jinja2
 import youtube_dl
 from babel.dates import format_date
 from dateutil import parser as dt_parser
-from kiwixstorage import KiwixStorage, AuthenticationError
+from kiwixstorage import KiwixStorage
 from zimscraperlib.download import save_file
 from zimscraperlib.zim import ZimInfo, make_zim_file
 from zimscraperlib.fix_ogvjs_dist import fix_source_dir
@@ -155,13 +156,8 @@ class Youtube2Zim(object):
         self.s3_url_with_credentials = s3_url_with_credentials
         self.use_any_optimized_version = use_any_optimized_version
         self.video_quality = "low" if self.low_quality else "high"
-        if s3_url_with_credentials:
-            self.s3_storage = KiwixStorage(s3_url_with_credentials)
-            if not self.s3_storage.check_credentials(list_buckets=True):
-                raise AuthenticationError(
-                    f"An error occurred when making connection with the s3. Check your key"
-                )
-            self.bucket_name = self.s3_storage.bucket_name
+        self.s3_storage = None
+
         # set and record locale for translations
         locale_name = locale_name or get_language_details(self.language)["iso-639-1"]
         try:
@@ -265,9 +261,14 @@ class Youtube2Zim(object):
             shutil.rmtree(self.build_dir)
         self.make_build_folder()
 
-        logger.info("testing Youtbe credentials")
+        logger.info("testing Youtube credentials")
         if not credentials_ok():
             raise ValueError("Unable to connect to Youtube API v3. check `API_KEY`.")
+
+        if self.s3_url_with_credentials:
+            self.s3_storage = KiwixStorage(self.s3_url_with_credentials)
+            if not self.s3_storage.check_credentials(list_buckets=True, failsafe=True):
+                raise ValueError("Error connecting S3. Check your key")
 
         # fail early if supplied branding files are missing
         self.check_branding_values()
@@ -309,6 +310,11 @@ class Youtube2Zim(object):
         logger.info(f"  format: {self.video_format}")
         logger.info(f"  quality: {self.video_quality}")
         logger.info(f"  generated-subtitles: {self.all_subtitles}")
+        if self.s3_storage:
+            netloc = urlparse(self.s3_url_with_credentials).netloc
+            logger.info(
+                f"  using cache: {netloc}  bucket: {self.s3_storage.bucket_name}"
+            )
         if not self.skip_download:
             succeeded, failed = self.download_video_files(
                 max_concurrency=self.max_concurrency
@@ -572,40 +578,36 @@ class Youtube2Zim(object):
 
         return overall_succeeded, overall_failed
 
-    def download_s3_cache(self, s3_key, local_video_path):
-        """returns True if successfully downloaded cache, otherwise False"""
+    def download_from_cache(self, key, video_path):
+        """ whether it successfully downloaded from cache """
+        if self.use_any_optimized_version:
+            if not self.s3_storage.has_object(key, self.s3_storage.bucket_name):
+                return False
+        else:
+            if not self.s3_storage.has_object_matching_meta(
+                key, tag="encoder_version", value=ENCODER_VERSION
+            ):
+                return False
+        video_path.parent.mkdir(parents=True, exist_ok=True)
         try:
-            if self.use_any_optimized_version:
-                if not self.s3_storage.has_object(s3_key, self.bucket_name):
-                    return False
-            else:
-                if not self.s3_storage.has_object_matching_meta(
-                    s3_key,
-                    tag="encoding_version",
-                    value=ENCODER_VERSION,
-                    bucket_name=self.bucket_name,
-                ):
-                    return False
-            os.makedirs(os.path.dirname(local_video_path), exist_ok=True)
-            self.s3_storage.download_file(s3_key, local_video_path)
-        except Exception as ex:
-            logger.error(f"{self.bucket_name}/{s3_key} download failed with {str(ex)}")
-            return False
-        logger.info(
-            f"cache ({self.bucket_name}/{s3_key}) downloaded {local_video_path}"
-        )
-        return True
-
-    def upload_s3_cache(self, s3_key, local_video_path):
-        """returns True if video uploaded to S3 for cache otherwise None"""
-        try:
-            self.s3_storage.upload_file(
-                local_video_path, s3_key, meta={"encoding_version": ENCODER_VERSION}
-            )
-            logger.info(f"cached video to {self.bucket_name} bucket ({s3_key})")
+            self.s3_storage.download_file(key, video_path)
+            logger.info(f"cache ({key}) downloaded {video_path}")
             return True
         except Exception as ex:
-            logger.error(f"{self.bucket_name}/{s3_key} upload failed with {str(ex)}")
+            logger.error(f"{key} download failed with {ex}")
+            return False
+
+    def upload_to_cache(self, key, video_path):
+        """ whether it successfully uploaded to cache """
+        try:
+            self.s3_storage.upload_file(
+                video_path, key, meta={"encoder_version": ENCODER_VERSION}
+            )
+            logger.info(f"video cached to {key}")
+            return True
+        except Exception as ex:
+            logger.error(f"{key} upload failed with {ex}")
+            return False
 
     def download_video_files_batch(self, options, videos_ids):
         succeeded = []
@@ -614,13 +616,14 @@ class Youtube2Zim(object):
             video_location = options["y2z_videos_dir"].joinpath(video_id)
             # Reset the skip_download argument
             options["skip_download"] = False
-            cache_present = None
-            if self.s3_url_with_credentials:
+            cache_downloaded = None
+            if self.s3_storage:
                 s3_key = f"{self.video_format}/{self.video_quality}/{video_id}"
-                video_path = os.path.join(video_location, f"video.{self.video_format}")
-                cache_present = self.download_s3_cache(s3_key, video_path)
+                video_path = video_location.joinpath(f"video.{self.video_format}")
+                cache_downloaded = self.download_from_cache(s3_key, video_path)
+                # skip_download will skip downloading videos only
                 # if cache is found in S3, we will skip video download from youtube_dl
-                options["skip_download"] = cache_present
+                options["skip_download"] = cache_downloaded
             try:
                 with youtube_dl.YoutubeDL(options) as ydl:
                     ydl.download([video_id])
@@ -629,14 +632,13 @@ class Youtube2Zim(object):
                     video_id,
                     options["y2z_video_format"],
                     options["y2z_low_quality"],
-                    recompress=not cache_present,
+                    recompress=not cache_downloaded,  # no need for re-compressing for cached videos
                 )
                 succeeded.append(video_id)
             except (youtube_dl.utils.DownloadError, FileNotFoundError):
                 failed.append(video_id)
-            if cache_present is False:
-                # False only if optimization cache is requested and cache is not found
-                self.upload_s3_cache(s3_key, video_path)
+            if self.s3_storage and not cache_downloaded:
+                self.upload_to_cache(s3_key, video_path)
         return succeeded, failed
 
     def download_authors_branding(self):

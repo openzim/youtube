@@ -61,8 +61,6 @@ def post_process_video(video_dir, video_id, video_format, low_quality, recompres
 
     if recompress:
         recompress_video(src_path, dst_path, video_format, low_quality)
-    else:
-        logger.info("Skipping recompression")
 
 
 def recompress_video(src_path, dst_path, video_format, low_quality):
