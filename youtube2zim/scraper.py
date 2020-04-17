@@ -612,7 +612,8 @@ class Youtube2Zim(object):
     def download_video_files_batch(self, options, videos_ids):
         succeeded = []
         failed = []
-        # Lets make copy of options dictionary so that it is not shared across concurrent events
+        # Lets make copy of options dictionary so that changes made in it
+        # is not shared across concurrent events
         options_copy = options.copy()
         for video_id in videos_ids:
             video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
