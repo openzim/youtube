@@ -17,7 +17,6 @@ import functools
 from pathlib import Path
 import concurrent.futures
 from gettext import gettext as _
-from urllib.parse import urlparse
 
 import jinja2
 import youtube_dl
@@ -268,7 +267,9 @@ class Youtube2Zim(object):
         if self.s3_url_with_credentials:
             self.s3_storage = KiwixStorage(self.s3_url_with_credentials)
             if not self.s3_storage.check_credentials(list_buckets=True, failsafe=True):
-                raise ValueError("Error connecting S3. Check your key")
+                raise ValueError(
+                    "Error connecting to Optimization Cache. Check your URL (must contain credentials and bucket name)."
+                )
 
         # fail early if supplied branding files are missing
         self.check_branding_values()
@@ -311,7 +312,7 @@ class Youtube2Zim(object):
         logger.info(f"  quality: {self.video_quality}")
         logger.info(f"  generated-subtitles: {self.all_subtitles}")
         if self.s3_storage:
-            netloc = urlparse(self.s3_url_with_credentials).netloc
+            netloc = self.s3_storage.url.netloc
             logger.info(
                 f"  using cache: {netloc}  bucket: {self.s3_storage.bucket_name}"
             )
@@ -591,11 +592,11 @@ class Youtube2Zim(object):
         video_path.parent.mkdir(parents=True, exist_ok=True)
         try:
             self.s3_storage.download_file(key, video_path)
-            logger.info(f"cache ({key}) downloaded {video_path}")
-            return True
-        except Exception as ex:
-            logger.error(f"{key} download failed with {ex}")
+        except Exception as exc:
+            logger.error(f"{key} download failed with {exc}")
             return False
+        logger.info(f"cache ({key}) downloaded {video_path}")
+        return True
 
     def upload_to_cache(self, key, video_path):
         """ whether it successfully uploaded to cache """
@@ -603,22 +604,20 @@ class Youtube2Zim(object):
             self.s3_storage.upload_file(
                 video_path, key, meta={"encoder_version": ENCODER_VERSION}
             )
-            logger.info(f"video cached to {key}")
-            return True
-        except Exception as ex:
-            logger.error(f"{key} upload failed with {ex}")
+        except Exception as exc:
+            logger.error(f"{key} upload failed with {exc}")
             return False
+        logger.info(f"video cached to {key}")
+        return True
 
     def download_video_files_batch(self, options, videos_ids):
         succeeded = []
         failed = []
-        # Lets make copy of options dictionary so that changes made in it
-        # is not shared across concurrent events
-        options_copy = options.copy()
         for video_id in videos_ids:
+            # Lets make copy of options dictionary so that changes made in it
+            # is not shared across concurrent events
+            options_copy = options.copy()
             video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
-            # Reset the skip_download argument
-            options_copy["skip_download"] = False
             cache_downloaded = None
             if self.s3_storage:
                 s3_key = f"{self.video_format}/{self.video_quality}/{video_id}"
