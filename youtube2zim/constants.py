@@ -13,6 +13,8 @@ NAME = ROOT_DIR.name
 with open(ROOT_DIR.joinpath("VERSION"), "r") as fh:
     VERSION = fh.read().strip()
 
+ENCODER_VERSION = "v1"
+
 SCRAPER = f"{NAME} {VERSION}"
 
 CHANNEL = "channel"
