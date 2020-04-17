@@ -612,10 +612,12 @@ class Youtube2Zim(object):
     def download_video_files_batch(self, options, videos_ids):
         succeeded = []
         failed = []
+        # Lets make copy of options dictionary so that it is not shared across concurrent events
+        options_copy = options.copy()
         for video_id in videos_ids:
-            video_location = options["y2z_videos_dir"].joinpath(video_id)
+            video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
             # Reset the skip_download argument
-            options["skip_download"] = False
+            options_copy["skip_download"] = False
             cache_downloaded = None
             if self.s3_storage:
                 s3_key = f"{self.video_format}/{self.video_quality}/{video_id}"
@@ -623,15 +625,15 @@ class Youtube2Zim(object):
                 cache_downloaded = self.download_from_cache(s3_key, video_path)
                 # skip_download will skip downloading videos only
                 # if cache is found in S3, we will skip video download from youtube_dl
-                options["skip_download"] = cache_downloaded
+                options_copy["skip_download"] = cache_downloaded
             try:
-                with youtube_dl.YoutubeDL(options) as ydl:
+                with youtube_dl.YoutubeDL(options_copy) as ydl:
                     ydl.download([video_id])
                 post_process_video(
                     video_location,
                     video_id,
-                    options["y2z_video_format"],
-                    options["y2z_low_quality"],
+                    options_copy["y2z_video_format"],
+                    options_copy["y2z_low_quality"],
                     recompress=not cache_downloaded,  # no need for re-compressing for cached videos
                 )
                 succeeded.append(video_id)
