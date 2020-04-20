@@ -7,3 +7,4 @@ babel==2.7.0
 zimscraperlib>=1.0.1,<1.1
 requests>=2.23,<3.0
 -e git://github.com/kiwix/python_storagelib.git#egg=python_storagelib
+pif==0.8.2

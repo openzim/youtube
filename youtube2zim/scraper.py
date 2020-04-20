@@ -20,6 +20,7 @@ from gettext import gettext as _
 
 import jinja2
 import youtube_dl
+from pif import get_public_ip
 from babel.dates import format_date
 from dateutil import parser as dt_parser
 from kiwixstorage import KiwixStorage
@@ -264,13 +265,8 @@ class Youtube2Zim(object):
         if not credentials_ok():
             raise ValueError("Unable to connect to Youtube API v3. check `API_KEY`.")
 
-        if self.s3_url_with_credentials:
-            logger.info("testing S3 Optimization Cache credentials")
-            self.s3_storage = KiwixStorage(self.s3_url_with_credentials)
-            if not self.s3_storage.check_credentials(list_buckets=True, failsafe=True):
-                raise ValueError(
-                    "Error connecting to Optimization Cache. Check your URL (must contain credentials and bucket name)."
-                )
+        if self.s3_url_with_credentials and not self.s3_credentials_ok():
+            raise ValueError("Unable to connect to Optimization Cache. Check its URL.")
 
         # fail early if supplied branding files are missing
         self.check_branding_values()
@@ -350,6 +346,20 @@ class Youtube2Zim(object):
                 shutil.rmtree(self.build_dir, ignore_errors=True)
 
         logger.info("all done!")
+
+    def s3_credentials_ok(self):
+        logger.info("testing S3 Optimization Cache credentials")
+        self.s3_storage = KiwixStorage(self.s3_url_with_credentials)
+        if not self.s3_storage.check_credentials(
+            list_buckets=True, bucket=True, write=True, read=True, failsafe=True
+        ):
+            logger.error("S3 cache connection error testing permissions.")
+            logger.error(f"  Server: {self.s3_storage.url.netloc}")
+            logger.error(f"  Bucket: {self.s3_storage.bucket_name}")
+            logger.error(f"  Key ID: {self.s3_storage.params.get('keyid')}")
+            logger.error(f"  Public IP: {get_public_ip()}")
+            return False
+        return True
 
     def validate_dateafter_input(self):
         try:
