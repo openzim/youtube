@@ -42,7 +42,7 @@ def main(build_path):
         video_path = build_dir.joinpath("videos", video_id, f"video.{video_format}")
         logger.info(video_path)
 
-        recompress_video(video_path, video_path, video_format, True)
+        recompress_video(video_path, video_path, video_format)
 
     logger.info("all done.")
 

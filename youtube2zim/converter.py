@@ -60,7 +60,7 @@ def post_process_video(
         return
 
     dst_path = src_path.parent.joinpath(f"video.{video_format}")
-    recompress_video(src_path, dst_path, video_format, low_quality)
+    recompress_video(src_path, dst_path, video_format)
 
 
 def recompress_video(src_path, dst_path, video_format):
