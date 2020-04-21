@@ -29,7 +29,9 @@ def hook_youtube_dl_ffmpeg(video_format, low_quality, data):
     )
 
 
-def post_process_video(video_dir, video_id, video_format, low_quality, recompress=True):
+def post_process_video(
+    video_dir, video_id, video_format, low_quality, skip_recompress=False
+):
     """ apply custom post-processing to downloaded video
 
         - resize thumbnail
@@ -54,17 +56,15 @@ def post_process_video(video_dir, video_id, video_format, low_quality, recompres
     )
 
     # don't reencode if not requesting low-quality and received wanted format
-    if not low_quality and src_path.suffix[1:] == video_format:
+    if skip_recompress or (not low_quality and src_path.suffix[1:] == video_format):
         return
 
     dst_path = src_path.parent.joinpath(f"video.{video_format}")
-
-    if recompress:
-        recompress_video(src_path, dst_path, video_format, low_quality)
+    recompress_video(src_path, dst_path, video_format, low_quality)
 
 
-def recompress_video(src_path, dst_path, video_format, low_quality):
-    """ re-encode a video file in-place (via a temp file) for format and quality """
+def recompress_video(src_path, dst_path, video_format):
+    """ re-encode in-place (via temp file) for format at lower quality """
 
     tmp_path = src_path.parent.joinpath(f"video.tmp.{video_format}")
 
@@ -74,54 +74,40 @@ def recompress_video(src_path, dst_path, video_format, low_quality):
 
     args = ["ffmpeg", "-y", "-i", f"file:{src_path}"]
 
-    if low_quality:
-        args += [
-            "-codec:v",
-            video_codecs[video_format],
-            "-quality",
-            "best",
-            "-cpu-used",
-            "0",
-            "-b:v",
-            "300k",
-            "-qmin",
-            "30",
-            "-qmax",
-            "42",
-            "-maxrate",
-            "300k",
-            "-bufsize",
-            "1000k",
-            "-threads",
-            "8",
-            "-vf",
-            "scale='480:trunc(ow/a/2)*2'",
-            "-codec:a",
-            audio_codecs[video_format],
-            "-ar",
-            "44100",
-            "-b:a",
-            "128k",
-        ]
-    else:
-        args += [
-            "-codec:v",
-            video_codecs[video_format],
-            "-quality",
-            "best",
-            "-cpu-used",
-            "0",
-            "-bufsize",
-            "1000k",
-            "-threads",
-            "8",
-            "-codec:a",
-            audio_codecs[video_format],
-        ]
+    args += [
+        "-codec:v",
+        video_codecs[video_format],
+        "-quality",
+        "best",
+        "-cpu-used",
+        "0",
+        "-b:v",
+        "300k",
+        "-qmin",
+        "30",
+        "-qmax",
+        "42",
+        "-maxrate",
+        "300k",
+        "-bufsize",
+        "1000k",
+        "-threads",
+        "8",
+        "-vf",
+        "scale='480:trunc(ow/a/2)*2'",
+        "-codec:a",
+        audio_codecs[video_format],
+        "-ar",
+        "44100",
+        "-b:a",
+        "128k",
+        "-max_muxing_queue_size",
+        "9999",
+    ]
     args += params[video_format]
     args += [f"file:{tmp_path}"]
 
-    logger.info(f"recompress {src_path} -> {dst_path} {video_format=} {low_quality=}")
+    logger.info(f"recompress {src_path} -> {dst_path} {video_format=}")
     logger.debug(nicer_args_join(args))
 
     ffmpeg = subprocess.run(args)

@@ -626,14 +626,13 @@ class Youtube2Zim(object):
         for video_id in videos_ids:
             options_copy = options.copy()
             video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
-            cache_downloaded = None
+            downloaded_from_cache = False
             if self.s3_storage:
                 s3_key = f"{self.video_format}/{self.video_quality}/{video_id}"
                 video_path = video_location.joinpath(f"video.{self.video_format}")
-                cache_downloaded = self.download_from_cache(s3_key, video_path)
-                # skip_download will skip downloading videos only
-                # if cache is found in S3, we will skip video download from youtube_dl
-                options_copy["skip_download"] = cache_downloaded
+                downloaded_from_cache = self.download_from_cache(s3_key, video_path)
+                # YTDL option to skip download of video, but not thumbnail and subtitles
+                options_copy["skip_download"] = True
             try:
                 with youtube_dl.YoutubeDL(options_copy) as ydl:
                     ydl.download([video_id])
@@ -642,12 +641,12 @@ class Youtube2Zim(object):
                     video_id,
                     options_copy["y2z_video_format"],
                     options_copy["y2z_low_quality"],
-                    recompress=not cache_downloaded,
+                    skip_recompress=downloaded_from_cache,
                 )
                 succeeded.append(video_id)
             except (youtube_dl.utils.DownloadError, FileNotFoundError):
                 failed.append(video_id)
-            if self.s3_storage and not cache_downloaded:
+            if self.s3_storage and not downloaded_from_cache:
                 self.upload_to_cache(s3_key, video_path)
         return succeeded, failed
 
