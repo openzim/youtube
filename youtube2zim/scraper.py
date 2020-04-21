@@ -792,6 +792,16 @@ class Youtube2Zim(object):
             - videos/<videoId>/video.jpg            template
         """
 
+        def remove_unused_videos(used_videos):
+            used_video_ids = []
+            for video in used_videos:
+                used_video_ids.append(video["contentDetails"]["videoId"])
+            videos_dir_contents = [x for x in self.videos_dir.iterdir() if x.is_dir()]
+            for dir in videos_dir_contents:
+                if not dir.stem in used_video_ids:
+                    logger.debug(f"Removing unused video {dir.stem}")
+                    shutil.rmtree(dir, ignore_errors=True)
+
         def is_present(video):
             """ whether this video has actually been succeffuly downloaded """
             return video["contentDetails"]["videoId"] in actual_videos_ids
@@ -818,42 +828,38 @@ class Youtube2Zim(object):
         videos = list(filter(is_present, videos))
         videos_channels = load_json(self.cache_dir, "videos_channels")
         has_channel = functools.partial(video_has_channel, videos_channels)
+        # filter videos to exclude those for which we have no channel (#76)
+        videos = list(filter(has_channel, videos))
         for video in videos:
             video_id = video["contentDetails"]["videoId"]
-            # Ensure that video has channel (#76)
-            if(has_channel(video)):
-                title = video["snippet"]["title"]
-                slug = get_slug(title)
-                description = video["snippet"]["description"]
-                publication_date = dt_parser.parse(
-                    video["contentDetails"]["videoPublishedAt"]
-                )
-                author = videos_channels[video_id]
-                subtitles = get_subtitles(video_id)
-                video_url = f"https://www.youtube.com/watch?v={video_id}"
+            title = video["snippet"]["title"]
+            slug = get_slug(title)
+            description = video["snippet"]["description"]
+            publication_date = dt_parser.parse(
+                video["contentDetails"]["videoPublishedAt"]
+            )
+            author = videos_channels[video_id]
+            subtitles = get_subtitles(video_id)
+            video_url = f"https://www.youtube.com/watch?v={video_id}"
 
-                html = env.get_template("article.html").render(
-                    video_id=video_id,
-                    video_format=self.video_format,
-                    author=author,
-                    title=title,
-                    description=description,
-                    date=format_date(publication_date, format="medium", locale=self.locale),
-                    subtitles=subtitles,
-                    url=video_url,
-                    channel_id=video["snippet"]["channelId"],
-                    color=self.main_color,
-                    background_color=self.secondary_color,
-                    autoplay=self.autoplay,
-                )
-                with open(
-                    self.build_dir.joinpath(f"{slug}.html"), "w", encoding="utf-8"
-                ) as fp:
-                    fp.write(html)
-            else:
-                # video doesn't have channel, remove it
-                shutil.rmtree(self.videos_dir.joinpath(video_id), ignore_errors=True)
-
+            html = env.get_template("article.html").render(
+                video_id=video_id,
+                video_format=self.video_format,
+                author=author,
+                title=title,
+                description=description,
+                date=format_date(publication_date, format="medium", locale=self.locale),
+                subtitles=subtitles,
+                url=video_url,
+                channel_id=video["snippet"]["channelId"],
+                color=self.main_color,
+                background_color=self.secondary_color,
+                autoplay=self.autoplay,
+            )
+            with open(
+                self.build_dir.joinpath(f"{slug}.html"), "w", encoding="utf-8"
+            ) as fp:
+                fp.write(html)
 
         # build homepage
         html = env.get_template("home.html").render(
@@ -926,3 +932,6 @@ class Youtube2Zim(object):
             self.build_dir.joinpath("metadata.json"), "w", encoding="utf-8"
         ) as fp:
             json.dump({"video_format": self.video_format}, fp, indent=4)
+
+        # clean videos left out in videos directory
+        remove_unused_videos(videos)
