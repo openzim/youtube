@@ -310,7 +310,7 @@ class Youtube2Zim(object):
         logger.info(f"  generated-subtitles: {self.all_subtitles}")
         if self.s3_storage:
             logger.info(
-                f"  using cache: {self.s3_storage.url.netloc}  bucket: {self.s3_storage.bucket_name}"
+                f"  using cache: {self.s3_storage.url.netloc} with bucket: {self.s3_storage.bucket_name}"
             )
         if not self.skip_download:
             succeeded, failed = self.download_video_files(
@@ -603,9 +603,9 @@ class Youtube2Zim(object):
         try:
             self.s3_storage.download_file(key, video_path)
         except Exception as exc:
-            logger.error(f"{key} download failed with {exc}")
+            logger.error(f"{key} failed to download from cache: {exc}")
             return False
-        logger.info(f"cache ({key}) downloaded {video_path}")
+        logger.info(f"downloaded {video_path} from cache at {key}")
         return True
 
     def upload_to_cache(self, key, video_path):
@@ -615,9 +615,9 @@ class Youtube2Zim(object):
                 video_path, key, meta={"encoder_version": ENCODER_VERSION}
             )
         except Exception as exc:
-            logger.error(f"{key} upload failed with {exc}")
+            logger.error(f"{key} failed to upload to cache: {exc}")
             return False
-        logger.info(f"video cached to {key}")
+        logger.info(f"uploaded {video_path} to cache at {key}")
         return True
 
     def download_video_files_batch(self, options, videos_ids):
