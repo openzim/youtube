@@ -796,6 +796,9 @@ class Youtube2Zim(object):
             """ whether this video has actually been succeffuly downloaded """
             return video["contentDetails"]["videoId"] in actual_videos_ids
 
+        def video_has_channel(videos_channels, video):
+            return video["contentDetails"]["videoId"] in videos_channels
+
         def get_subtitles(video_id):
             video_dir = self.videos_dir.joinpath(video_id)
             languages = [
@@ -814,6 +817,9 @@ class Youtube2Zim(object):
         # filter videos so we only include the ones we could retrieve
         videos = list(filter(is_present, videos))
         videos_channels = load_json(self.cache_dir, "videos_channels")
+        has_channel = functools.partial(video_has_channel, videos_channels)
+        # filter videos to exclude those for which we have no channel (#76)
+        videos = list(filter(has_channel, videos))
         for video in videos:
             video_id = video["contentDetails"]["videoId"]
             title = video["snippet"]["title"]
@@ -898,6 +904,7 @@ class Youtube2Zim(object):
                 # filtering-out missing ones (deleted or not downloaded)
                 playlist_videos = list(filter(skip_deleted_videos, playlist_videos))
                 playlist_videos = list(filter(is_present, playlist_videos))
+                playlist_videos = list(filter(has_channel, playlist_videos))
                 # sorting them based on playlist
                 playlist_videos.sort(key=lambda v: v["snippet"]["position"])
 
