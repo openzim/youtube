@@ -818,38 +818,42 @@ class Youtube2Zim(object):
         videos = list(filter(is_present, videos))
         videos_channels = load_json(self.cache_dir, "videos_channels")
         has_channel = functools.partial(video_has_channel, videos_channels)
-        # filter videos to exclude those for which we have no channel (#76)
-        videos = list(filter(has_channel, videos))
         for video in videos:
             video_id = video["contentDetails"]["videoId"]
-            title = video["snippet"]["title"]
-            slug = get_slug(title)
-            description = video["snippet"]["description"]
-            publication_date = dt_parser.parse(
-                video["contentDetails"]["videoPublishedAt"]
-            )
-            author = videos_channels[video_id]
-            subtitles = get_subtitles(video_id)
-            video_url = f"https://www.youtube.com/watch?v={video_id}"
+            # Ensure that video has channel (#76)
+            if(has_channel(video)):
+                title = video["snippet"]["title"]
+                slug = get_slug(title)
+                description = video["snippet"]["description"]
+                publication_date = dt_parser.parse(
+                    video["contentDetails"]["videoPublishedAt"]
+                )
+                author = videos_channels[video_id]
+                subtitles = get_subtitles(video_id)
+                video_url = f"https://www.youtube.com/watch?v={video_id}"
 
-            html = env.get_template("article.html").render(
-                video_id=video_id,
-                video_format=self.video_format,
-                author=author,
-                title=title,
-                description=description,
-                date=format_date(publication_date, format="medium", locale=self.locale),
-                subtitles=subtitles,
-                url=video_url,
-                channel_id=video["snippet"]["channelId"],
-                color=self.main_color,
-                background_color=self.secondary_color,
-                autoplay=self.autoplay,
-            )
-            with open(
-                self.build_dir.joinpath(f"{slug}.html"), "w", encoding="utf-8"
-            ) as fp:
-                fp.write(html)
+                html = env.get_template("article.html").render(
+                    video_id=video_id,
+                    video_format=self.video_format,
+                    author=author,
+                    title=title,
+                    description=description,
+                    date=format_date(publication_date, format="medium", locale=self.locale),
+                    subtitles=subtitles,
+                    url=video_url,
+                    channel_id=video["snippet"]["channelId"],
+                    color=self.main_color,
+                    background_color=self.secondary_color,
+                    autoplay=self.autoplay,
+                )
+                with open(
+                    self.build_dir.joinpath(f"{slug}.html"), "w", encoding="utf-8"
+                ) as fp:
+                    fp.write(html)
+            else:
+                # video doesn't have channel, remove it
+                shutil.rmtree(self.videos_dir.joinpath(video_id), ignore_errors=True)
+
 
         # build homepage
         html = env.get_template("home.html").render(
