@@ -791,6 +791,13 @@ class Youtube2Zim(object):
             - videos/<videoId>/video.jpg            template
         """
 
+        def remove_unused_videos(videos):
+            video_ids = [video["contentDetails"]["videoId"] for video in videos]
+            for path in self.videos_dir.iterdir():
+                if path.is_dir() and path.name not in video_ids:
+                    logger.debug(f"Removing unused video {path.name}")
+                    shutil.rmtree(path, ignore_errors=True)
+
         def is_present(video):
             """ whether this video has actually been succeffuly downloaded """
             return video["contentDetails"]["videoId"] in actual_videos_ids
@@ -921,3 +928,6 @@ class Youtube2Zim(object):
             self.build_dir.joinpath("metadata.json"), "w", encoding="utf-8"
         ) as fp:
             json.dump({"video_format": self.video_format}, fp, indent=4)
+
+        # clean videos left out in videos directory
+        remove_unused_videos(videos)
