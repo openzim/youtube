@@ -794,10 +794,10 @@ class Youtube2Zim(object):
 
         def remove_unused_videos(videos):
             video_ids = [video["contentDetails"]["videoId"] for video in videos]
-            for fname in self.videos_dir.iterdir():
-                if fname.is_dir() and fname.name not in video_ids:
-                    logger.debug(f"Removing unused video {fname.name}")
-                    shutil.rmtree(fname, ignore_errors=True)
+            for path in self.videos_dir.iterdir():
+                if path.is_dir() and path.name not in video_ids:
+                    logger.debug(f"Removing unused video {path.name}")
+                    shutil.rmtree(path, ignore_errors=True)
 
         def is_present(video):
             """ whether this video has actually been succeffuly downloaded """
