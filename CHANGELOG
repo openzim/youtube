@@ -1,6 +1,10 @@
 Version 2.1.4
 
  Fixed compression issue on system without swap (#75)
+ Using 44kHz audio sample rate on low-quality to save some space (#74)
+ Added S3 Optimization Cache support (#69 #80)
+ Bumped some dependencies (zimscraperlib, kiwixstorage)
+ Filtering out videos with missing channel (#76)
 
 Version 2.1.3
  Fixed regresssion on --low-quality not working anymore
