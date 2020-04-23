@@ -141,6 +141,8 @@ function firstVideos(video) {
                     'type="video/{{ video_format}}" />' + subtitles + '</video>' +
             '<div id="video-details">' +
                 '<h4 id="title">' + video['title'] + '</h4>' + 
-                '<p class="description">' + video['description'] + '</p>' +
+                '<p class="description">' + video['description'].slice(0, 200) +
+                '...<a href=\'' + video['slug'] + '.html\'>Read More</a>' +
+                '</p>' +
             '</div>';
 }
