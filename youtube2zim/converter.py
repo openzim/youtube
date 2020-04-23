@@ -64,7 +64,19 @@ def post_process_video(
 
 
 def recompress_video(src_path, dst_path, video_format):
-    """ re-encode in-place (via temp file) for format at lower quality """
+    """ re-encode in-place (via temp file) for format at lower quality
+
+        references:
+            - https://trac.ffmpeg.org/wiki/Limiting%20the%20output%20bitrate
+            - https://ffmpeg.org/ffmpeg-filters.html#scale
+
+            - webm options: https://trac.ffmpeg.org/wiki/Encode/VP9
+            - h264 options: https://trac.ffmpeg.org/wiki/Encode/H.264
+                            https://sites.google.com/site/linuxencoding/x264-ffmpeg-mapping
+
+            - vorbis options: https://trac.ffmpeg.org/wiki/TheoraVorbisEncodingGuide
+            - acc options: https://trac.ffmpeg.org/wiki/Encode/AAC
+    """
 
     tmp_path = src_path.parent.joinpath(f"video.tmp.{video_format}")
 
@@ -75,32 +87,47 @@ def recompress_video(src_path, dst_path, video_format):
     args = ["ffmpeg", "-y", "-i", f"file:{src_path}"]
 
     args += [
+        # target video codec
         "-codec:v",
         video_codecs[video_format],
+        # compression efficiency
         "-quality",
         "best",
+        # increases encoding speed by degrading quality (0: don't speed-up)
         "-cpu-used",
         "0",
+        # set output video average bitrate
         "-b:v",
         "300k",
+        # quality range (min, max), the higher the worst quality
+        # qmin 0 qmax 1 == best quality
+        # qmin 50 qmax 51 == worst quality
         "-qmin",
         "30",
         "-qmax",
         "42",
+        # constrain quality to not exceed this bitrate
         "-maxrate",
         "300k",
+        # decoder buffer size, which determines the variability of the output bitrate
         "-bufsize",
         "1000k",
+        # nb of threads to use
         "-threads",
         "8",
+        # change output video dimensions
         "-vf",
         "scale='480:trunc(ow/a/2)*2'",
+        # target audio codec
         "-codec:a",
         audio_codecs[video_format],
+        # set sample rate
         "-ar",
         "44100",
+        # set output audio average bitrate
         "-b:a",
         "128k",
+        # increase queue size to prevent failure on system without swap
         "-max_muxing_queue_size",
         "9999",
     ]
