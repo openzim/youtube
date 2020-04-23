@@ -1,3 +1,7 @@
+Version 2.1.5
+
+Fixed regression causing S3 to only use videos from cache (never youtube)
+
 Version 2.1.4
 
  Fixed compression issue on system without swap (#75)

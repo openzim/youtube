@@ -631,8 +631,9 @@ class Youtube2Zim(object):
                 s3_key = f"{self.video_format}/{self.video_quality}/{video_id}"
                 video_path = video_location.joinpath(f"video.{self.video_format}")
                 downloaded_from_cache = self.download_from_cache(s3_key, video_path)
-                # YTDL option to skip download of video, but not thumbnail and subtitles
-                options_copy["skip_download"] = True
+                # option to skip download of video, but not thumbnail and subtitles
+                if downloaded_from_cache:
+                    options_copy["skip_download"] = True
             try:
                 with youtube_dl.YoutubeDL(options_copy) as ydl:
                     ydl.download([video_id])
