@@ -8,7 +8,7 @@ function genplaylist() {
     videoDB.getjson();
     videoDB.loadData(undefined, function() {
         var data = videoDB.getPage(videoDB.getPageNumber());
-        firstVideos(data);
+        firstVideos(videoDB.getFirstData());
         refreshVideos(data)    
     })    
     setupPagination();
@@ -97,7 +97,7 @@ function refreshPagination() {
 function refreshVideos(pageData) {
     var videoList = document.getElementById('video-items');
     videoList.innerHTML = '';
-    
+
     for (i in pageData) {
       var video = pageData[i];
       var li = document.createElement('li');
@@ -121,8 +121,7 @@ function refreshVideos(pageData) {
 }
 
 
-function firstVideos(pageData) {
-    var video = pageData[0];
+function firstVideos(video) {
     var videoIntro = document.getElementById('video-intro');
     var subtitles = '';
     if (video['subtitles'].length > 0) {
