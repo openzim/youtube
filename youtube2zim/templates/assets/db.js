@@ -6,6 +6,7 @@ var videoDB = (function() {
   var ITEMS_PER_PAGE = {{ NB_VIDEOS_PER_PAGE }};
   var db = {};
   var data;
+  var first_video;
   var page;
   var selected_playlist
   var  i
@@ -30,6 +31,7 @@ var videoDB = (function() {
   db.loadData = function(language, callback){
     if (typeof language === 'undefined'){
       data = json_selected;
+      first_video = data.shift();
     }
     else {
 
@@ -44,6 +46,7 @@ var videoDB = (function() {
           data.push(json_selected[i]);
         }
       }
+      first_video = data.shift();
     }
     callback();
   }
@@ -109,6 +112,10 @@ var videoDB = (function() {
     var pageStart = (page-1)*ITEMS_PER_PAGE;
     var pageEnd = page*ITEMS_PER_PAGE;
     return data.slice(pageStart, pageEnd);
+  }
+
+  db.getFirstVideo = function() {
+    return first_video;
   }
 
   return db;

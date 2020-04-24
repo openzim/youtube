@@ -8,7 +8,7 @@ function genplaylist() {
     videoDB.getjson();
     videoDB.loadData(undefined, function() {
         var data = videoDB.getPage(videoDB.getPageNumber());
-        firstVideos(data);
+        firstVideo(videoDB.getFirstVideo());
         refreshVideos(data)    
     })    
     setupPagination();
@@ -97,7 +97,7 @@ function refreshPagination() {
 function refreshVideos(pageData) {
     var videoList = document.getElementById('video-items');
     videoList.innerHTML = '';
-    
+
     for (i in pageData) {
       var video = pageData[i];
       var li = document.createElement('li');
@@ -121,8 +121,7 @@ function refreshVideos(pageData) {
 }
 
 
-function firstVideos(pageData) {
-    var video = pageData[0];
+function firstVideo(video) {
     var videoIntro = document.getElementById('video-intro');
     var subtitles = '';
     if (video['subtitles'].length > 0) {
@@ -131,6 +130,10 @@ function firstVideos(pageData) {
             subtitles += '<track kind="subtitles" src="videos/' + video['id'] + '/video.' + subtitle['code'] + '.vtt" srclang="' + subtitle['code'] + '" label="' + subtitle['native'] + '" />';
         }
     }
+    var video_desctiption = video['description'].slice(0, 200);
+    if (video['description'].length > 200) {
+        video_desctiption += '...';
+    }
     videoIntro.innerHTML = '' +
         '<video id="video_container" class="video-js vjs-default-skin" ' +
                'width="480px" height="270px" crossorigin ' +
@@ -138,10 +141,16 @@ function firstVideos(pageData) {
                             '"ogvjs": {"base": "assets/ogvjs"}, "autoplay": false, ' +
                                       '"preload": true, "controls": true}\' ' +
                'poster="' + ZIM_IMG_NS + 'videos/' + video['id'] + '/video.jpg">' +
-            '<source src="' + ZIM_IMG_NS + 'videos/' + video['id'] + '/video.{{ video_format}}" ' +
-                    'type="video/{{ video_format}}" />' + subtitles + '</video>' +
+            '<source src="' + ZIM_IMG_NS + 'videos/' + video['id'] + '/video.{{ video_format }}" ' +
+                    'type="video/{{ video_format }}" />' + subtitles + '</video>' +
             '<div id="video-details">' +
-                '<h4 id="title">' + video['title'] + '</h4>' + 
-                '<p class="description">' + video['description'] + '</p>' +
+                '<h4 id="title">' +
+                    '<a href=\'' + video['slug'] + '.html\'>' +
+                        video['title'] +
+                    '</a>' +
+                '</h4>' + 
+                '<p class="description">' +
+                    video_desctiption +
+                '</p>' +
             '</div>';
 }
