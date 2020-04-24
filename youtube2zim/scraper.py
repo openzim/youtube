@@ -875,9 +875,7 @@ class Youtube2Zim(object):
         # rewrite app.js including `format`
         with open(self.assets_dir.joinpath("app.js"), "w", encoding="utf-8") as fp:
             fp.write(
-                env.get_template("assets/app.js").render(
-                    video_format=self.video_format
-                )
+                env.get_template("assets/app.js").render(video_format=self.video_format)
             )
 
         # rewrite app.js including `pagination`
