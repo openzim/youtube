@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2020-04-24 16:02+0530\n"
-"PO-Revision-Date: 2020-04-24 16:03+0530\n"
+"POT-Creation-Date: 2020-04-24 18:33+0530\n"
+"PO-Revision-Date: 2020-04-24 18:35+0530\n"
 "Last-Translator: reg <rgaudin@gmail.com>\n"
 "Language: fr\n"
 "Language-Team: \n"
@@ -34,7 +34,3 @@ msgstr "Page {current}/{total}"
 #: youtube2zim/scraper.py:752 youtube2zim/scraper.py:870
 msgid "Back to top"
 msgstr "Haut"
-
-#: youtube2zim/scraper.py:879
-msgid "Read more"
-msgstr "Lire la suite"

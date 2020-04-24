@@ -8,7 +8,7 @@ function genplaylist() {
     videoDB.getjson();
     videoDB.loadData(undefined, function() {
         var data = videoDB.getPage(videoDB.getPageNumber());
-        firstVideos(videoDB.getFirstData());
+        firstVideo(videoDB.getFirstVideo());
         refreshVideos(data)    
     })    
     setupPagination();
@@ -121,7 +121,7 @@ function refreshVideos(pageData) {
 }
 
 
-function firstVideos(video) {
+function firstVideo(video) {
     var videoIntro = document.getElementById('video-intro');
     var subtitles = '';
     if (video['subtitles'].length > 0) {
@@ -129,6 +129,10 @@ function firstVideos(video) {
             var subtitle = video['subtitles'][i];
             subtitles += '<track kind="subtitles" src="videos/' + video['id'] + '/video.' + subtitle['code'] + '.vtt" srclang="' + subtitle['code'] + '" label="' + subtitle['native'] + '" />';
         }
+    }
+    var video_desctiption = video['description'].slice(0, 200);
+    if (video['description'].length > 200) {
+        video_desctiption += '...';
     }
     videoIntro.innerHTML = '' +
         '<video id="video_container" class="video-js vjs-default-skin" ' +
@@ -140,9 +144,13 @@ function firstVideos(video) {
             '<source src="' + ZIM_IMG_NS + 'videos/' + video['id'] + '/video.{{ video_format }}" ' +
                     'type="video/{{ video_format }}" />' + subtitles + '</video>' +
             '<div id="video-details">' +
-                '<h4 id="title">' + video['title'] + '</h4>' + 
-                '<p class="description">' + video['description'].slice(0, 200) +
-                '...<a href=\'' + video['slug'] + '.html\'>{{ read_more_label }}</a>' +
+                '<h4 id="title">' +
+                    '<a href=\'' + video['slug'] + '.html\'>' +
+                        video['title'] +
+                    '</a>' +
+                '</h4>' + 
+                '<p class="description">' +
+                    video_desctiption +
                 '</p>' +
             '</div>';
 }
