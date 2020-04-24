@@ -137,12 +137,12 @@ function firstVideos(video) {
                             '"ogvjs": {"base": "assets/ogvjs"}, "autoplay": false, ' +
                                       '"preload": true, "controls": true}\' ' +
                'poster="' + ZIM_IMG_NS + 'videos/' + video['id'] + '/video.jpg">' +
-            '<source src="' + ZIM_IMG_NS + 'videos/' + video['id'] + '/video.{{ video_format}}" ' +
-                    'type="video/{{ video_format}}" />' + subtitles + '</video>' +
+            '<source src="' + ZIM_IMG_NS + 'videos/' + video['id'] + '/video.{{ video_format }}" ' +
+                    'type="video/{{ video_format }}" />' + subtitles + '</video>' +
             '<div id="video-details">' +
                 '<h4 id="title">' + video['title'] + '</h4>' + 
                 '<p class="description">' + video['description'].slice(0, 200) +
-                '...<a href=\'' + video['slug'] + '.html\'>Read More</a>' +
+                '...<a href=\'' + video['slug'] + '.html\'>{{ read_more_label }}</a>' +
                 '</p>' +
             '</div>';
 }
