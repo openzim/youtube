@@ -22,12 +22,12 @@ ASSETS_PATH="${SCRIPT_PATH}/youtube2zim/templates/assets"
 echo "About to download JS assets to ${ASSETS_PATH}"
 
 echo "getting video.js"
-curl -L -O https://github.com/videojs/video.js/releases/download/v7.6.4/video-js-7.6.4.zip
+curl -L -O https://github.com/videojs/video.js/releases/download/v7.8.1/video-js-7.8.1.zip
 rm -rf $ASSETS_PATH/videojs
 mkdir -p $ASSETS_PATH/videojs
-unzip -o -d $ASSETS_PATH/videojs video-js-7.6.4.zip
+unzip -o -d $ASSETS_PATH/videojs video-js-7.8.1.zip
 rm -rf $ASSETS_PATH/videojs/alt $ASSETS_PATH/videojs/examples
-rm -f video-js-7.6.4.zip
+rm -f video-js-7.8.1.zip
 
 echo "getting ogv.js"
 curl -L -O https://github.com/brion/ogv.js/releases/download/1.6.1/ogvjs-1.6.1.zip
