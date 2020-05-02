@@ -26,7 +26,8 @@
             <video  class="video-js vjs-default-skin"
                     id="video_container"
                     poster="videos/{{ video_id }}/video.jpg"
-                    width="480px" height="270px">
+                    width="480px" height="270px"
+                    data-setup='{"techOrder": ["html5", "ogvjs"], "ogvjs": {"base": "assets/ogvjs"}, "autoplay": {% if autoplay %}true{% else %}false{% endif %}, "preload": true, "controls": true, "controlBar": {"pictureInPictureToggle":false}}'>
                 <source src="videos/{{ video_id }}/video.{{ video_format }}" type="video/{{ video_format }}" />{% if subtitles %}
                 {% for language in subtitles %}<track kind="subtitles" src="videos/{{ video_id }}/video.{{ language.code }}.vtt" srclang="{{ language.code }}" label="{{ language.native }}" />
                 {% endfor %}{% endif %}
@@ -36,9 +37,5 @@
             </div>
             <div id="date">{{ date }}</div>
         </div>
-        <script>
-            video_container_element = document.getElementById("video_container");
-            video_container_element.setAttribute("data-setup", "{\"techOrder\": [\"html5\", \"ogvjs\"], \"ogvjs\": {\"base\": \"assets/ogvjs\"}, \"autoplay\": {% if autoplay %}true{% else %}false{% endif %}, \"preload\": true, \"controls\": true, \"controlBar\": { \"pictureInPictureToggle\":" + !!document.pictureInPictureEnabled +  "}}");
-        </script>
     </body>
 </html>
