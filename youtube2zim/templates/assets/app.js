@@ -139,7 +139,7 @@ function firstVideo(video) {
                'width="480px" height="270px" crossorigin ' +
                'data-setup=\'{"techOrder": ["html5", "ogvjs"], ' + 
                             '"ogvjs": {"base": "assets/ogvjs"}, "autoplay": false, ' +
-                                      '"preload": true, "controls": true}\' ' +
+                                      '"preload": true, "controls": true, "controlBar": {"pictureInPictureToggle": false}}\'' +
                'poster="' + ZIM_IMG_NS + 'videos/' + video['id'] + '/video.jpg">' +
             '<source src="' + ZIM_IMG_NS + 'videos/' + video['id'] + '/video.{{ video_format }}" ' +
                     'type="video/{{ video_format }}" />' + subtitles + '</video>' +
