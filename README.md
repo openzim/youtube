@@ -73,11 +73,7 @@ youtube2zim --api-key "<your-api-key>" --type user --id "Vsauce"
 ## Notes
 
 * Your API_KEY is subject to usage quotas (10,000 requests/day) so use `--only_test_branding` when adjusting parameters and branding to not *waste your quota*.
-* On macOS, the locale setting is buggy. You need to launch it with `LANGUAGE` environment variable (as ISO-639-1) for the translations to work.
-
-```bash
-LANGUAGE=fr youtube2zim --language fra
-```
+* If you encounter issues reading ZIM files created using this scraper, please take a look at the [Compatibility Matrix](https://github.com/openzim/youtube/wiki/Compatibility) before opening a ticket.
 
 Development
 -----------
