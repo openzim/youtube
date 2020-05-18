@@ -38,7 +38,7 @@ setup(
     ],
     zip_safe=False,
     include_package_data=True,
-    entry_points={"console_scripts": ["youtube2zim=youtube2zim.__main__:main"]},
+    entry_points={"console_scripts": ["youtube2zim=youtube2zim.__main__:main", "youtube2playlistzims=youtube2zim.extras.youtube2playlistzims.__main__:main"]},
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
@@ -46,5 +46,5 @@ setup(
         "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.8",
 )
