@@ -2,12 +2,6 @@
 # -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4 nu
 
-"""
-    create project on Google Developer console
-    Add Youtube Data API v3 to it
-    Create credentials (Other non-UI, Public Data)
-"""
-
 import shutil
 from pathlib import Path
 import subprocess
@@ -39,7 +33,7 @@ class Youtube2PlaylistZims(object):
         all_subtitles,
         autoplay,
         output_dir,
-        fname,
+        base_fname,
         debug,
         keep_build_dir,
         max_concurrency,
@@ -54,12 +48,11 @@ class Youtube2PlaylistZims(object):
         description=None,
         creator=None,
         publisher=None,
-        name=None,
+        base_name=None,
         profile_image=None,
         banner_image=None,
         main_color=None,
         secondary_color=None,
-        only_test_branding=None,
     ):
         # data-retrieval info
         self.collection_type = collection_type
@@ -75,14 +68,14 @@ class Youtube2PlaylistZims(object):
         self.nb_videos_per_page = nb_videos_per_page
         self.all_subtitles = all_subtitles
         self.autoplay = autoplay
-        self.fname = fname
+        self.base_fname = base_fname
         self.language = language
         self.tags = tags
         self.title = title
         self.description = description
         self.creator = creator
         self.publisher = publisher
-        self.name = name
+        self.base_name = base_name
         self.profile_image = profile_image
         self.banner_image = banner_image
         self.main_color = main_color
@@ -121,8 +114,6 @@ class Youtube2PlaylistZims(object):
     def is_playlists(self):
         return self.collection_type == PLAYLISTS
 
-    
-
     def extract_playlists(self):
         """ prepare a list of Playlist from user request
 
@@ -155,26 +146,27 @@ class Youtube2PlaylistZims(object):
 
     def run_youtube2zim(self):
         for playlist in self.playlists:
-            param_map = [("optimization-cache", "s3_url_with_credentials"),
-            ("use-any-optimized-version", "use_any_optimized_version"),
-            ("dateafter", "dateafter"),
-            ("concurrency", "max_concurrency"),
-            ("keep", "keep_build_dir"),
-            ("debug", "debug"),
-            ("secondary-color", "secondary_color"),
-            ("main-color", "main_color"),
-            ("banner", "banner_image"),
-            ("profile", "profile_image"),
-            ("tags", "tags"),
-            ("publisher", "publisher"),
-            ("language", "language"),
-            ("autoplay", "autoplay"),
-            ("locale", "locale_name"),
-            ("pagination", "nb_videos_per_page"),
-            ("all-subtitles", "all_subtitles"),
-            ("low-quality", "low_quality"),
-            ("format", "video_format"),
-            ("api-key", "api_key")
+            param_map = [
+                ("optimization-cache", "s3_url_with_credentials"),
+                ("use-any-optimized-version", "use_any_optimized_version"),
+                ("dateafter", "dateafter"),
+                ("concurrency", "max_concurrency"),
+                ("keep", "keep_build_dir"),
+                ("debug", "debug"),
+                ("secondary-color", "secondary_color"),
+                ("main-color", "main_color"),
+                ("banner", "banner_image"),
+                ("profile", "profile_image"),
+                ("tags", "tags"),
+                ("publisher", "publisher"),
+                ("language", "language"),
+                ("autoplay", "autoplay"),
+                ("locale", "locale_name"),
+                ("pagination", "nb_videos_per_page"),
+                ("all-subtitles", "all_subtitles"),
+                ("low-quality", "low_quality"),
+                ("format", "video_format"),
+                ("api-key", "api_key"),
             ]
             args = ["youtube2zim"]
 
@@ -190,33 +182,38 @@ class Youtube2PlaylistZims(object):
 
             # set dynamically passed arguments
             playlist_output_dir = self.output_dir.joinpath(playlist.playlist_id)
+            name = self.base_name + f"_{playlist.title}"
+            title = self.title if self.title else playlist.title
+            description = self.description if self.description else playlist.description
+            creator = self.creator if self.creator else playlist.creator_name
             args += [f"--id={playlist.playlist_id}"]
             args += [f"--output={str(playlist_output_dir)}"]
-            name = self.name + f"playlist_{playlist.playlist_id}"
-            args += [f"--name=\"{name}\""]
-            
+            args += [f"--name={name}"]
             args += [f"--zim-file={playlist.playlist_id}"]
-            args += [f"--title='{playlist.title}'"]
-            args += [f"--description='{playlist.description}'"]
-            args += [f"--creator='{playlist.creator_name}'"]
+            args += [f"--title={title}"]
+            args += [f"--description={description}"]
+            args += [f"--creator={creator}"]
             args += [f"--type=playlist"]
-
 
             logger.debug(args)
             subprocess.run(args, check=True)
-            logger.info(f"youtube2zim successfully created zim for playlist {playlist.playlist_id}")
+            logger.info(
+                f"youtube2zim successfully created zim for playlist {playlist.playlist_id}"
+            )
             logger.debug(f"Moving ZIM to output directory")
 
-            zim = playlist.title.replace(" ", "_")
-            if self.fname:
-                fname = self.fname + f"_{zim}"
-            else:
-                fname = zim
-            shutil.move(playlist_output_dir.joinpath(f"{playlist.playlist_id}.zim"), self.output_dir.joinpath(f"{fname}.zim"))
-            
-            
-            
-            # shutil.move(playlist_output_dir.glob("*.zim"), )
+            default_fname = playlist.title.replace(" ", "_")
+            fname = (
+                self.base_fname + f"_{default_fname}"
+                if self.base_fname
+                else default_fname
+            )
+            shutil.move(
+                playlist_output_dir.joinpath(f"{playlist.playlist_id}.zim"),
+                self.output_dir.joinpath(f"{fname}.zim"),
+            )
+            if not self.keep_build_dir:
+                shutil.rmtree(playlist_output_dir, ignore_errors=True)
 
     def run(self):
         """ execute the runner step by step """
@@ -245,4 +242,3 @@ class Youtube2PlaylistZims(object):
         self.run_youtube2zim()
         shutil.rmtree(self.cache_dir, ignore_errors=True)
         logger.info("All done")
-

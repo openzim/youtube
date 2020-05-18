@@ -8,3 +8,4 @@ NAME = pathlib.Path(__file__).parent.name
 CHANNELS = "channels"
 PLAYLISTS = "playlists"
 USERS = "users"
+RUNNERVERSION = 0.1

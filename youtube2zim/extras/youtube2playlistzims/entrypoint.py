@@ -6,7 +6,7 @@ import logging
 import argparse
 
 from ...constants import logger, YOUTUBE
-from .constants import USERS, CHANNELS, PLAYLISTS, NAME
+from .constants import USERS, CHANNELS, PLAYLISTS, NAME, RUNNERVERSION
 from .runner import Youtube2PlaylistZims
 
 
@@ -24,13 +24,14 @@ def main():
         dest="collection_type",
     )
     parser.add_argument(
-        "--id", help="Comma-seperated list of Youtube ID(s) of the collection", required=True, dest="youtube_ids"
+        "--ids",
+        help="Comma-seperated list of Youtube ID(s) of the collection",
+        required=True,
+        dest="youtube_ids",
     )
     parser.add_argument("--api-key", help="Youtube API Token", required=True)
     parser.add_argument(
-        "--name",
-        help="ZIM basename and filename (date will be appended)",
-        required=True,
+        "--base-name", help="ZIM basename",
     )
 
     parser.add_argument(
@@ -74,9 +75,9 @@ def main():
     )
 
     parser.add_argument(
-        "--zim-file",
-        help="ZIM file base name (playlist ID will be appended and based on --name if not provided)",
-        dest="fname",
+        "--zim-file-basename",
+        help="ZIM file base name (Appended before default name i.e. playlist title)",
+        dest="base_fname",
     )
 
     parser.add_argument(
@@ -88,16 +89,15 @@ def main():
         dest="locale_name",
     )
     parser.add_argument(
-        "--title",
-        help="Custom title for your project and ZIM. Default to Channel name (of first video if playlists)",
+        "--title", help="Custom title for all ZIMs. Default to playlist title",
     )
     parser.add_argument(
         "--description",
-        help="Custom description for your project and ZIM. Default to Channel name (of first video if playlists)",
+        help="Custom description for all ZIMs. Default to playlist description",
     )
     parser.add_argument(
         "--creator",
-        help="Name of content creator. Defaults to Channel name or “Youtue Channels”",
+        help="Name of content creator for all ZIMs. Default to playlist creator",
     )
     parser.add_argument(
         "--publisher", help="Custom publisher name (ZIM metadata)", default="Kiwix"
@@ -148,7 +148,7 @@ def main():
         "--version",
         help="Display runner version and exit",
         action="version",
-        version="0.1",
+        version=RUNNERVERSION,
     )
     parser.add_argument(
         "--dateafter",
