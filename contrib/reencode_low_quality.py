@@ -15,6 +15,9 @@ import json
 import logging
 import pathlib
 
+from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
+from zimscraperlib.video.encoding import reencode
+
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -27,14 +30,17 @@ def main(build_path):
         logger.error(f"Build dir `{build_dir}` is not an existing folder.")
         sys.exit(1)
 
-    # import youtube2zim hook
     sys.path = [str(pathlib.Path(__file__).parent.parent.resolve())] + sys.path
-    from youtube2zim.converter import recompress_video
 
     # retrieve source video_format
     with open(build_dir.joinpath("metadata.json"), "r") as fp:
         metadata = json.load(fp)
         video_format = metadata["video_format"]
+
+    if video_format == "mp4":
+        args = VideoMp4Low().to_ffmpeg_args()
+    else:
+        args = VideoWebmLow().to_ffmpeg_args()
 
     for video_id in build_dir.joinpath("videos").iterdir():
         if not video_id.is_dir():
@@ -42,7 +48,7 @@ def main(build_path):
         video_path = build_dir.joinpath("videos", video_id, f"video.{video_format}")
         logger.info(video_path)
 
-        recompress_video(video_path, video_path, video_format)
+        reencode(video_path, video_path, args, delete_src=True, failsafe=False)
 
     logger.info("all done.")
 
