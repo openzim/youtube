@@ -30,7 +30,6 @@ from zimscraperlib.zim import ZimInfo, make_zim_file
 from zimscraperlib.fix_ogvjs_dist import fix_source_dir
 from zimscraperlib.imaging import resize_image, get_colors, is_hex_color
 from zimscraperlib.video.presets import VideoWebmLow, VideoMp4Low
-from zimscraperlib.video.encoding import reencode
 from zimscraperlib.i18n import get_language_details, setlocale
 
 from .youtube import (
@@ -45,6 +44,7 @@ from .youtube import (
     skip_outofrange_videos,
 )
 from .utils import clean_text, load_json, save_json, get_slug
+from .converter import post_process_video
 from .constants import (
     logger,
     ROOT_DIR,
@@ -588,14 +588,14 @@ class Youtube2Zim(object):
 
         return overall_succeeded, overall_failed
 
-    def download_from_cache(self, key, video_path, enc_version):
+    def download_from_cache(self, key, video_path, encoder_version):
         """ whether it successfully downloaded from cache """
         if self.use_any_optimized_version:
             if not self.s3_storage.has_object(key, self.s3_storage.bucket_name):
                 return False
         else:
             if not self.s3_storage.has_object_matching_meta(
-                key, tag="encoder_version", value=enc_version
+                key, tag="encoder_version", value=f"v{str(encoder_version)}"
             ):
                 return False
         video_path.parent.mkdir(parents=True, exist_ok=True)
@@ -607,11 +607,11 @@ class Youtube2Zim(object):
         logger.info(f"downloaded {video_path} from cache at {key}")
         return True
 
-    def upload_to_cache(self, key, video_path, enc_version):
+    def upload_to_cache(self, key, video_path, encoder_version):
         """ whether it successfully uploaded to cache """
         try:
             self.s3_storage.upload_file(
-                video_path, key, meta={"encoder_version": enc_version}
+                video_path, key, meta={"encoder_version": f"v{str(encoder_version)}"}
             )
         except Exception as exc:
             logger.error(f"{key} failed to upload to cache: {exc}")
@@ -619,52 +619,12 @@ class Youtube2Zim(object):
         logger.info(f"uploaded {video_path} to cache at {key}")
         return True
 
-    def post_process_video(self, video_dir, video_id, enc, skip_recompress=False):
-        """ apply custom post-processing to downloaded video
-
-            - resize thumbnail
-            - recompress video if incorrect video_format or low_quality requested """
-
-        # find downloaded video from video_dir
-        files = [
-            p for p in video_dir.iterdir() if p.stem == "video" and p.suffix != ".jpg"
-        ]
-        if len(files) == 0:
-            logger.error(f"Video file missing in {video_dir} for {video_id}")
-            logger.debug(list(video_dir.iterdir()))
-            raise FileNotFoundError(f"Missing video file in {video_dir}")
-        if len(files) > 1:
-            logger.warning(
-                f"Multiple video file candidates for {video_id} in {video_dir}. Picking {files[0]} out of {files}"
-            )
-        src_path = files[0]
-
-        # resize thumbnail. we use max width:248x187px in listing
-        # but our posters are 480x270px
-        resize_image(
-            src_path.parent.joinpath("video.jpg"), width=480, height=270, method="cover"
-        )
-
-        # don't reencode if not requesting low-quality and received wanted format
-        if skip_recompress or (
-            not self.low_quality and src_path.suffix[1:] == self.video_format
-        ):
-            return
-
-        dst_path = src_path.parent.joinpath(f"video.{self.video_format}")
-        reencode(
-            src_path, dst_path, enc.to_ffmpeg_args(), delete_src=True, failsafe=False
-        )
-
     def download_video_files_batch(self, options, videos_ids):
         succeeded = []
         failed = []
 
-        # set encoders
-        if self.video_format == "mp4":
-            enc = VideoMp4Low()
-        else:
-            enc = VideoWebmLow()
+        # set preset
+        preset = {"mp4": VideoMp4Low}.get(self.video_format, VideoWebmLow)()
 
         for video_id in videos_ids:
             options_copy = options.copy()
@@ -674,7 +634,7 @@ class Youtube2Zim(object):
                 s3_key = f"{self.video_format}/{self.video_quality}/{video_id}"
                 video_path = video_location.joinpath(f"video.{self.video_format}")
                 downloaded_from_cache = self.download_from_cache(
-                    s3_key, video_path, enc.VERSION
+                    s3_key, video_path, preset.VERSION
                 )
                 # option to skip download of video, but not thumbnail and subtitles
                 if downloaded_from_cache:
@@ -682,10 +642,12 @@ class Youtube2Zim(object):
             try:
                 with youtube_dl.YoutubeDL(options_copy) as ydl:
                     ydl.download([video_id])
-                self.post_process_video(
+                post_process_video(
                     video_location,
                     video_id,
-                    enc,
+                    preset,
+                    self.video_format,
+                    self.low_quality,
                     skip_recompress=downloaded_from_cache,
                 )
                 succeeded.append(video_id)
@@ -697,7 +659,7 @@ class Youtube2Zim(object):
                 failed.append(video_id)
             else:  # upload to cache only if everything went well
                 if self.s3_storage and not downloaded_from_cache:
-                    self.upload_to_cache(s3_key, video_path, enc.VERSION)
+                    self.upload_to_cache(s3_key, video_path, preset.VERSION)
         return succeeded, failed
 
     def download_authors_branding(self):

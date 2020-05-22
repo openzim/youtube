@@ -30,8 +30,6 @@ def main(build_path):
         logger.error(f"Build dir `{build_dir}` is not an existing folder.")
         sys.exit(1)
 
-    sys.path = [str(pathlib.Path(__file__).parent.parent.resolve())] + sys.path
-
     # retrieve source video_format
     with open(build_dir.joinpath("metadata.json"), "r") as fp:
         metadata = json.load(fp)
