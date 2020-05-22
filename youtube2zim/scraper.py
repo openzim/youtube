@@ -44,7 +44,7 @@ from .youtube import (
     skip_outofrange_videos,
 )
 from .utils import clean_text, load_json, save_json, get_slug
-from .converter import post_process_video
+from .processing import post_process_video
 from .constants import (
     logger,
     ROOT_DIR,
@@ -595,7 +595,7 @@ class Youtube2Zim(object):
                 return False
         else:
             if not self.s3_storage.has_object_matching_meta(
-                key, tag="encoder_version", value=f"v{str(encoder_version)}"
+                key, tag="encoder_version", value=f"v{encoder_version}"
             ):
                 return False
         video_path.parent.mkdir(parents=True, exist_ok=True)
@@ -611,7 +611,7 @@ class Youtube2Zim(object):
         """ whether it successfully uploaded to cache """
         try:
             self.s3_storage.upload_file(
-                video_path, key, meta={"encoder_version": f"v{str(encoder_version)}"}
+                video_path, key, meta={"encoder_version": f"v{encoder_version}"}
             )
         except Exception as exc:
             logger.error(f"{key} failed to upload to cache: {exc}")
