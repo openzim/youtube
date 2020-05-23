@@ -633,6 +633,7 @@ class Youtube2Zim(object):
             if self.s3_storage:
                 s3_key = f"{self.video_format}/{self.video_quality}/{video_id}"
                 video_path = video_location.joinpath(f"video.{self.video_format}")
+                logger.debug(f"Attempting to download {video_id} from cache...")
                 downloaded_from_cache = self.download_from_cache(
                     s3_key, video_path, preset.VERSION
                 )
@@ -640,6 +641,8 @@ class Youtube2Zim(object):
                 if downloaded_from_cache:
                     options_copy["skip_download"] = True
             try:
+                if not downloaded_from_cache:
+                    logger.debug(f"Downloading video {video_id} using youtube-dl...")
                 with youtube_dl.YoutubeDL(options_copy) as ydl:
                     ydl.download([video_id])
                 post_process_video(
@@ -651,6 +654,9 @@ class Youtube2Zim(object):
                     skip_recompress=downloaded_from_cache,
                 )
                 succeeded.append(video_id)
+                logger.debug(
+                    f"Successfully downloaded and processed assets for video ID - {video_id}"
+                )
             except (
                 youtube_dl.utils.DownloadError,
                 FileNotFoundError,
@@ -659,6 +665,7 @@ class Youtube2Zim(object):
                 failed.append(video_id)
             else:  # upload to cache only if everything went well
                 if self.s3_storage and not downloaded_from_cache:
+                    logger.debug(f"Uploading {video_id} to cache ...")
                     self.upload_to_cache(s3_key, video_path, preset.VERSION)
         return succeeded, failed
 
