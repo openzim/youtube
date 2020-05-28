@@ -67,10 +67,13 @@ def main():
 
     args, extra_args = parser.parse_known_args()
 
+    def has_arg(arg):
+        # whether arg is specified in extra_args
+        return list(filter(lambda x: x.startswith(f"--{arg}"), extra_args))
+
     # prevent setting --title and --description
     for arg in ("name", "title", "description"):
-        has_arg = list(filter(lambda x: x.startswith(f"--{arg}"), extra_args))
-        if args.playlists_mode and has_arg:
+        if args.playlists_mode and has_arg(arg):
             parser.error(
                 f"Can't use --{arg} in playlists mode. Use --playlists-{arg} to set format."
             )
