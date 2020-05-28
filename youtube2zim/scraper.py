@@ -35,8 +35,7 @@ from zimscraperlib.i18n import get_language_details, setlocale
 from .youtube import (
     get_channel_json,
     credentials_ok,
-    Playlist,
-    get_channel_playlists_json,
+    extract_playlists_details_from,
     get_videos_json,
     get_videos_authors_info,
     save_channel_branding,
@@ -260,7 +259,7 @@ class Youtube2Zim(object):
         if not self.keep_build_dir and self.build_dir.exists():
             shutil.rmtree(self.cache_dir, ignore_errors=True)
             shutil.rmtree(self.build_dir)
-        self.make_build_folder()
+        self.prepare_build_folder()
 
         logger.info("testing Youtube credentials")
         if not credentials_ok():
@@ -372,7 +371,7 @@ class Youtube2Zim(object):
             )
             raise ValueError(f"Invalid dateafter input: {exc}")
 
-    def make_build_folder(self):
+    def prepare_build_folder(self):
         """ prepare build folder before we start downloading data """
 
         # create build folder
@@ -452,34 +451,11 @@ class Youtube2Zim(object):
             CHANNEL (and USER): we grab all playlists + `uploads` playlist
             PLAYLIST: we retrieve from the playlist Id(s) """
 
-        if self.is_user or self.is_channel:
-            if self.is_user:
-                # youtube_id is a Username, fetch actual channelId through channel
-                channel_json = get_channel_json(self.youtube_id, for_username=True)
-            else:
-                # youtube_id is a channelId
-                channel_json = get_channel_json(self.youtube_id)
-
-            self.main_channel_id = channel_json["id"]
-
-            # retrieve list of playlists for that channel
-            playlist_ids = [
-                p["id"] for p in get_channel_playlists_json(self.main_channel_id)
-            ]
-            # we always include uploads playlist (contains everything)
-            playlist_ids += [
-                channel_json["contentDetails"]["relatedPlaylists"]["uploads"]
-            ]
-            self.uploads_playlist_id = playlist_ids[-1]
-        elif self.is_playlist:
-            playlist_ids = self.youtube_id.split(",")
-            self.main_channel_id = Playlist.from_id(playlist_ids[0]).creator_id
-        else:
-            raise NotImplementedError("unsupported collection_type")
-
-        self.playlists = [
-            Playlist.from_id(playlist_id) for playlist_id in list(set(playlist_ids))
-        ]
+        (
+            self.playlists,
+            self.main_channel_id,
+            self.uploads_playlist_id,
+        ) = extract_playlists_details_from(self.collection_type, self.youtube_id)
 
     def extract_videos_list(self):
         all_videos = load_json(self.cache_dir, "videos")
