@@ -38,7 +38,12 @@ setup(
     ],
     zip_safe=False,
     include_package_data=True,
-    entry_points={"console_scripts": ["youtube2zim=youtube2zim.__main__:main"]},
+    entry_points={
+        "console_scripts": [
+            "youtube2zim=youtube2zim.__main__:main",
+            "youtube2zim-playlists=youtube2zim.playlists.__main__:main",
+        ]
+    },
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",

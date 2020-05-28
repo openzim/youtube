@@ -1,6 +1,7 @@
 Version 2.1.5
 
 Fixed regression causing S3 to only use videos from cache (never youtube)
+Added youtube2zim-playlists script to create one zim per playlist
 
 Version 2.1.4
 
