@@ -49,3 +49,8 @@ def make_build_folder(build_dir):
 
     for sub_folder in ("cache", "videos", "channels"):
         build_dir.joinpath(sub_folder).mkdir(exist_ok=True)
+
+
+def has_argument(arg_name, all_args):
+    """ whether --arg_name is specified in all_args """
+    return list(filter(lambda x: x.startswith(f"--{arg_name}"), all_args))

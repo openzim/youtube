@@ -6,7 +6,7 @@ import logging
 import argparse
 
 from ..constants import NAME, SCRAPER, CHANNEL, PLAYLIST, USER, logger
-from .scraper import YoutubeHandler
+from ..utils import has_argument
 
 
 def main():
@@ -49,11 +49,19 @@ def main():
         required=True,
     )
     parser.add_argument(
+        "--playlists-zim-file",
+        help="Format for building individual --zim-file argument. Uses --playlists-name otherwise",
+    )
+    parser.add_argument(
         "--playlists-title", help="Custom title format for individual playlist ZIM",
     )
     parser.add_argument(
         "--playlists-description",
         help="Custom description format for individual playlist ZIM",
+    )
+    parser.add_argument(
+        "--metadata-from",
+        help="File path or URL to a JSON file holding custom metadata for individual playlists. Format in README",
     )
     parser.add_argument(
         "--debug", help="Enable verbose output", action="store_true", default=False
@@ -67,13 +75,9 @@ def main():
 
     args, extra_args = parser.parse_known_args()
 
-    def has_arg(arg):
-        # whether arg is specified in extra_args
-        return list(filter(lambda x: x.startswith(f"--{arg}"), extra_args))
-
     # prevent setting --title and --description
-    for arg in ("name", "title", "description"):
-        if args.playlists_mode and has_arg(arg):
+    for arg in ("name", "title", "description", "zim-file"):
+        if args.playlists_mode and has_argument(arg, extra_args):
             parser.error(
                 f"Can't use --{arg} in playlists mode. Use --playlists-{arg} to set format."
             )
@@ -83,6 +87,8 @@ def main():
         parser.error("--playlists-name is mandatory in playlists mode")
 
     logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
+
+    from .scraper import YoutubeHandler
 
     try:
         handler = YoutubeHandler(dict(args._get_kwargs()), extra_args=extra_args)

@@ -75,6 +75,62 @@ youtube2zim --api-key "<your-api-key>" --type user --id "Vsauce"
 * Your API_KEY is subject to usage quotas (10,000 requests/day) so use `--only_test_branding` when adjusting parameters and branding to not *waste your quota*.
 * If you encounter issues reading ZIM files created using this scraper, please take a look at the [Compatibility Matrix](https://github.com/openzim/youtube/wiki/Compatibility) before opening a ticket.
 
+youtube2zim-playlists
+---------------------
+
+`youtube2zim` produces a single ZIM file for a youtube request (`channel`, `user`, `playlists`.
+
+`youtube2zim-playlists` allows you to **create one ZIM file per playlist** instead.
+
+This script is a wrapper around `youtube2zim` and is bundled with the main package.
+
+## Usage
+
+`youtube2zim-playlists --help`
+
+Sample usage:
+
+```
+youtube2zim-playlists --indiv-playlists --api-key XXX --type user --id Vsauce --playlists-name="vsauce_en_playlist-{playlist_id}"
+```
+
+Those are the required arguments for `youtube2zim-playlists` but **you can also pass any regular `youtube2zim` argument**. Those will be forwarded to `youtube2zim` (which will be run independently for each playlist).
+
+**Specificities**:
+
+- `--title` and `--description` are mutually exclusive with `--playlists-title` and `--playlists-description`.
+- If using `--title` or `--description`, all your playlists ZIMs will have the same, static metadata. This is rarely wanted.
+- `--playlists-title` and `--playlists-description` allows you to dynamically customize them via some playlist-related variables:
+  - `{title}`: the playlist title
+  - `{description}`: the playlist description
+  - `{slug}`: slugified version of the playlist title
+  - `{playlist_id}`: playlist ID on youtube
+  - `{creator_id}`: playlist's owner channel/user ID.
+  - `{creator_name}`: playlist's owner channel/user name.
+- You can omit them and `youtube2zim` will auto-generate those.
+- you **must specify `--playlists-name`** (supports variables listed above).
+- `--playlists-name` is used to set the `Name` metadata of the ZIM (should be unique) and if not set separately, the output file name for the ZIM.
+- `--metadata-from` allows to specify a path or URL to a JSON file specifying custom static metadata for individual playlists. Format:
+
+``` json
+{
+    "<playlist-id>": {
+        "name": "",
+        "zim-file": "",
+        "title": "",
+        "description": "",
+        "tags": "",
+        "creator": "",
+        "profile": "",
+        "banner": "",
+    }
+}
+```
+
+All fields are optional and taken from command-line/default if not found. `<playlist-id>` represents the Youtube Playlist ID.
+
+If you feel the need for setting additional details in this file, chances are you should run `youtube2zim` independently for that playlist (still possible!)
+
 Development
 -----------
 
