@@ -338,7 +338,11 @@ class Youtube2Zim(object):
         # make zim file
         if not self.no_zim:
             period = datetime.datetime.now().strftime("%Y-%m")
-            self.fname = Path(self.fname if self.fname else f"{self.name}_{period}.zim")
+            self.fname = (
+                self.fname.format(period=period)
+                if self.fname
+                else f"{self.name}_{period}.zim"
+            )
             logger.info("building ZIM file")
             print(self.zim_info.to_zimwriterfs_args())
             make_zim_file(self.build_dir, self.output_dir, self.fname, self.zim_info)
