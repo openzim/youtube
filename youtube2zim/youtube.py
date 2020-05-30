@@ -7,7 +7,7 @@ from dateutil import parser as dt_parser
 from zimscraperlib.download import save_file
 from zimscraperlib.imaging import resize_image
 
-from .constants import logger, YOUTUBE
+from .constants import logger, YOUTUBE, USER, CHANNEL, PLAYLIST
 from .utils import save_json, load_json, get_slug
 
 
@@ -41,6 +41,16 @@ class Playlist(object):
             creator_id=playlist_json["snippet"]["channelId"],
             creator_name=playlist_json["snippet"]["channelTitle"],
         )
+
+    def __dict__(self):
+        return {
+            "playlist_id": self.playlist_id,
+            "title": self.title,
+            "description": self.description,
+            "creator_id": self.creator_id,
+            "creator_name": self.creator_name,
+            "slug": self.slug,
+        }
 
 
 def credentials_ok():
@@ -276,3 +286,40 @@ def skip_deleted_videos(item):
 def skip_outofrange_videos(date_range, item):
     """ filter func to filter-out videos that are not within specified date range"""
     return dt_parser.parse(item["snippet"]["publishedAt"]).date() in date_range
+
+
+def extract_playlists_details_from(collection_type, youtube_id):
+    """ prepare a list of Playlist from user request
+
+        USER: we fetch the hidden channel associate to it
+        CHANNEL (and USER): we grab all playlists + `uploads` playlist
+        PLAYLIST: we retrieve from the playlist Id(s) """
+
+    uploads_playlist_id = None
+    main_channel_id = None
+    if collection_type == USER or collection_type == CHANNEL:
+        if collection_type == USER:
+            # youtube_id is a Username, fetch actual channelId through channel
+            channel_json = get_channel_json(youtube_id, for_username=True)
+        else:
+            # youtube_id is a channelId
+            channel_json = get_channel_json(youtube_id)
+
+        main_channel_id = channel_json["id"]
+
+        # retrieve list of playlists for that channel
+        playlist_ids = [p["id"] for p in get_channel_playlists_json(main_channel_id)]
+        # we always include uploads playlist (contains everything)
+        playlist_ids += [channel_json["contentDetails"]["relatedPlaylists"]["uploads"]]
+        uploads_playlist_id = playlist_ids[-1]
+    elif collection_type == PLAYLIST:
+        playlist_ids = youtube_id.split(",")
+        main_channel_id = Playlist.from_id(playlist_ids[0]).creator_id
+    else:
+        raise NotImplementedError("unsupported collection_type")
+
+    return (
+        [Playlist.from_id(playlist_id) for playlist_id in list(set(playlist_ids))],
+        main_channel_id,
+        uploads_playlist_id,
+    )
