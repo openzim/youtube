@@ -1,7 +1,16 @@
+dev
+
+using video-js-7.8.1
+Added youtube2zim-playlists script to create one zim per playlist
+--zim-file now supports the `{period}` replacement string to insert date (#99)
+picture-in-picture toggle now hidden
+using zimscraperlib to encode videos
+logging transfer before starting them
+added video_encoding_tester script in contrib/
+
 Version 2.1.5
 
 Fixed regression causing S3 to only use videos from cache (never youtube)
-Added youtube2zim-playlists script to create one zim per playlist
 
 Version 2.1.4
 

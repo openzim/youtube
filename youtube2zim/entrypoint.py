@@ -79,7 +79,7 @@ def main():
     )
     parser.add_argument(
         "--zim-file",
-        help="ZIM file name (based on --name if not provided)",
+        help="ZIM file name (based on --name if not provided). If used, {period} is replaced with date as of YYYY-MM",
         dest="fname",
     )
 
