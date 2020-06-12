@@ -30,13 +30,6 @@ def main():
     parser.add_argument("--api-key", help="Youtube API Token", required=True)
 
     parser.add_argument(
-        "--output",
-        help="Output folder for ZIM file or build folder",
-        default="/output",
-        dest="output_dir",
-    )
-
-    parser.add_argument(
         "--indiv-playlists",
         help="Playlists mode: build one ZIM per playlist of the channel",
         action="store_true",
@@ -58,6 +51,10 @@ def main():
     parser.add_argument(
         "--playlists-description",
         help="Custom description format for individual playlist ZIM",
+    )
+    parser.add_argument(
+        "--playlists-build-dir",
+        help="Custom format for build directory names for individual ZIMs",
     )
     parser.add_argument(
         "--metadata-from",
@@ -83,8 +80,33 @@ def main():
             )
 
     # playlists-name mandatory in playlist-mode
-    if args.playlists_mode and not args.playlists_name:
-        parser.error("--playlists-name is mandatory in playlists mode")
+    if not args.metadata_from:
+        if args.playlists_mode and not args.playlists_name:
+            parser.error("--playlists-name is mandatory in playlists mode")
+
+        variables_list = [
+            "{title}",
+            "{description}",
+            "{playlist_id}",
+            "{slug}",
+            "{creator_id}",
+            "{creator_name}",
+        ]
+        if args.playlists_name and not [
+            identifier
+            for identifier in variables_list
+            if identifier in args.playlists_name
+        ]:
+            parser.error("--playlists-name must have a variable to ensure unique names")
+
+        if args.playlists_build_dir and not [
+            identifier
+            for identifier in variables_list
+            if identifier in args.playlists_build_dir
+        ]:
+            parser.error(
+                "--playlists-build-dir must have a variable to ensure unique names for custom build directories"
+            )
 
     logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
 

@@ -7,6 +7,8 @@ picture-in-picture toggle now hidden
 using zimscraperlib to encode videos
 logging transfer before starting them
 added video_encoding_tester script in contrib/
+build-dir is temporary by default
+--build-dir introduced to support custom build directory
 
 Version 2.1.5
 

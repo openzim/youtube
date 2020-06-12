@@ -15,8 +15,8 @@
 import re
 import sys
 import json
-import shutil
 import pathlib
+import tempfile
 import subprocess
 
 import requests
@@ -24,7 +24,7 @@ from zimscraperlib.logging import nicer_args_join
 
 from ..constants import logger, NAME, YOUTUBE, PLAYLIST
 from ..youtube import extract_playlists_details_from, credentials_ok
-from ..utils import make_build_folder, has_argument
+from ..utils import has_argument
 
 
 class YoutubeHandler(object):
@@ -36,8 +36,8 @@ class YoutubeHandler(object):
             setattr(self, key, value)
         self.extra_args = extra_args
 
-        self.output_dir = pathlib.Path(self.output_dir).expanduser().resolve()
-        self.build_dir = self.output_dir.joinpath("build")
+        self.temp_dir = self.temp_dir = tempfile.TemporaryDirectory()
+        self.build_dir = pathlib.Path(self.temp_dir.name)
 
         # metadata_from JSON file
         self.metadata_from = (
@@ -71,10 +71,9 @@ class YoutubeHandler(object):
             f"starting all-playlits {NAME} scraper for {self.collection_type}#{self.youtube_id}"
         )
 
-        # prepare main build dir (only for cache playlists computation data)
-        if self.build_dir.exists():
-            shutil.rmtree(self.build_dir, ignore_errors=True)
-        make_build_folder(self.build_dir)
+        # create required sub folders
+        for sub_folder in ("cache", "videos", "channels"):
+            self.build_dir.joinpath(sub_folder).mkdir(exist_ok=True)
 
         logger.info("testing Youtube credentials")
         if not credentials_ok():
@@ -120,8 +119,6 @@ class YoutubeHandler(object):
             playlist_id,
             "--api-key",
             self.api_key,
-            "--output",
-            str(self.output_dir.joinpath("playlists", playlist_id)),
         ]
 
         # set metadata args for playlist
@@ -135,6 +132,7 @@ class YoutubeHandler(object):
             "creator",
             "profile",
             "banner",
+            "build-dir",
         ):
             # use value from metadata JSON if present else from command-line
             value = metadata.get(
@@ -147,10 +145,9 @@ class YoutubeHandler(object):
 
         # ensure we supplied a name
         if not has_argument("name", args):
-            args += [
-                "--name",
-                self.compute_format(playlist, self.playlists_name),
-            ]
+            raise ValueError(
+                "Cannot supply a --name argument to youtube2zim. Ensure you have a supplied either --playlists-name or have name in metadata JSON"
+            )
 
         # append regular youtube2zim args
         args += self.extra_args
@@ -176,8 +173,6 @@ class YoutubeHandler(object):
                 self.youtube_id,
                 "--api-key",
                 self.api_key,
-                "--output",
-                self.output_dir,
             ]
             + self.extra_args
         )

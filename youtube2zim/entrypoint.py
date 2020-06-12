@@ -71,12 +71,18 @@ def main():
         default="/output",
         dest="output_dir",
     )
+
+    parser.add_argument(
+        "--build-dir", help="Custom build folder to build ZIM from",
+    )
+
     parser.add_argument(
         "--no-zim",
         help="Don't produce a ZIM file, create HTML folder only.",
         action="store_true",
         default=False,
     )
+
     parser.add_argument(
         "--zim-file",
         help="ZIM file name (based on --name if not provided). If used, {period} is replaced with date as of YYYY-MM",
@@ -86,45 +92,55 @@ def main():
     parser.add_argument(
         "--language", help="ISO-639-3 (3 chars) language code of content", default="eng"
     )
+
     parser.add_argument(
         "--locale",
         help="Locale name to use for translations (if avail) and time representations. Defaults to --language or English.",
         dest="locale_name",
     )
+
     parser.add_argument(
         "--title",
         help="Custom title for your project and ZIM. Default to Channel name (of first video if playlists)",
     )
+
     parser.add_argument(
         "--description",
         help="Custom description for your project and ZIM. Default to Channel name (of first video if playlists)",
     )
+
     parser.add_argument(
         "--creator",
         help="Name of content creator. Defaults to Channel name or “Youtue Channels”",
     )
+
     parser.add_argument(
         "--publisher", help="Custom publisher name (ZIM metadata)", default="Kiwix"
     )
+
     parser.add_argument(
         "--tags",
         help="List of comma-separated Tags for the ZIM file. _videos:yes added automatically",
         default="youtube",
     )
+
     parser.add_argument(
         "--profile",
         help="Custom profile image (path or URL). Squared. Will be resized to 100x100px",
         dest="profile_image",
     )
+
     parser.add_argument(
         "--banner",
         help="Custom banner image (path or URL). Will be resized to 1060x175px",
         dest="banner_image",
     )
+
     parser.add_argument(
         "--main-color",
         help="Custom color. Hex/HTML syntax (#DEDEDE). Default to main color of profile image.",
     )
+
     parser.add_argument(
         "--secondary-color",
         help="Custom secondary color. Hex/HTML syntax (#DEDEDE). Default to secondary color of profile image.",
@@ -133,6 +149,7 @@ def main():
     parser.add_argument(
         "--debug", help="Enable verbose output", action="store_true", default=False
     )
+
     parser.add_argument(
         "--keep",
         help="Don't erase build folder on start (for debug/devel)",
@@ -140,6 +157,7 @@ def main():
         action="store_true",
         dest="keep_build_dir",
     )
+
     parser.add_argument(
         "--skip-download",
         help="Skip the download step (videos, thumbnails, subtitles)",
@@ -147,6 +165,7 @@ def main():
         action="store_true",
         dest="skip_download",
     )
+
     parser.add_argument(
         "--concurrency",
         help="Number of concurrent threads to use",
@@ -154,6 +173,7 @@ def main():
         dest="max_concurrency",
         default=1,
     )
+
     parser.add_argument(
         "--only_test_branding",
         help="Just generate a fake home.html to check branding (images and colors)",
@@ -161,12 +181,14 @@ def main():
         action="store_true",
         dest="only_test_branding",
     )
+
     parser.add_argument(
         "--version",
         help="Display scraper version and exit",
         action="version",
         version=SCRAPER,
     )
+
     parser.add_argument(
         "--dateafter",
         help="Custom filter to download videos uploaded on or after specified date. Format: YYYYMMDD or (now|today)[+-][0-9](day|week|month|year)(s)?",

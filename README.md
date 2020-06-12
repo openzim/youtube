@@ -123,6 +123,7 @@ Those are the required arguments for `youtube2zim-playlists` but **you can also 
         "creator": "",
         "profile": "",
         "banner": "",
+        "build-dir": "",
     }
 }
 ```
