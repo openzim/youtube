@@ -67,13 +67,14 @@ def main():
 
     parser.add_argument(
         "--output",
-        help="Output folder for ZIM file or build folder",
+        help="Output folder for ZIM file",
         default="/output",
         dest="output_dir",
     )
 
     parser.add_argument(
-        "--build-dir", help="Custom build folder to build ZIM from",
+        "--tmp-dir",
+        help="Path to create temp folder in. Used for building ZIM file. Receives all data (storage space)",
     )
 
     parser.add_argument(
