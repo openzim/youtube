@@ -36,8 +36,7 @@ class YoutubeHandler(object):
             setattr(self, key, value)
         self.extra_args = extra_args
 
-        self.temp_dir = self.temp_dir = tempfile.TemporaryDirectory()
-        self.build_dir = pathlib.Path(self.temp_dir.name)
+        self.build_dir = pathlib.Path(tempfile.mkdtemp())
 
         # metadata_from JSON file
         self.metadata_from = (
@@ -73,7 +72,7 @@ class YoutubeHandler(object):
 
         # create required sub folders
         for sub_folder in ("cache", "videos", "channels"):
-            self.build_dir.joinpath(sub_folder).mkdir(exist_ok=True)
+            self.build_dir.joinpath(sub_folder).mkdir()
 
         logger.info("testing Youtube credentials")
         if not credentials_ok():
@@ -132,7 +131,6 @@ class YoutubeHandler(object):
             "creator",
             "profile",
             "banner",
-            "build-dir",
         ):
             # use value from metadata JSON if present else from command-line
             value = metadata.get(
@@ -145,9 +143,10 @@ class YoutubeHandler(object):
 
         # ensure we supplied a name
         if not has_argument("name", args):
-            raise ValueError(
-                "Cannot supply a --name argument to youtube2zim. Ensure you have a supplied either --playlists-name or have name in metadata JSON"
-            )
+            args += [
+                "--name",
+                self.compute_format(playlist, self.playlists_name),
+            ]
 
         # append regular youtube2zim args
         args += self.extra_args

@@ -9,44 +9,6 @@ from ..constants import NAME, SCRAPER, CHANNEL, PLAYLIST, USER, logger
 from ..utils import has_argument
 
 
-def check_passed_args(args, extra_args, parser):
-    # prevent setting --title and --description
-    for arg in ("name", "title", "description", "zim-file"):
-        if args.playlists_mode and has_argument(arg, extra_args):
-            parser.error(
-                f"Can't use --{arg} in playlists mode. Use --playlists-{arg} to set format."
-            )
-
-    # playlists-name mandatory in playlist-mode
-    if not args.metadata_from:
-        if args.playlists_mode and not args.playlists_name:
-            parser.error("--playlists-name is mandatory in playlists mode")
-
-        variables_list = [
-            "{title}",
-            "{description}",
-            "{playlist_id}",
-            "{slug}",
-            "{creator_id}",
-            "{creator_name}",
-        ]
-        if args.playlists_name and not [
-            identifier
-            for identifier in variables_list
-            if identifier in args.playlists_name
-        ]:
-            parser.error("--playlists-name must have a variable to ensure unique names")
-
-        if args.playlists_build_dir and not [
-            identifier
-            for identifier in variables_list
-            if identifier in args.playlists_build_dir
-        ]:
-            parser.error(
-                "--playlists-build-dir must have a variable to ensure unique names for custom build directories"
-            )
-
-
 def main():
     parser = argparse.ArgumentParser(
         prog=f"{NAME}-playlists",
@@ -91,10 +53,6 @@ def main():
         help="Custom description format for individual playlist ZIM",
     )
     parser.add_argument(
-        "--playlists-build-dir",
-        help="Custom format for build directory names for individual ZIMs",
-    )
-    parser.add_argument(
         "--metadata-from",
         help="File path or URL to a JSON file holding custom metadata for individual playlists. Format in README",
     )
@@ -110,7 +68,16 @@ def main():
 
     args, extra_args = parser.parse_known_args()
 
-    check_passed_args(args, extra_args, parser)
+    # prevent setting --title and --description
+    for arg in ("name", "title", "description", "zim-file"):
+        if args.playlists_mode and has_argument(arg, extra_args):
+            parser.error(
+                f"Can't use --{arg} in playlists mode. Use --playlists-{arg} to set format."
+            )
+
+    # playlists-name mandatory in playlist-mode
+    if args.playlists_mode and not args.playlists_name and not args.metadata_from:
+        parser.error("--playlists-name or --metadata-from mandatory in playlists mode")
 
     logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
 
