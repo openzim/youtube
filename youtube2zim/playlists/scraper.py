@@ -141,13 +141,6 @@ class YoutubeHandler(object):
                 # format value using playlists' variables
                 args += [f"--{key}", self.compute_format(playlist, str(value))]
 
-        # ensure we supplied a name
-        if not has_argument("name", args):
-            args += [
-                "--name",
-                self.compute_format(playlist, self.playlists_name),
-            ]
-
         # append regular youtube2zim args
         args += self.extra_args
 

@@ -76,8 +76,8 @@ def main():
             )
 
     # playlists-name mandatory in playlist-mode
-    if args.playlists_mode and not args.playlists_name and not args.metadata_from:
-        parser.error("--playlists-name or --metadata-from mandatory in playlists mode")
+    if args.playlists_mode and not args.playlists_name:
+        parser.error("--playlists-name is mandatory in playlists mode")
 
     logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
 
