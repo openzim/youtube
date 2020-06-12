@@ -122,7 +122,7 @@ Those are the required arguments for `youtube2zim-playlists` but **you can also 
         "tags": "",
         "creator": "",
         "profile": "",
-        "banner": "",
+        "banner": ""
     }
 }
 ```

@@ -30,13 +30,6 @@ def main():
     parser.add_argument("--api-key", help="Youtube API Token", required=True)
 
     parser.add_argument(
-        "--output",
-        help="Output folder for ZIM file or build folder",
-        default="/output",
-        dest="output_dir",
-    )
-
-    parser.add_argument(
         "--indiv-playlists",
         help="Playlists mode: build one ZIM per playlist of the channel",
         action="store_true",

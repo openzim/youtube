@@ -12,6 +12,7 @@ import os
 import json
 import locale
 import shutil
+import tempfile
 import subprocess
 import datetime
 import functools
@@ -69,6 +70,7 @@ class Youtube2Zim(object):
         no_zim,
         fname,
         debug,
+        tmp_dir,
         keep_build_dir,
         skip_download,
         max_concurrency,
@@ -117,8 +119,13 @@ class Youtube2Zim(object):
         self.main_color = main_color
         self.secondary_color = secondary_color
 
-        # process-related
+        # directory setup
         self.output_dir = Path(output_dir).expanduser().resolve()
+        if tmp_dir:
+            Path(tmp_dir).mkdir(parents=True, exist_ok=True)
+        self.build_dir = Path(tempfile.mkdtemp(dir=tmp_dir))
+
+        # process-related
         self.playlists = []
         self.uploads_playlist_id = None
         self.videos_ids = []
@@ -131,8 +138,6 @@ class Youtube2Zim(object):
         self.keep_build_dir = keep_build_dir
         self.skip_download = skip_download
         self.max_concurrency = max_concurrency
-
-        self.build_dir = self.output_dir.joinpath("build")
 
         # store ZIM-related info
         self.zim_info = ZimInfo(
@@ -256,9 +261,6 @@ class Youtube2Zim(object):
             f"starting youtube scraper for {self.collection_type}#{self.youtube_id}"
         )
         logger.info("preparing build folder at {}".format(self.build_dir.resolve()))
-        if not self.keep_build_dir and self.build_dir.exists():
-            shutil.rmtree(self.cache_dir, ignore_errors=True)
-            shutil.rmtree(self.build_dir)
         self.prepare_build_folder()
 
         logger.info("testing Youtube credentials")
@@ -335,6 +337,7 @@ class Youtube2Zim(object):
         self.make_html_files(succeeded)
 
         # make zim file
+        os.makedirs(self.output_dir, exist_ok=True)
         if not self.no_zim:
             period = datetime.datetime.now().strftime("%Y-%m")
             self.fname = (
@@ -345,8 +348,9 @@ class Youtube2Zim(object):
             logger.info("building ZIM file")
             print(self.zim_info.to_zimwriterfs_args())
             make_zim_file(self.build_dir, self.output_dir, self.fname, self.zim_info)
-            logger.info("removing HTML folder")
+
             if not self.keep_build_dir:
+                logger.info("removing temp folder")
                 shutil.rmtree(self.build_dir, ignore_errors=True)
 
         logger.info("all done!")
@@ -378,12 +382,7 @@ class Youtube2Zim(object):
     def prepare_build_folder(self):
         """ prepare build folder before we start downloading data """
 
-        # create build folder
-        os.makedirs(self.build_dir, exist_ok=True)
-
         # copy assets
-        if self.assets_dir.exists():
-            shutil.rmtree(self.assets_dir)
         shutil.copytree(self.assets_src_dir, self.assets_dir)
 
         fix_source_dir(self.assets_dir, "assets")

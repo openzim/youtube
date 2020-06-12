@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4 nu
 
-import os
 import json
 
 from slugify import slugify
@@ -36,19 +35,6 @@ def load_json(cache_dir, key):
             return json.load(fp)
     except Exception:
         return None
-
-
-def make_build_folder(build_dir):
-    """ prepare build folder before we start
-
-        cache for youtube-API requests cache
-        videos for storing video files
-        channels for channel-related files (profile pics) """
-
-    os.makedirs(build_dir, exist_ok=True)
-
-    for sub_folder in ("cache", "videos", "channels"):
-        build_dir.joinpath(sub_folder).mkdir(exist_ok=True)
 
 
 def has_argument(arg_name, all_args):
