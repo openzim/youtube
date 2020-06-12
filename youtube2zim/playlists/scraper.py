@@ -15,6 +15,7 @@
 import re
 import sys
 import json
+import shutil
 import pathlib
 import tempfile
 import subprocess
@@ -24,7 +25,6 @@ from zimscraperlib.logging import nicer_args_join
 
 from ..constants import logger, NAME, YOUTUBE, PLAYLIST
 from ..youtube import extract_playlists_details_from, credentials_ok
-from ..utils import has_argument
 
 
 class YoutubeHandler(object):
@@ -64,6 +64,7 @@ class YoutubeHandler(object):
     def run(self):
         # drop directly to regular youtube2zim if not requesting indiv playlits zims
         if not self.playlists_mode:
+            shutil.rmtree(self.build_dir, ignore_errors=True)  # not needed
             return self.handle_single_zim()
 
         logger.info(
@@ -92,6 +93,9 @@ class YoutubeHandler(object):
                 len(playlists), "\n   ".join([p.playlist_id for p in playlists]),
             )
         )
+
+        # no need for build_dir anymore
+        shutil.rmtree(self.build_dir, ignore_errors=True)
 
         for playlist in playlists:
             if playlist.playlist_id == uploads_playlist_id:
