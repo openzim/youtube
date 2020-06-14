@@ -2,6 +2,7 @@ Youtube2zim
 =============
 
 [![CodeFactor](https://www.codefactor.io/repository/github/openzim/youtube/badge)](https://www.codefactor.io/repository/github/openzim/youtube)
+[![Docker Build Status](https://img.shields.io/docker/build/openzim/youtube)](https://hub.docker.com/r/openzim/youtube)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![PyPI version shields.io](https://img.shields.io/pypi/v/youtube2zim.svg)](https://pypi.org/project/youtube2zim/)
 
