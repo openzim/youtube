@@ -56,10 +56,11 @@ class YoutubeHandler(object):
         """ youtube2zim executable """
 
         # handle either `python youtube2zim` and `youtube2zim`
-        executable = pathlib.Path(sys.executable)
-        if re.match(r"python[0-9]*", executable.name):
-            return [str(executable), "youtube2zim"]
-        return [str(executable)]
+        cmd = "youtube2zim"
+        dev_cmd = f"{cmd}/playlists"
+        if sys.argv[0] == dev_cmd:
+            return [sys.executable, cmd]
+        return [sys.argv[0].replace(f"{cmd}-playlists", cmd)]
 
     def run(self):
         # drop directly to regular youtube2zim if not requesting indiv playlits zims
