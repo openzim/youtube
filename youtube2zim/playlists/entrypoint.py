@@ -39,7 +39,6 @@ def main():
     parser.add_argument(
         "--playlists-name",
         help="Format for building individual --name argument. Required in playlist mode.",
-        required=True,
     )
     parser.add_argument(
         "--playlists-zim-file",
