@@ -8,6 +8,10 @@ using zimscraperlib to encode videos
 logging transfer before starting them
 added video_encoding_tester script in contrib/
 --tmp-dir option to set where temp files are downloaded/handled (system temp otherwise)
+thumbnail now converted to JPEG if received as WebP
+thumbnail resize now supports upscaling if original is too small
+thumnail resize and conversion from zimscraperlib
+using zimscraperlib 1.1.1
 
 Version 2.1.5
 
