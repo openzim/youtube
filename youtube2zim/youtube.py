@@ -49,7 +49,7 @@ class Playlist(object):
             "description": self.description,
             "creator_id": self.creator_id,
             "creator_name": self.creator_name,
-            "slug": self.slug,
+            "slug": self.slug.replace("_", "-"),
         }
 
 

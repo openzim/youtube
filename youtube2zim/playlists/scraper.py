@@ -12,7 +12,6 @@
     - Only displays youtube2zim's output on failure
 """
 
-import re
 import sys
 import json
 import shutil
