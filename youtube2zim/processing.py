@@ -47,7 +47,7 @@ def post_process_video(
 
     # resize thumbnail. we use max width:248x187px in listing
     # but our posters are 480x270px
-    resize_image(thumb_src, width=480, height=270, method="cover")
+    resize_image(thumb_src, width=480, height=270, method="cover", allow_upscaling=True)
 
     # don't reencode if not requesting low-quality and received wanted format
     if skip_recompress or (not low_quality and src_path.suffix[1:] == video_format):
