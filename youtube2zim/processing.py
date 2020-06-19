@@ -3,15 +3,9 @@
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 from zimscraperlib.video.encoding import reencode
-from zimscraperlib.imaging import resize_image, PIL
+from zimscraperlib.imaging import resize_image, convert_image
 
 from .constants import logger
-
-
-def convert_thumbnail(source_image, dest_image):
-    """ convert image using destination's filename as destination format """
-    img = PIL.Image.open(source_image)
-    img.save(str(dest_image))
 
 
 def post_process_video(
@@ -39,15 +33,16 @@ def post_process_video(
         )
     src_path = files[0]
 
-    # do we need to convert thumbnail?
-    thumb_src = src_path.with_name("video.jpg")
-    if not thumb_src.exists():
-        logger.debug("We don't have video.jpg, let's convert from webp")
-        convert_thumbnail(thumb_src.with_suffix(".webp"), thumb_src)
+    # thumbnail might be WebP as .webp, JPEG as .jpg or WebP as .jpg
+    thumbnail = tmp_thumbnail = src_path.with_name("video.jpg")
+    if not thumbnail.exists():
+        logger.debug("We don't have video.jpg, thumbnail is .webp")
+        tmp_thumbnail = thumbnail.with_suffix(".webp")
+    convert_image(tmp_thumbnail, thumbnail, "JPEG")
 
     # resize thumbnail. we use max width:248x187px in listing
     # but our posters are 480x270px
-    resize_image(thumb_src, width=480, height=270, method="cover")
+    resize_image(thumbnail, width=480, height=270, method="cover", allow_upscaling=True)
 
     # don't reencode if not requesting low-quality and received wanted format
     if skip_recompress or (not low_quality and src_path.suffix[1:] == video_format):
