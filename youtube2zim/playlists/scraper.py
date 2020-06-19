@@ -176,7 +176,7 @@ class YoutubeHandler(object):
 
     @staticmethod
     def compute_format(playlist, fmt):
-        return fmt.format(**playlist.__dict__())
+        return fmt.format(**playlist.__dict__(), **{"period": "{period}"})
 
     def fetch_metadata(self):
         """ retrieves and loads metadata from --metadata-from """
