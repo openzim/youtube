@@ -3,15 +3,9 @@
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 from zimscraperlib.video.encoding import reencode
-from zimscraperlib.imaging import resize_image, PIL
+from zimscraperlib.imaging import resize_image, convert_image
 
 from .constants import logger
-
-
-def convert_thumbnail(source_image, dest_image):
-    """ convert image using destination's filename as destination format """
-    img = PIL.Image.open(source_image)
-    img.save(str(dest_image))
 
 
 def post_process_video(
@@ -41,9 +35,11 @@ def post_process_video(
 
     # do we need to convert thumbnail?
     thumb_src = src_path.with_name("video.jpg")
+    thumb_dst = thumb_src
     if not thumb_src.exists():
         logger.debug("We don't have video.jpg, let's convert from webp")
-        convert_thumbnail(thumb_src.with_suffix(".webp"), thumb_src)
+        thumb_src = thumb_src.with_suffix(".webp")
+    convert_image(thumb_src, thumb_dst, "JPEG")
 
     # resize thumbnail. we use max width:248x187px in listing
     # but our posters are 480x270px
