@@ -84,7 +84,7 @@ def main():
 
     try:
         handler = YoutubeHandler(dict(args._get_kwargs()), extra_args=extra_args)
-        handler.run()
+        raise SystemExit(handler.run())
     except Exception as exc:
         logger.error(f"FAILED. An error occurred: {exc}")
         if args.debug:
