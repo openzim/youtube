@@ -160,14 +160,6 @@ def main():
     )
 
     parser.add_argument(
-        "--skip-download",
-        help="Skip the download step (videos, thumbnails, subtitles)",
-        default=False,
-        action="store_true",
-        dest="skip_download",
-    )
-
-    parser.add_argument(
         "--concurrency",
         help="Number of concurrent threads to use",
         type=int,

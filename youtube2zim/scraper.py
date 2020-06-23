@@ -72,7 +72,6 @@ class Youtube2Zim(object):
         debug,
         tmp_dir,
         keep_build_dir,
-        skip_download,
         max_concurrency,
         youtube_store,
         language,
@@ -136,7 +135,6 @@ class Youtube2Zim(object):
         self.no_zim = no_zim
         self.debug = debug
         self.keep_build_dir = keep_build_dir
-        self.skip_download = skip_download
         self.max_concurrency = max_concurrency
 
         # store ZIM-related info
@@ -314,15 +312,14 @@ class Youtube2Zim(object):
             logger.info(
                 f"  using cache: {self.s3_storage.url.netloc} with bucket: {self.s3_storage.bucket_name}"
             )
-        if not self.skip_download:
-            succeeded, failed = self.download_video_files(
-                max_concurrency=self.max_concurrency
-            )
-            if failed:
-                logger.error(f"{len(failed)} video(s) failed to download: {failed}")
-                if len(failed) >= len(succeeded):
-                    logger.critical("More than half of videos failed. exiting")
-                    raise IOError("Too much videos failed to download")
+        succeeded, failed = self.download_video_files(
+            max_concurrency=self.max_concurrency
+        )
+        if failed:
+            logger.error(f"{len(failed)} video(s) failed to download: {failed}")
+            if len(failed) >= len(succeeded):
+                logger.critical("More than half of videos failed. exiting")
+                raise IOError("Too much videos failed to download")
 
         logger.info("retrieve channel-info for all videos (author details)")
         get_videos_authors_info(succeeded)
