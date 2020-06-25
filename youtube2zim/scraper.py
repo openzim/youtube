@@ -89,7 +89,6 @@ class Youtube2Zim(object):
         banner_image=None,
         main_color=None,
         secondary_color=None,
-        only_test_branding=None,
     ):
         # data-retrieval info
         self.collection_type = collection_type
@@ -129,7 +128,6 @@ class Youtube2Zim(object):
         self.uploads_playlist_id = None
         self.videos_ids = []
         self.main_channel_id = None  # use for branding
-        self.only_test_branding = only_test_branding
 
         # debug/devel options
         self.no_zim = no_zim
@@ -280,16 +278,6 @@ class Youtube2Zim(object):
                 "\n   ".join([p.playlist_id for p in self.playlists]),
             )
         )
-
-        if self.only_test_branding:
-            logger.info("update general metadata")
-            self.update_metadata()
-
-            logger.info("building fake homepage with branding")
-            self.make_test_html_file()
-
-            logger.info("done.")
-            return
 
         logger.info("compute list of videos")
         self.extract_videos_list()
@@ -721,58 +709,6 @@ class Youtube2Zim(object):
             method="thumbnail",
             to=self.build_dir.joinpath("favicon.jpg"),
         )
-
-    def make_test_html_file(self):
-
-        video_id = "aaaabbbccddd"
-        video_dir = self.videos_dir.joinpath(video_id)
-        video_dir.mkdir(exist_ok=True)
-        shutil.copy(
-            self.assets_dir.joinpath("sample.jpg"), video_dir.joinpath("video.jpg")
-        )
-
-        env = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(str(self.templates_dir)), autoescape=True
-        )
-
-        html = env.get_template("home.html").render(
-            playlists=self.sorted_playlists,
-            video_format=self.video_format,
-            title=self.title,
-            description=self.description,
-            color=self.main_color,
-            background_color=self.secondary_color,
-            page_label=_("Page {current}/{total}"),
-            back_label=_("Back to top"),
-        )
-        with open(self.build_dir.joinpath("home.html"), "w", encoding="utf-8") as fp:
-            fp.write(html)
-
-        with open(self.assets_dir.joinpath("db.js"), "w", encoding="utf-8") as fp:
-            fp.write(
-                env.get_template("assets/db.js").render(
-                    NB_VIDEOS_PER_PAGE=self.nb_videos_per_page
-                )
-            )
-
-        with open(self.assets_dir.joinpath("data.js"), "w", encoding="utf-8") as fp:
-            videos = [
-                {
-                    "id": video_id,
-                    "title": "A Sample Title",
-                    "slug": "a-sample-title",
-                    "description": "A sample description of video",
-                    "subtitles": [],
-                    "thumbnail": str(Path("videos").joinpath(video_id, "video.jpg")),
-                }
-                for _ in range(0, 6)
-            ]
-            fp.write(
-                "var json_{slug} = {json_str};\n".format(
-                    slug=self.sorted_playlists[0].slug,
-                    json_str=json.dumps(videos, indent=4),
-                )
-            )
 
     def make_html_files(self, actual_videos_ids):
         """ make up HTML structure to read the content

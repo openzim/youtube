@@ -168,14 +168,6 @@ def main():
     )
 
     parser.add_argument(
-        "--only_test_branding",
-        help="Just generate a fake home.html to check branding (images and colors)",
-        default=False,
-        action="store_true",
-        dest="only_test_branding",
-    )
-
-    parser.add_argument(
         "--version",
         help="Display scraper version and exit",
         action="version",

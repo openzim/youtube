@@ -11,7 +11,9 @@ added video_encoding_tester script in contrib/
 thumbnail now converted to JPEG if received as WebP
 thumbnail resize now supports upscaling if original is too small
 thumnail resize and conversion from zimscraperlib
-using zimscraperlib 1.1.1
+using zimscraperlib 1.1.2
+removed skip-download option
+removed only_test_branding option
 
 Version 2.1.5
 
