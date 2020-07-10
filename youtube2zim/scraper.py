@@ -27,7 +27,7 @@ from babel.dates import format_date
 from dateutil import parser as dt_parser
 from kiwixstorage import KiwixStorage
 from zimscraperlib.download import save_file
-from zimscraperlib.zim import ZimInfo, make_zim_file
+from zimscraperlib.zim import make_zim_file
 from zimscraperlib.fix_ogvjs_dist import fix_source_dir
 from zimscraperlib.imaging import resize_image, get_colors, is_hex_color
 from zimscraperlib.video.presets import VideoWebmLow, VideoMp4Low
@@ -134,19 +134,6 @@ class Youtube2Zim(object):
         self.debug = debug
         self.keep_build_dir = keep_build_dir
         self.max_concurrency = max_concurrency
-
-        # store ZIM-related info
-        self.zim_info = ZimInfo(
-            language=language,
-            tags=tags,
-            title=title,
-            description=description,
-            creator=creator,
-            publisher=publisher,
-            name=name,
-            scraper=SCRAPER,
-            favicon="favicon.jpg",
-        )
 
         # update youtube credentials store
         youtube_store.update(
@@ -331,8 +318,20 @@ class Youtube2Zim(object):
                 else f"{self.name}_{period}.zim"
             )
             logger.info("building ZIM file")
-            print(self.zim_info.to_zimwriterfs_args())
-            make_zim_file(self.build_dir, self.output_dir, self.fname, self.zim_info)
+            make_zim_file(
+                build_dir=self.build_dir,
+                fpath=self.output_dir / self.fname,
+                name=self.name,
+                main_page="home.html",
+                favicon="favicon.jpg",
+                title=self.title,
+                description=self.description,
+                language=self.language,
+                creator=self.creator,
+                publisher="Kiwix",
+                tags=self.tags,
+                scraper=SCRAPER,
+            )
 
             if not self.keep_build_dir:
                 logger.info("removing temp folder")
@@ -674,15 +673,6 @@ class Youtube2Zim(object):
         self.tags = self.tags or ["youtube"]
         if "_videos:yes" not in self.tags:
             self.tags.append("_videos:yes")
-
-        self.zim_info.update(
-            title=self.title,
-            description=self.description,
-            creator=self.creator,
-            publisher=self.publisher,
-            name=self.name,
-            tags=self.tags,
-        )
 
         # copy our main_channel branding into /(profile|banner).jpg if not supplied
         if not self.profile_path.exists():
