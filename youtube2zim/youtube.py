@@ -262,7 +262,10 @@ def save_channel_branding(channels_dir, channel_id, save_banner=False):
             thumnbail = thumbnails[quality]["url"]
             break
 
-    profile_path = channels_dir.joinpath(channel_id, "profile.jpg")
+    channel_dir = channels_dir.joinpath(channel_id)
+    channel_dir.mkdir(exist_ok=True)
+
+    profile_path = channel_dir.joinpath("profile.jpg")
     if not profile_path.exists():
         save_file(thumnbail, profile_path)
         # resize profile as we only use up 100px/80 sq
@@ -270,7 +273,7 @@ def save_channel_branding(channels_dir, channel_id, save_banner=False):
 
     if save_banner:
         banner = channel_json["brandingSettings"]["image"]["bannerImageUrl"]
-        banner_path = channels_dir.joinpath(channel_id, "banner.jpg")
+        banner_path = channel_dir.joinpath("banner.jpg")
         if not banner_path.exists():
             save_file(banner, banner_path)
 
