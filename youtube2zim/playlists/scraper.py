@@ -123,6 +123,8 @@ class YoutubeHandler(object):
             "--api-key",
             self.api_key,
         ]
+        if self.debug:
+            args.append("--debug")
 
         # set metadata args for playlist
         metadata = self.metadata.get(playlist_id, {})
@@ -172,6 +174,8 @@ class YoutubeHandler(object):
             ]
             + self.extra_args
         )
+        if self.debug:
+            args.append("--debug")
         sys.exit(subprocess.run(args).returncode)
 
     @staticmethod
