@@ -120,7 +120,8 @@ class Youtube2Zim(object):
         # directory setup
         self.output_dir = Path(output_dir).expanduser().resolve()
         if tmp_dir:
-            Path(tmp_dir).mkdir(parents=True, exist_ok=True)
+            tmp_dir = Path(tmp_dir).expanduser().resolve()
+            tmp_dir.mkdir(parents=True, exist_ok=True)
         self.build_dir = Path(tempfile.mkdtemp(dir=tmp_dir))
 
         # process-related
