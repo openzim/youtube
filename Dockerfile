@@ -23,4 +23,6 @@ RUN cd /src/ && python3 ./setup.py install
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["entrypoint.sh"]
 
+RUN mkdir -p /output
+WORKDIR /output
 CMD ["youtube2zim", "--help"]
