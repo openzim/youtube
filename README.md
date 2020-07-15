@@ -18,7 +18,6 @@ Requirements
 ------------
 
 * [`ffmpeg`](https://ffmpeg.org/) for video transcoding (only used with `--lower-quality`).
-* [`zimwriterfs`](https://github.com/openzim/zimwriterfs) for ZIM file packaging. Use `--no-zim` to skip this step.
 * `curl` and `unzip` to install Javascript dependencies. See `get_js_deps.sh` if you want to do it manually.
 
 Installation
