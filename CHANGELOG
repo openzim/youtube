@@ -1,6 +1,10 @@
-2.1.7.dev0
+2.1.7
 
-n/a
+using zimscraperlib 1.2.0
+replaced zimwriterfs with pylibzim
+tmp-dir now sanitized as build-dir
+fixed --debug not forwarded in playlists mode
+changed workdir to /output in docker image
 
 2.1.6
 
