@@ -26,7 +26,7 @@
                     width="480px" height="270px"
                     data-setup='{"techOrder": ["html5", "ogvjs"], "ogvjs": {"base": "assets/ogvjs"}, "autoplay": {% if autoplay %}true{% else %}false{% endif %}, "preload": true, "controls": true, "controlBar": {"pictureInPictureToggle":false}}'>
                 <source src="videos/{{ video_id }}/video.{{ video_format }}" type="video/{{ video_format }}" />{% if subtitles %}
-                {% for language in subtitles %}<track kind="subtitles" src="videos/{{ video_id }}/video.{{ language.code }}.vtt" srclang="{{ language.code }}" label="{{ language.native }}" />
+                {% for language in subtitles %}<track kind="subtitles" src="videos/{{ video_id }}/video.{{ language.code }}.vtt" srclang="{{ language.code }}" label="{{ language.name }}" />
                 {% endfor %}{% endif %}
             </video>
             <div id="description">

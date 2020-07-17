@@ -52,6 +52,7 @@ from .constants import (
     PLAYLIST,
     USER,
     SCRAPER,
+    YOUTUBE_LANG_MAP,
 )
 
 
@@ -735,7 +736,17 @@ class Youtube2Zim(object):
                 if x.is_file() and x.name.endswith(".vtt")
             ]
 
-            return [get_language_details(language) for language in languages]
+            def to_jinja_subtitle(lang):
+                subtitle = get_language_details(YOUTUBE_LANG_MAP.get(lang, lang))
+                return {
+                    "code": lang,
+                    # Youtube.com uses `English - code` format.
+                    # Note: videojs displays it lowercased anyway
+                    "name": f"{subtitle['english'].title()} - {subtitle['query']}",
+                }
+
+            # Youtube.com sorts subtitles by English name
+            return sorted(map(to_jinja_subtitle, languages), key=lambda x: x["name"])
 
         env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(str(self.templates_dir)), autoescape=True
