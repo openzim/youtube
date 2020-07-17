@@ -19,6 +19,8 @@ CHANNEL = "channel"
 PLAYLIST = "playlist"
 USER = "user"
 
+YOUTUBELANGMAP = {"iw": "he"}
+
 logger = getLogger(NAME, level=logging.DEBUG)
 
 

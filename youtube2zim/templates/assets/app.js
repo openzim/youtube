@@ -127,7 +127,7 @@ function firstVideo(video) {
     if (video['subtitles'].length > 0) {
         for (i in video['subtitles']) {
             var subtitle = video['subtitles'][i];
-            subtitles += '<track kind="subtitles" src="videos/' + video['id'] + '/video.' + subtitle['code'] + '.vtt" srclang="' + subtitle['code'] + '" label="' + subtitle['native'] + '" />';
+            subtitles += '<track kind="subtitles" src="' + ZIM_META_NS + 'videos/' + video['id'] + '/video.' + subtitle['code'] + '.vtt" srclang="' + subtitle['code'] + '" label="' + subtitle['display_string'] + '" />';
         }
     }
     var video_desctiption = video['description'].slice(0, 200);

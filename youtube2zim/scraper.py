@@ -52,6 +52,7 @@ from .constants import (
     PLAYLIST,
     USER,
     SCRAPER,
+    YOUTUBELANGMAP,
 )
 
 
@@ -105,7 +106,7 @@ class Youtube2Zim(object):
         self.all_subtitles = all_subtitles
         self.autoplay = autoplay
         self.fname = fname
-        self.language = language
+        self.language = self.preprocess_language(language)
         self.tags = [t.strip() for t in tags.split(",")]
         self.title = title
         self.description = description
@@ -234,6 +235,12 @@ class Youtube2Zim(object):
             + sorted_playlists[0:index]
             + sorted_playlists[index + 1 :]
         )
+
+    @staticmethod
+    def preprocess_language(lang):
+        if lang in YOUTUBELANGMAP:
+            return YOUTUBELANGMAP[lang]
+        return lang
 
     def run(self):
         """ execute the scraper step by step """
@@ -735,7 +742,18 @@ class Youtube2Zim(object):
                 if x.is_file() and x.name.endswith(".vtt")
             ]
 
-            return [get_language_details(language) for language in languages]
+            subtitle_details = []
+            for language in languages:
+                language_details = get_language_details(
+                    self.preprocess_language(language)
+                )
+                subtitle_details.append(
+                    {
+                        "code": language,
+                        "display_string": f"{language_details['native']} - {language_details['english']}",
+                    }
+                )
+            return subtitle_details
 
         env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(str(self.templates_dir)), autoescape=True
