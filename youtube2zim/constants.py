@@ -19,7 +19,8 @@ CHANNEL = "channel"
 PLAYLIST = "playlist"
 USER = "user"
 
-YOUTUBELANGMAP = {"iw": "he"}
+# Youtube uses some non-standard language codes
+YOUTUBE_LANG_MAP = {"iw": "he", "es-419": "es"}
 
 logger = getLogger(NAME, level=logging.DEBUG)
 

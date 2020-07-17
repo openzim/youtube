@@ -52,7 +52,7 @@ from .constants import (
     PLAYLIST,
     USER,
     SCRAPER,
-    YOUTUBELANGMAP,
+    YOUTUBE_LANG_MAP,
 )
 
 
@@ -106,7 +106,7 @@ class Youtube2Zim(object):
         self.all_subtitles = all_subtitles
         self.autoplay = autoplay
         self.fname = fname
-        self.language = self.preprocess_language(language)
+        self.language = language
         self.tags = [t.strip() for t in tags.split(",")]
         self.title = title
         self.description = description
@@ -235,12 +235,6 @@ class Youtube2Zim(object):
             + sorted_playlists[0:index]
             + sorted_playlists[index + 1 :]
         )
-
-    @staticmethod
-    def preprocess_language(lang):
-        if lang in YOUTUBELANGMAP:
-            return YOUTUBELANGMAP[lang]
-        return lang
 
     def run(self):
         """ execute the scraper step by step """
@@ -742,18 +736,17 @@ class Youtube2Zim(object):
                 if x.is_file() and x.name.endswith(".vtt")
             ]
 
-            subtitle_details = []
-            for language in languages:
-                language_details = get_language_details(
-                    self.preprocess_language(language)
-                )
-                subtitle_details.append(
-                    {
-                        "code": language,
-                        "display_string": f"{language_details['native']} - {language_details['english']}",
-                    }
-                )
-            return subtitle_details
+            def to_jinja_subtitle(lang):
+                subtitle = get_language_details(YOUTUBE_LANG_MAP.get(lang, lang))
+                return {
+                    "code": lang,
+                    # Youtube.com uses `English - code` format.
+                    # Note: videojs displays it lowercased anyway
+                    "name": f"{subtitle['english'].title()} - {subtitle['query']}",
+                }
+
+            # Youtube.com sorts subtitles by English name
+            return sorted(map(to_jinja_subtitle, languages), key=lambda x: x["name"])
 
         env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(str(self.templates_dir)), autoescape=True
