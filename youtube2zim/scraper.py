@@ -383,10 +383,10 @@ class Youtube2Zim(object):
         self.channels_dir.mkdir(exist_ok=True)
 
     def check_branding_values(self):
-        """ checks that user-supplied images and colors are valid (so to fail early)
+        """checks that user-supplied images and colors are valid (so to fail early)
 
-            Images are checked for existence or downloaded then resized
-            Colors are check for validity """
+        Images are checked for existence or downloaded then resized
+        Colors are check for validity"""
 
         # skip this step if none of related values were supplied
         if not sum(
@@ -434,11 +434,11 @@ class Youtube2Zim(object):
             )
 
     def extract_playlists(self):
-        """ prepare a list of Playlist from user request
+        """prepare a list of Playlist from user request
 
-            USER: we fetch the hidden channel associate to it
-            CHANNEL (and USER): we grab all playlists + `uploads` playlist
-            PLAYLIST: we retrieve from the playlist Id(s) """
+        USER: we fetch the hidden channel associate to it
+        CHANNEL (and USER): we grab all playlists + `uploads` playlist
+        PLAYLIST: we retrieve from the playlist Id(s)"""
 
         (
             self.playlists,
@@ -703,7 +703,7 @@ class Youtube2Zim(object):
         )
 
     def make_html_files(self, actual_videos_ids):
-        """ make up HTML structure to read the content
+        """make up HTML structure to read the content
 
         /home.html                                  Homepage
 

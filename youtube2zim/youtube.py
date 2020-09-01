@@ -155,10 +155,10 @@ def get_playlist_json(playlist_id):
 
 
 def get_videos_json(playlist_id):
-    """ retrieve a list of youtube PlaylistItem dict
+    """retrieve a list of youtube PlaylistItem dict
 
-        same request for both channel and playlist
-        channel mode uses `uploads` playlist from channel """
+    same request for both channel and playlist
+    channel mode uses `uploads` playlist from channel"""
 
     fname = f"playlist_{playlist_id}_videos"
     items = load_json(YOUTUBE.cache_dir, fname)
@@ -292,11 +292,11 @@ def skip_outofrange_videos(date_range, item):
 
 
 def extract_playlists_details_from(collection_type, youtube_id):
-    """ prepare a list of Playlist from user request
+    """prepare a list of Playlist from user request
 
-        USER: we fetch the hidden channel associate to it
-        CHANNEL (and USER): we grab all playlists + `uploads` playlist
-        PLAYLIST: we retrieve from the playlist Id(s) """
+    USER: we fetch the hidden channel associate to it
+    CHANNEL (and USER): we grab all playlists + `uploads` playlist
+    PLAYLIST: we retrieve from the playlist Id(s)"""
 
     uploads_playlist_id = None
     main_channel_id = None

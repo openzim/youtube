@@ -45,7 +45,8 @@ def main():
         help="Format for building individual --zim-file argument. Uses --playlists-name otherwise",
     )
     parser.add_argument(
-        "--playlists-title", help="Custom title format for individual playlist ZIM",
+        "--playlists-title",
+        help="Custom title format for individual playlist ZIM",
     )
     parser.add_argument(
         "--playlists-description",
