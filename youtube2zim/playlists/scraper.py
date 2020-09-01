@@ -28,7 +28,9 @@ from ..youtube import extract_playlists_details_from, credentials_ok
 
 class YoutubeHandler(object):
     def __init__(
-        self, options, extra_args,
+        self,
+        options,
+        extra_args,
     ):
         # save options as properties
         for key, value in options.items():
@@ -90,7 +92,8 @@ class YoutubeHandler(object):
 
         logger.info(
             ".. {} playlists:\n   {}".format(
-                len(playlists), "\n   ".join([p.playlist_id for p in playlists]),
+                len(playlists),
+                "\n   ".join([p.playlist_id for p in playlists]),
             )
         )
 

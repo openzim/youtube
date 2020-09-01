@@ -11,10 +11,10 @@ from .constants import logger
 def post_process_video(
     video_dir, video_id, preset, video_format, low_quality, skip_recompress=False
 ):
-    """ apply custom post-processing to downloaded video
+    """apply custom post-processing to downloaded video
 
-        - resize thumbnail
-        - recompress video if incorrect video_format or low_quality requested """
+    - resize thumbnail
+    - recompress video if incorrect video_format or low_quality requested"""
 
     # find downloaded video from video_dir
     files = [
