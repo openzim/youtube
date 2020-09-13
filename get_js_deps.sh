@@ -55,6 +55,14 @@ rm -f v1.3.1.zip
 echo "getting jquery.js"
 curl -L -o $ASSETS_PATH/jquery.min.js https://code.jquery.com/jquery-1.12.4.min.js
 
+echo "getting webp-hero"
+curl -L -O https://unpkg.com/webp-hero@0.0.0-dev.26/dist-cjs/polyfills.js
+rm -f $ASSETS_PATH/polyfills.js
+mv polyfills.js $ASSETS_PATH/polyfills.js
+curl -L -O https://unpkg.com/webp-hero@0.0.0-dev.26/dist-cjs/webp-hero.bundle.js
+rm -f $ASSETS_PATH/webp-hero.bundle.js
+mv webp-hero.bundle.js $ASSETS_PATH/webp-hero.bundle.js
+
 if command -v fix_ogvjs_dist > /dev/null; then
     echo "fixing JS files"
     fix_ogvjs_dist $ASSETS_PATH "assets"
