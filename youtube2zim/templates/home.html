@@ -17,6 +17,8 @@
     <script src="assets/ogvjs/ogv-support.js"></script>
     <script src="assets/ogvjs/ogv.js"></script>
     <script src="assets/videojs-ogvjs.js"></script>
+    <script src="assets/polyfills.js"></script>
+    <script src="assets/webp-hero.bundle.js"></script>
   </head>
   <body>
     <div class="container">
@@ -57,5 +59,16 @@
   <script src="assets/data.js"></script>
   <script src="assets/db.js"></script>
   <script src="assets/app.js"></script>
+  <script>
+    $(document).ready(function() {
+      webpHero.detectWebpSupport().then(function (support_webp){
+          if (!support_webp) {
+              console.log("no WebP support, polyfilling.");
+              let webpMachine = new webpHero.WebpMachine();
+              webpMachine.polyfillDocument();
+          }
+      });
+  });
+  </script>
 </body>
 </html>
