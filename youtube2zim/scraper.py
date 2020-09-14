@@ -593,45 +593,40 @@ class Youtube2Zim(object):
         options_copy = options.copy()
         video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
 
-        downloaded_from_cache = False
         if self.s3_storage:
             s3_key = f"{self.video_format}/{self.video_quality}/{video_id}"
             video_path = video_location.joinpath(f"video.{self.video_format}")
             logger.debug(
                 f"Attempting to download video file for {video_id} from cache..."
             )
-            downloaded_from_cache = self.download_from_cache(
-                s3_key, video_path, preset.VERSION
-            )
-            if downloaded_from_cache:
+            if self.download_from_cache(s3_key, video_path, preset.VERSION):
                 return True
 
-        if not downloaded_from_cache:
-            try:
-                # skip downloading the thumbnails
-                options_copy["writethumbnail"] = False
-                with youtube_dl.YoutubeDL(options_copy) as ydl:
-                    ydl.download([video_id])
-                post_process_video(
-                    video_location,
-                    video_id,
-                    preset,
-                    self.video_format,
-                    self.low_quality,
-                )
-            except (
-                youtube_dl.utils.DownloadError,
-                FileNotFoundError,
-                subprocess.CalledProcessError,
-            ) as exc:
-                logger.error("Video file for {video_id} could not be downloaded")
-                logger.debug(exc)
-                return False
-            else:  # upload to cache only if everything went well
-                if self.s3_storage and not downloaded_from_cache:
-                    logger.debug(f"Uploading video file for {video_id} to cache ...")
-                    self.upload_to_cache(s3_key, video_path, preset.VERSION)
-                return True
+        try:
+            # skip downloading the thumbnails
+            options_copy["writethumbnail"] = False
+            with youtube_dl.YoutubeDL(options_copy) as ydl:
+                ydl.download([video_id])
+            post_process_video(
+                video_location,
+                video_id,
+                preset,
+                self.video_format,
+                self.low_quality,
+            )
+        except (
+            youtube_dl.utils.DownloadError,
+            FileNotFoundError,
+            subprocess.CalledProcessError,
+        ) as exc:
+            logger.error("Video file for {video_id} could not be downloaded")
+            logger.debug(exc)
+            return False
+        else:  # upload to cache only if everything went well
+            if self.s3_storage:
+                logger.debug(f"Uploading video file for {video_id} to cache ...")
+                self.upload_to_cache(s3_key, video_path, preset.VERSION)
+            return True
 
     def download_thumbnail(self, video_id, options):
         """ download the thumbnail from cache/youtube and return True if successful """
@@ -640,39 +635,34 @@ class Youtube2Zim(object):
         options_copy = options.copy()
         video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
 
-        downloaded_from_cache = False
         if self.s3_storage:
             s3_key = f"thumbnails/high/{video_id}"
             thumbnail_path = video_location.joinpath("video.webp")
             logger.debug(
                 f"Attempting to download thumbnail for {video_id} from cache..."
             )
-            downloaded_from_cache = self.download_from_cache(
-                s3_key, thumbnail_path, preset.VERSION
-            )
-            if downloaded_from_cache:
+            if self.download_from_cache(s3_key, thumbnail_path, preset.VERSION):
                 return True
 
-        if not downloaded_from_cache:
-            try:
-                # skip downloading the video
-                options_copy["skip_download"] = True
-                with youtube_dl.YoutubeDL(options_copy) as ydl:
-                    ydl.download([video_id])
-                process_thumbnail(thumbnail_path, preset)
-            except (
-                youtube_dl.utils.DownloadError,
-                FileNotFoundError,
-                subprocess.CalledProcessError,
-            ) as exc:
-                logger.error("Thumbnail for {video_id} could not be downloaded")
-                logger.debug(exc)
-                return False
-            else:  # upload to cache only if everything went well
-                if self.s3_storage and not downloaded_from_cache:
-                    logger.debug(f"Uploading thumbnail for {video_id} to cache ...")
-                    self.upload_to_cache(s3_key, thumbnail_path, preset.VERSION)
-                return True
+        try:
+            # skip downloading the video
+            options_copy["skip_download"] = True
+            with youtube_dl.YoutubeDL(options_copy) as ydl:
+                ydl.download([video_id])
+            process_thumbnail(thumbnail_path, preset)
+        except (
+            youtube_dl.utils.DownloadError,
+            FileNotFoundError,
+            subprocess.CalledProcessError,
+        ) as exc:
+            logger.error("Thumbnail for {video_id} could not be downloaded")
+            logger.debug(exc)
+            return False
+        else:  # upload to cache only if everything went well
+            if self.s3_storage:
+                logger.debug(f"Uploading thumbnail for {video_id} to cache ...")
+                self.upload_to_cache(s3_key, thumbnail_path, preset.VERSION)
+            return True
 
     def download_video_files_batch(self, options, videos_ids):
         """ download video file and thumbnail for all videos in batch and return succeeded and failed video ids """
