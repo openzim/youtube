@@ -29,8 +29,7 @@ from kiwixstorage import KiwixStorage
 from zimscraperlib.download import save_file
 from zimscraperlib.zim import make_zim_file
 from zimscraperlib.fix_ogvjs_dist import fix_source_dir
-from zimscraperlib.image.optimization import optimize_image
-from zimscraperlib.image.presets import WebpMedium
+from zimscraperlib.image.presets import WebpHigh
 from zimscraperlib.image.transformation import resize_image
 from zimscraperlib.image.probing import get_colors, is_hex_color
 from zimscraperlib.video.presets import VideoWebmLow, VideoMp4Low
@@ -47,7 +46,7 @@ from .youtube import (
     skip_outofrange_videos,
 )
 from .utils import clean_text, load_json, save_json, get_slug
-from .processing import post_process_video
+from .processing import post_process_video, process_thumbnail
 from .constants import (
     logger,
     ROOT_DIR,
@@ -587,103 +586,106 @@ class Youtube2Zim(object):
         logger.info(f"uploaded {video_path} to cache at {key}")
         return True
 
-    def download_video_files_batch(self, options, videos_ids):
+    def download_video(self, video_id, options):
+        """ download the video from cache/youtube and return True if successful """
 
-        succeeded = []
-        failed = []
+        preset = {"mp4": VideoMp4Low}.get(self.video_format, VideoWebmLow)()
+        options_copy = options.copy()
+        video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
 
-        def process_thumbnail(thumbnail_path, preset_thumbnail):
-            # thumbnail might be WebP as .webp, JPEG as .jpg or WebP as .jpg
-            tmp_thumbnail = thumbnail_path
-            if not thumbnail_path.exists():
-                logger.debug("We don't have video.webp, thumbnail is .jpg")
-                tmp_thumbnail = thumbnail_path.with_suffix(".jpg")
-
-            # resize thumbnail. we use max width:248x187px in listing
-            # but our posters are 480x270px
-            resize_image(
-                tmp_thumbnail,
-                width=480,
-                height=270,
-                method="cover",
-                allow_upscaling=True,
-            )
-            optimize_image(tmp_thumbnail, thumbnail_path, **preset_thumbnail.options)
-            return True
-
-        def record_success_and_log(video_id):
-            succeeded.append(video_id)
+        downloaded_from_cache = False
+        if self.s3_storage:
+            s3_key = f"{self.video_format}/{self.video_quality}/{video_id}"
+            video_path = video_location.joinpath(f"video.{self.video_format}")
             logger.debug(
-                f"Successfully downloaded and processed assets for video ID - {video_id}"
+                f"Attempting to download video file for {video_id} from cache..."
             )
+            downloaded_from_cache = self.download_from_cache(
+                s3_key, video_path, preset.VERSION
+            )
+            if downloaded_from_cache:
+                return True
 
-        # set preset
-        preset_video = {"mp4": VideoMp4Low}.get(self.video_format, VideoWebmLow)()
-        preset_thumbnail = WebpMedium()
-
-        for video_id in videos_ids:
-            options_copy = options.copy()
-            video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
-            video_downloaded_from_cache = False
-            thumbnail_downloaded_from_cache = False
-            if self.s3_storage:
-                s3_key_video = f"{self.video_format}/{self.video_quality}/{video_id}"
-                s3_key_thumbnail = f"thumbnails/{video_id}"
-                video_path = video_location.joinpath(f"video.{self.video_format}")
-                thumbnail_path = video_location.joinpath("video.webp")
-                logger.debug(f"Attempting to download {video_id} from cache...")
-                video_downloaded_from_cache = self.download_from_cache(
-                    s3_key_video, video_path, preset_video.VERSION
-                )
-                thumbnail_downloaded_from_cache = self.download_from_cache(
-                    s3_key_thumbnail, thumbnail_path, preset_thumbnail.VERSION
-                )
+        if not downloaded_from_cache:
             try:
-                if not thumbnail_downloaded_from_cache and video_downloaded_from_cache:
-                    # skip downloading the video
-                    options_copy["skip_download"] = True
-                    with youtube_dl.YoutubeDL(options_copy) as ydl:
-                        ydl.download([video_id])
-                    process_thumbnail(thumbnail_path, preset_thumbnail)
-                    record_success_and_log(video_id)
-
-                if not video_downloaded_from_cache:
-                    # update the thumbnail too
-                    if thumbnail_downloaded_from_cache:
-                        thumbnail_path.unlink()
-                        thumbnail_downloaded_from_cache = False
-
-                    logger.debug(f"Downloading video {video_id} using youtube-dl...")
-                    with youtube_dl.YoutubeDL(options_copy) as ydl:
-                        ydl.download([video_id])
-                    post_process_video(
-                        video_location,
-                        video_id,
-                        preset_video,
-                        self.video_format,
-                        self.low_quality,
-                    )
-                    process_thumbnail(thumbnail_path, preset_thumbnail)
-                    record_success_and_log(video_id)
-
+                # skip downloading the thumbnails
+                options_copy["writethumbnail"] = False
+                with youtube_dl.YoutubeDL(options_copy) as ydl:
+                    ydl.download([video_id])
+                post_process_video(
+                    video_location,
+                    video_id,
+                    preset,
+                    self.video_format,
+                    self.low_quality,
+                )
             except (
                 youtube_dl.utils.DownloadError,
                 FileNotFoundError,
                 subprocess.CalledProcessError,
-            ):
-                failed.append(video_id)
+            ) as exc:
+                logger.error("Video file for {video_id} could not be downloaded")
+                logger.debug(exc)
+                return False
             else:  # upload to cache only if everything went well
-                if self.s3_storage:
-                    if not video_downloaded_from_cache:
-                        logger.debug(f"Uploading video {video_id} to cache ...")
-                        self.upload_to_cache(
-                            s3_key_video, video_path, preset_video.VERSION
-                        )
-                    if not thumbnail_downloaded_from_cache:
-                        logger.debug(f"Uploading thumbnail for {video_id} to cache ...")
-                        self.upload_to_cache(
-                            s3_key_thumbnail, thumbnail_path, preset_thumbnail.VERSION
-                        )
+                if self.s3_storage and not downloaded_from_cache:
+                    logger.debug(f"Uploading video file for {video_id} to cache ...")
+                    self.upload_to_cache(s3_key, video_path, preset.VERSION)
+                return True
+
+    def download_thumbnail(self, video_id, options):
+        """ download the thumbnail from cache/youtube and return True if successful """
+
+        preset = WebpHigh()
+        options_copy = options.copy()
+        video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
+
+        downloaded_from_cache = False
+        if self.s3_storage:
+            s3_key = f"thumbnails/high/{video_id}"
+            thumbnail_path = video_location.joinpath("video.webp")
+            logger.debug(
+                f"Attempting to download thumbnail for {video_id} from cache..."
+            )
+            downloaded_from_cache = self.download_from_cache(
+                s3_key, thumbnail_path, preset.VERSION
+            )
+            if downloaded_from_cache:
+                return True
+
+        if not downloaded_from_cache:
+            try:
+                # skip downloading the video
+                options_copy["skip_download"] = True
+                with youtube_dl.YoutubeDL(options_copy) as ydl:
+                    ydl.download([video_id])
+                process_thumbnail(thumbnail_path, preset)
+            except (
+                youtube_dl.utils.DownloadError,
+                FileNotFoundError,
+                subprocess.CalledProcessError,
+            ) as exc:
+                logger.error("Thumbnail for {video_id} could not be downloaded")
+                logger.debug(exc)
+                return False
+            else:  # upload to cache only if everything went well
+                if self.s3_storage and not downloaded_from_cache:
+                    logger.debug(f"Uploading thumbnail for {video_id} to cache ...")
+                    self.upload_to_cache(s3_key, thumbnail_path, preset.VERSION)
+                return True
+
+    def download_video_files_batch(self, options, videos_ids):
+        """ download video file and thumbnail for all videos in batch and return succeeded and failed video ids """
+
+        succeeded = []
+        failed = []
+        for video_id in videos_ids:
+            if self.download_video(video_id, options) and self.download_thumbnail(
+                video_id, options
+            ):
+                succeeded.append(video_id)
+            else:
+                failed.append(video_id)
         return succeeded, failed
 
     def download_authors_branding(self):

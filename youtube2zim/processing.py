@@ -3,8 +3,30 @@
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 from zimscraperlib.video.encoding import reencode
+from zimscraperlib.image.optimization import optimize_image
+from zimscraperlib.image.transformation import resize_image
 
 from .constants import logger
+
+
+def process_thumbnail(thumbnail_path, preset):
+    # thumbnail might be WebP as .webp, JPEG as .jpg or WebP as .jpg
+    tmp_thumbnail = thumbnail_path
+    if not thumbnail_path.exists():
+        logger.debug("We don't have video.webp, thumbnail is .jpg")
+        tmp_thumbnail = thumbnail_path.with_suffix(".jpg")
+
+    # resize thumbnail. we use max width:248x187px in listing
+    # but our posters are 480x270px
+    resize_image(
+        tmp_thumbnail,
+        width=480,
+        height=270,
+        method="cover",
+        allow_upscaling=True,
+    )
+    optimize_image(tmp_thumbnail, thumbnail_path, **preset.options)
+    return True
 
 
 def post_process_video(video_dir, video_id, preset, video_format, low_quality):
