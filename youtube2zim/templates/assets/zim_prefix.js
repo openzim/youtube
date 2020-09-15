@@ -12,12 +12,12 @@ ZIM_META_NS = getMetaNamespacePrefix();
 hasImageNamespacePrefix = function(target) { return target.indexOf(ZIM_IMG_NS) !== -1;}
 hasMetaNamespacePrefix = function(target) { return target.indexOf(ZIM_META_NS) !== -1;}
 changeNamespacePrefix = function(target, new_ns) {
-    let avail_ns = ["A", "-", "I"];
+    var avail_ns = ["A", "-", "I"];
     new_ns = new_ns.toUpperCase();
     if (avail_ns.indexOf(new_ns) == -1) {
         throw ("Invalid NS: " + new_ns);
     }
-    let ns_char = -1;
+    var ns_char = -1;
     avail_ns.forEach(function (namespace) {
         if (ns_char == -1) {
             ns_char = target.indexOf("/" + namespace + "/");
