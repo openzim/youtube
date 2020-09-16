@@ -626,7 +626,7 @@ class Youtube2Zim(object):
             FileNotFoundError,
             subprocess.CalledProcessError,
         ) as exc:
-            logger.error("Video file for {video_id} could not be downloaded")
+            logger.error(f"Video file for {video_id} could not be downloaded")
             logger.debug(exc)
             return False
         else:  # upload to cache only if everything went well
@@ -669,7 +669,7 @@ class Youtube2Zim(object):
             FileNotFoundError,
             subprocess.CalledProcessError,
         ) as exc:
-            logger.error("Thumbnail for {video_id} could not be downloaded")
+            logger.error(f"Thumbnail for {video_id} could not be downloaded")
             logger.debug(exc)
             return False
         else:  # upload to cache only if everything went well
@@ -698,7 +698,7 @@ class Youtube2Zim(object):
             if self.download_video(video_id, options) and self.download_thumbnail(
                 video_id, options
             ):
-                self.download_subtitles(video_id)
+                self.download_subtitles(video_id, options)
                 succeeded.append(video_id)
             else:
                 failed.append(video_id)

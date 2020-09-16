@@ -5,7 +5,7 @@
 import requests
 from dateutil import parser as dt_parser
 from zimscraperlib.download import save_file
-from zimscraperlib.imaging import resize_image
+from zimscraperlib.image.transformation import resize_image
 
 from .constants import logger, YOUTUBE, USER, CHANNEL, PLAYLIST
 from .utils import save_json, load_json, get_slug

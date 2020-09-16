@@ -25,7 +25,7 @@ def process_thumbnail(thumbnail_path, preset):
         method="cover",
         allow_upscaling=True,
     )
-    optimize_image(tmp_thumbnail, thumbnail_path, **preset.options)
+    optimize_image(tmp_thumbnail, thumbnail_path, delete_src=True, **preset.options)
     return True
 
 
