@@ -604,7 +604,14 @@ class Youtube2Zim(object):
 
         try:
             # skip downloading the thumbnails
-            options_copy["writethumbnail"] = False
+            options_copy.update(
+                {
+                    "writethumbnail": False,
+                    "writesubtitles": False,
+                    "allsubtitles": False,
+                    "writeautomaticsub": False,
+                }
+            )
             with youtube_dl.YoutubeDL(options_copy) as ydl:
                 ydl.download([video_id])
             post_process_video(
@@ -646,7 +653,14 @@ class Youtube2Zim(object):
 
         try:
             # skip downloading the video
-            options_copy["skip_download"] = True
+            options_copy.update(
+                {
+                    "skip_download": True,
+                    "writesubtitles": False,
+                    "allsubtitles": False,
+                    "writeautomaticsub": False,
+                }
+            )
             with youtube_dl.YoutubeDL(options_copy) as ydl:
                 ydl.download([video_id])
             process_thumbnail(thumbnail_path, preset)
@@ -664,6 +678,17 @@ class Youtube2Zim(object):
                 self.upload_to_cache(s3_key, thumbnail_path, preset.VERSION)
             return True
 
+    def download_subtitles(self, video_id, options):
+        """ download subtitles for a video """
+
+        options_copy = options.copy()
+        options_copy.update({"skip_download": True, "writethumbnail": False})
+        try:
+            with youtube_dl.YoutubeDL(options_copy) as ydl:
+                ydl.download([video_id])
+        except Exception:
+            logger.error(f"Could not download subtitles for {video_id}")
+
     def download_video_files_batch(self, options, videos_ids):
         """ download video file and thumbnail for all videos in batch and return succeeded and failed video ids """
 
@@ -673,6 +698,7 @@ class Youtube2Zim(object):
             if self.download_video(video_id, options) and self.download_thumbnail(
                 video_id, options
             ):
+                self.download_subtitles(video_id)
                 succeeded.append(video_id)
             else:
                 failed.append(video_id)
