@@ -478,7 +478,7 @@ class Youtube2Zim(object):
         options = {
             "cachedir": self.videos_dir,
             "writethumbnail": True,
-            "write_all_thumbnails": True,
+            "write_all_thumbnails": False,
             "writesubtitles": True,
             "allsubtitles": True,
             "subtitlesformat": "vtt",
@@ -592,10 +592,10 @@ class Youtube2Zim(object):
         preset = {"mp4": VideoMp4Low}.get(self.video_format, VideoWebmLow)()
         options_copy = options.copy()
         video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
+        video_path = video_location.joinpath(f"video.{self.video_format}")
 
         if self.s3_storage:
             s3_key = f"{self.video_format}/{self.video_quality}/{video_id}"
-            video_path = video_location.joinpath(f"video.{self.video_format}")
             logger.debug(
                 f"Attempting to download video file for {video_id} from cache..."
             )
@@ -634,10 +634,10 @@ class Youtube2Zim(object):
         preset = WebpHigh()
         options_copy = options.copy()
         video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
+        thumbnail_path = video_location.joinpath("video.webp")
 
         if self.s3_storage:
             s3_key = f"thumbnails/high/{video_id}"
-            thumbnail_path = video_location.joinpath("video.webp")
             logger.debug(
                 f"Attempting to download thumbnail for {video_id} from cache..."
             )
