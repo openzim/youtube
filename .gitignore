@@ -73,3 +73,5 @@ youtube2zim/templates/assets/jquery.min.js
 youtube2zim/templates/assets/ogvjs/
 youtube2zim/templates/assets/videojs-ogvjs.js
 youtube2zim/templates/assets/videojs/
+youtube2zim/templates/assets/polyfills.js
+youtube2zim/templates/assets/webp-hero.bundle.js
