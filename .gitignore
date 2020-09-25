@@ -35,9 +35,6 @@ htmlcov/
 nosetests.xml
 coverage.xml
 
-# Translations
-*.mo
-
 # Mr Developer
 .mr.developer.cfg
 .project
@@ -48,7 +45,6 @@ coverage.xml
 
 # Django stuff:
 *.log
-*.pot
 
 # Sphinx documentation
 docs/_build/
