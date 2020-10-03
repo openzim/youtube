@@ -9,7 +9,9 @@ function genplaylist() {
     videoDB.loadData(undefined, function() {
         var data = videoDB.getPage(videoDB.getPageNumber());
         firstVideo(videoDB.getFirstVideo());
-        refreshVideos(data)
+        refreshVideos(data);
+        videojs(document.querySelector('.video-js'));
+        trigger_webp_polyfill();
     })
     setupPagination();
     refreshPagination();
@@ -154,3 +156,4 @@ function firstVideo(video) {
                 '</p>' +
             '</div>';
 }
+
