@@ -2,15 +2,15 @@
 window.onload = genplaylist();
 
 function genplaylist() {
-    // Load the initial data. 
+    // Load the initial data.
     // This will display all data without any language filter.
     videoDB.resetPage();
     videoDB.getjson();
     videoDB.loadData(undefined, function() {
         var data = videoDB.getPage(videoDB.getPageNumber());
         firstVideo(videoDB.getFirstVideo());
-        refreshVideos(data)    
-    })    
+        refreshVideos(data)
+    })
     setupPagination();
     refreshPagination();
     return false;
@@ -34,13 +34,13 @@ function setupPagination() {
     var leftArrow = document.getElementsByClassName('left-arrow')[i];
     var rightArrow = document.getElementsByClassName('right-arrow')[i];
     // var pageText = document.getElementsByClassName('pagination-text')[i];
-    
+
     leftArrow.onclick = function() {
         videoDB.pageBackwards(function() {
             handlePagination();
         });
     }
-    
+
     rightArrow.onclick = function() {
         videoDB.pageForward(function(){
             handlePagination();
@@ -50,7 +50,7 @@ function setupPagination() {
 }
 
 /**
- * Reset the page text on the pagination widget, 
+ * Reset the page text on the pagination widget,
  * if a new language has been applied.
  */
 function refreshPagination() {
@@ -65,7 +65,7 @@ function refreshPagination() {
             var pageText = document.getElementsByClassName('pagination-text')[i];
             var pageNumber = videoDB.getPageNumber();
             pageText.innerHTML = pageText.getAttribute("data-format").replace("{current}", pageNumber).replace("{total}", pageCount);
-    
+
             if (videoDB.getPageNumber() == 1) {
                 leftArrow.style.visibility = 'hidden';
                 rightArrow.style.visibility = 'visible';
@@ -76,7 +76,7 @@ function refreshPagination() {
                 leftArrow.style.visibility = 'visible';
                 rightArrow.style.visibility = 'visible';
             }
-            
+
             pageBox.style.visibility = 'visible';
             pageBox.style.display = '';
             leftArrow.style.display = '';
@@ -90,7 +90,7 @@ function refreshPagination() {
 }
 
 /**
- * Dynamically generate the video item out of 
+ * Dynamically generate the video item out of
  * the passed in {pageData} parameter.
  * @param {pageData} Video data for the current page.
  */
@@ -101,7 +101,7 @@ function refreshVideos(pageData) {
     for (i in pageData) {
       var video = pageData[i];
       var li = document.createElement('li');
-      
+
       var a = document.createElement('a')
       a.href =  video['slug'] + ".html";
       a.className = 'nostyle'
@@ -137,7 +137,7 @@ function firstVideo(video) {
     videoIntro.innerHTML = '' +
         '<video id="video_container" class="video-js vjs-default-skin" ' +
                'width="480px" height="270px" crossorigin ' +
-               'data-setup=\'{"techOrder": ["html5", "ogvjs"], ' + 
+               'data-setup=\'{"techOrder": ["html5", "ogvjs"], ' +
                             '"ogvjs": {"base": "assets/ogvjs"}, "autoplay": false, ' +
                                       '"preload": true, "controls": true, "controlBar": {"pictureInPictureToggle": false}}\'' +
                'poster="' + ZIM_IMG_NS + 'videos/' + video['id'] + '/video.webp">' +
@@ -148,7 +148,7 @@ function firstVideo(video) {
                     '<a href=\'' + video['slug'] + '.html\'>' +
                         video['title'] +
                     '</a>' +
-                '</h4>' + 
+                '</h4>' +
                 '<p class="description">' +
                     video_desctiption +
                 '</p>' +
