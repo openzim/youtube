@@ -42,7 +42,7 @@
           </td>
         </tr>
       </table>
-      <div id="grid-container"> 
+      <div id="grid-container">
         <div id="video-intro" class="rig grid">
         </div>
      <ul id="video-items" class="rig grid"></ul>
@@ -56,19 +56,10 @@
   </div>
   <script src="assets/jquery.min.js" type="text/javascript"></script>
   <script src="assets/chosen/chosen.jquery.js" type="text/javascript"></script>
+  <script src="assets/webp-trigger.js"></script>
   <script src="assets/data.js"></script>
   <script src="assets/db.js"></script>
   <script src="assets/app.js"></script>
-  <script>
-    $(document).ready(function() {
-      webpHero.detectWebpSupport().then(function (support_webp){
-          if (!support_webp) {
-              console.log("no WebP support, polyfilling.");
-              let webpMachine = new webpHero.WebpMachine();
-              webpMachine.polyfillDocument();
-          }
-      });
-  });
-  </script>
+  <script>$(document).ready(function() { trigger_webp_polyfill(); });</script>
 </body>
 </html>
