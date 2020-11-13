@@ -271,7 +271,10 @@ def save_channel_branding(channels_dir, channel_id, save_banner=False):
         # resize profile as we only use up 100px/80 sq
         resize_image(profile_path, width=100, height=100)
 
-    if save_banner:
+    # currently disabled as per deprecation of the following property
+    # without an alternative way to retrieve it (using the API)
+    # See: https://developers.google.com/youtube/v3/revision_history#september-9,-2020
+    if save_banner and False:
         banner = channel_json["brandingSettings"]["image"]["bannerImageUrl"]
         banner_path = channel_dir.joinpath("banner.jpg")
         if not banner_path.exists():
