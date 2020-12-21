@@ -1,0 +1,21 @@
+name: Container
+
+on:
+  push:
+    branches:
+      - 'master'
+    tags:
+      - v*
+
+jobs:
+  youtube:
+    name: Deploy Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish docker
+        uses: rgaudin/openzim-docker-action@main
+        with:
+          image-path: openzim/youtube
+          on-master: dev
+          tag-pattern: v*
+          restrict-to: openzim/youtube
