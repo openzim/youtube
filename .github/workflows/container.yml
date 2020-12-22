@@ -12,6 +12,7 @@ jobs:
     name: Deploy Docker Image
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Publish docker
         uses: rgaudin/openzim-docker-action@main
         with:
@@ -19,3 +20,7 @@ jobs:
           on-master: dev
           tag-pattern: v*
           restrict-to: openzim/youtube
+          hub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          hub-password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          ghcr-username: ${{ secrets.GHCR_USERNAME }}
+          ghcr-token: ${{ secrets.GHCR_TOKEN }}
