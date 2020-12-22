@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build and push
-        uses: openzim/docker-publish-action@main
+        uses: openzim/docker-publish-action@v1
         with:
           image-path: openzim/youtube
           on-master: dev
