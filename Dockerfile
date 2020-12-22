@@ -1,4 +1,5 @@
 FROM python:3.8
+LABEL org.opencontainers.image.source https://github.com/openzim/youtube
 
 # Install necessary packages
 RUN apt-get update -y \
