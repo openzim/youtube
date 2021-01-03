@@ -58,7 +58,7 @@ from .constants import (
 )
 
 
-class Youtube2Zim(object):
+class Youtube2Zim:
     def __init__(
         self,
         collection_type,

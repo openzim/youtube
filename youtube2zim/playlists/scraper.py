@@ -26,7 +26,7 @@ from ..constants import logger, NAME, YOUTUBE, PLAYLIST
 from ..youtube import extract_playlists_details_from, credentials_ok
 
 
-class YoutubeHandler(object):
+class YoutubeHandler:
     def __init__(
         self,
         options,

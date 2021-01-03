@@ -25,7 +25,7 @@ YOUTUBE_LANG_MAP = {"iw": "he", "es-419": "es"}
 logger = getLogger(NAME, level=logging.DEBUG)
 
 
-class Youtube(object):
+class Youtube:
     def __init__(self):
         self.build_dir = None
         self.cache_dir = None
