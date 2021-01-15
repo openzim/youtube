@@ -86,7 +86,7 @@ def get_channel_json(channel_id, for_username=False):
         req.raise_for_status()
         try:
             channel_json = req.json()["items"][0]
-        except IndexError:
+        except (KeyError, IndexError):
             if for_username:
                 logger.error(f"Invalid username `{channel_id}`: Not Found")
             else:

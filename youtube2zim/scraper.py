@@ -724,8 +724,14 @@ class Youtube2Zim:
     def update_metadata(self):
         # we use title, description, profile and banner of channel/user
         # or channel of first playlist
-        main_channel_json = get_channel_json(self.main_channel_id)
-        save_channel_branding(self.channels_dir, self.main_channel_id, save_banner=True)
+        try:
+            main_channel_json = get_channel_json(self.main_channel_id)
+        except KeyError:
+            main_channel_json = {"snippet": {"title": "Unknown", "description": ""}}
+        else:
+            save_channel_branding(
+                self.channels_dir, self.main_channel_id, save_banner=True
+            )
         self.copy_default_banner(self.main_channel_id)
 
         # if a single playlist was requested, use if for names;
@@ -817,7 +823,11 @@ class Youtube2Zim:
             ]
 
             def to_jinja_subtitle(lang):
-                subtitle = get_language_details(YOUTUBE_LANG_MAP.get(lang, lang))
+                try:
+                    subtitle = get_language_details(YOUTUBE_LANG_MAP.get(lang, lang))
+                except Exception:
+                    logger.error(f"Failed to get language details for {lang}")
+                    raise
                 return {
                     "code": lang,
                     # Youtube.com uses `English - code` format.
