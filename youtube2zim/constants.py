@@ -24,6 +24,7 @@ YOUTUBE_LANG_MAP = {
     "iw": "he",  # Hebrew
     "es-419": "es",  # Spanish
     "zh-Hans-CN": "zh-cn",  # Chinese
+    "zh-Hant-TW": "zh-tw",  # Chinese
     "mo": "ro",  # Romanian
     "sh": "srp",  # Serbian
 }
