@@ -109,7 +109,7 @@ function refreshVideos(pageData) {
       a.className = 'nostyle'
 
       var img = document.createElement('img');
-      img.src = ZIM_IMG_NS + "videos/" + video['id'] + "/video.webp";
+      img.src = "videos/" + video['id'] + "/video.webp";
 
       var title = document.createElement('p');
       title.id = 'title';
@@ -142,8 +142,8 @@ function firstVideo(video) {
                'data-setup=\'{"techOrder": ["html5", "ogvjs"], ' +
                             '"ogvjs": {"base": "assets/ogvjs"}, "autoplay": false, ' +
                                       '"preload": true, "controls": true, "controlBar": {"pictureInPictureToggle": false}}\'' +
-               'poster="' + ZIM_IMG_NS + 'videos/' + video['id'] + '/video.webp">' +
-            '<source src="' + ZIM_IMG_NS + 'videos/' + video['id'] + '/video.{{ video_format }}" ' +
+               'poster="videos/' + video['id'] + '/video.webp">' +
+            '<source src="videos/' + video['id'] + '/video.{{ video_format }}" ' +
                     'type="video/{{ video_format }}" />' + subtitles + '</video>' +
             '<div id="video-details">' +
                 '<h4 id="title">' +
