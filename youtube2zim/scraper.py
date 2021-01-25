@@ -371,8 +371,13 @@ class Youtube2Zim(object):
             raise ValueError(f"Invalid dateafter input: {exc}")
 
     def validate_id(self):
+        self.youtube_id = self.youtube_id.replace(" ", "")
         if self.collection_type == "channel" and len(self.youtube_id) > 24:
             raise ValueError("Invalid ChannelId")
+        if (self.collection_type == "channel" or self.collection_type == "user") and (
+            "," in self.youtube_id
+        ):
+            raise ValueError("Invalid YoutubeId")
 
     def prepare_build_folder(self):
         """ prepare build folder before we start downloading data """
