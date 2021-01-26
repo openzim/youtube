@@ -241,6 +241,8 @@ class Youtube2Zim:
     def run(self):
         """ execute the scraper step by step """
 
+        self.validate_id()
+
         # validate dateafter input
         self.validate_dateafter_input()
 
@@ -366,6 +368,14 @@ class Youtube2Zim:
                 f"YYYYMMDD or (now|today)[+-][0-9](day|week|month|year)(s)."
             )
             raise ValueError(f"Invalid dateafter input: {exc}")
+
+    def validate_id(self):
+        # space not allowed in youtube-ID
+        self.youtube_id = self.youtube_id.replace(" ", "")
+        if self.collection_type == "channel" and len(self.youtube_id) > 24:
+            raise ValueError("Invalid ChannelId")
+        if "," in self.youtube_id and self.collection_type != "playlist":
+            raise ValueError("Invalid YoutubeId")
 
     def prepare_build_folder(self):
         """ prepare build folder before we start downloading data """
