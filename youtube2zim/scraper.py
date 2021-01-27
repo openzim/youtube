@@ -26,7 +26,7 @@ from pif import get_public_ip
 from babel.dates import format_date
 from dateutil import parser as dt_parser
 from kiwixstorage import KiwixStorage
-from zimscraperlib.download import save_file
+from zimscraperlib.download import stream_file
 from zimscraperlib.zim import make_zim_file
 from zimscraperlib.fix_ogvjs_dist import fix_source_dir
 from zimscraperlib.image.presets import WebpHigh
@@ -416,7 +416,7 @@ class Youtube2Zim:
         logger.info("checking your branding files and values")
         if self.profile_image:
             if self.profile_image.startswith("http"):
-                save_file(self.profile_image, self.profile_path)
+                stream_file(self.profile_image, self.profile_path)
             else:
                 if not self.profile_image.exists():
                     raise IOError(
@@ -426,7 +426,7 @@ class Youtube2Zim:
             resize_image(self.profile_path, width=100, height=100, method="thumbnail")
         if self.banner_image:
             if self.banner_image.startswith("http"):
-                save_file(self.banner_image, self.banner_path)
+                stream_file(self.banner_image, self.banner_path)
             else:
                 if not self.banner_image.exists():
                     raise IOError(

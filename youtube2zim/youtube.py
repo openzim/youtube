@@ -4,7 +4,7 @@
 
 import requests
 from dateutil import parser as dt_parser
-from zimscraperlib.download import save_file
+from zimscraperlib.download import stream_file
 from zimscraperlib.image.transformation import resize_image
 
 from .constants import logger, YOUTUBE, USER, CHANNEL, PLAYLIST
@@ -267,7 +267,7 @@ def save_channel_branding(channels_dir, channel_id, save_banner=False):
 
     profile_path = channel_dir.joinpath("profile.jpg")
     if not profile_path.exists():
-        save_file(thumnbail, profile_path)
+        stream_file(thumnbail, profile_path)
         # resize profile as we only use up 100px/80 sq
         resize_image(profile_path, width=100, height=100)
 
@@ -278,7 +278,7 @@ def save_channel_branding(channels_dir, channel_id, save_banner=False):
         banner = channel_json["brandingSettings"]["image"]["bannerImageUrl"]
         banner_path = channel_dir.joinpath("banner.jpg")
         if not banner_path.exists():
-            save_file(banner, banner_path)
+            stream_file(banner, banner_path)
 
 
 def skip_deleted_videos(item):
