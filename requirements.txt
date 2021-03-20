@@ -2,7 +2,7 @@ python-slugify==3.0.3
 # youtube-dl should be updated as frequently as possible
 youtube_dl
 python-dateutil==2.8.0
-jinja2==2.10.1
+jinja2==2.11.3
 zimscraperlib>=1.3.5,<1.4
 requests>=2.23,<=2.24
 kiwixstorage>=0.2,<1.0
