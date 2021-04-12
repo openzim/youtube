@@ -4,6 +4,6 @@ youtube_dl
 python-dateutil==2.8.0
 jinja2==2.11.3
 zimscraperlib>=1.3.5,<1.4
-requests>=2.23,<=2.24
+requests>=2.23,<2.26
 kiwixstorage>=0.2,<1.0
 pif==0.8.2
