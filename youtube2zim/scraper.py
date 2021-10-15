@@ -156,7 +156,8 @@ class Youtube2Zim:
             self.locale = setlocale(ROOT_DIR, locale_name)
         except locale.Error:
             logger.error(
-                f"No locale for {locale_name}. Use --locale to specify it. defaulting to en_US"
+                f"No locale for {locale_name}. Use --locale to specify it. "
+                "defaulting to en_US"
             )
             self.locale = setlocale(ROOT_DIR, "en")
 
@@ -235,7 +236,7 @@ class Youtube2Zim:
         return (
             [sorted_playlists[index]]
             + sorted_playlists[0:index]
-            + sorted_playlists[index + 1 :]
+            + sorted_playlists[index + 1:]
         )
 
     def run(self):
@@ -284,14 +285,16 @@ class Youtube2Zim:
 
         # download videos (and recompress)
         logger.info(
-            f"downloading all videos, subtitles and thumbnails (concurrency={self.max_concurrency})"
+            "downloading all videos, subtitles and thumbnails "
+            f"(concurrency={self.max_concurrency})"
         )
         logger.info(f"  format: {self.video_format}")
         logger.info(f"  quality: {self.video_quality}")
         logger.info(f"  generated-subtitles: {self.all_subtitles}")
         if self.s3_storage:
             logger.info(
-                f"  using cache: {self.s3_storage.url.netloc} with bucket: {self.s3_storage.bucket_name}"
+                f"  using cache: {self.s3_storage.url.netloc} "
+                f"with bucket: {self.s3_storage.bucket_name}"
             )
         succeeded, failed = self.download_video_files(
             max_concurrency=self.max_concurrency
@@ -364,8 +367,8 @@ class Youtube2Zim:
             self.dateafter = youtube_dl.DateRange(self.dateafter)
         except Exception as exc:
             logger.error(
-                f"Invalid dateafter input. Valid dateafter format: "
-                f"YYYYMMDD or (now|today)[+-][0-9](day|week|month|year)(s)."
+                "Invalid dateafter input. Valid dateafter format: "
+                "YYYYMMDD or (now|today)[+-][0-9](day|week|month|year)(s)."
             )
             raise ValueError(f"Invalid dateafter input: {exc}")
 
@@ -383,7 +386,7 @@ class Youtube2Zim:
         # copy assets
         shutil.copytree(self.assets_src_dir, self.assets_dir)
 
-        fix_source_dir(self.assets_dir, "assets")
+        fix_source_dir(self.assets_dir)
 
         # cache folder to store youtube-api results
         self.cache_dir.mkdir(exist_ok=True)
@@ -442,7 +445,8 @@ class Youtube2Zim:
 
         if self.secondary_color and not is_hex_color(self.secondary_color):
             raise ValueError(
-                f"--secondary_color-color is not a valid hex color: {self.secondary_color}"
+                "--secondary_color-color is not "
+                f"a valid hex color: {self.secondary_color}"
             )
 
     def extract_playlists(self):
@@ -501,7 +505,8 @@ class Youtube2Zim:
             # "external_downloader_args": ["--max-tries=20", "--retry-wait=30"],
             "outtmpl": str(self.videos_dir.joinpath("%(id)s", "video.%(ext)s")),
             "preferredcodec": self.video_format,
-            "format": f"best[ext={vidext}]/bestvideo[ext={vidext}]+bestaudio[ext={audext}]/best",
+            "format": f"best[ext={vidext}]/"
+            f"bestvideo[ext={vidext}]+bestaudio[ext={audext}]/best",
             "y2z_videos_dir": self.videos_dir,
         }
         if self.all_subtitles:
@@ -700,7 +705,9 @@ class Youtube2Zim:
             logger.error(f"Could not download subtitles for {video_id}")
 
     def download_video_files_batch(self, options, videos_ids):
-        """ download video file and thumbnail for all videos in batch and return succeeded and failed video ids """
+        """ download video file and thumbnail for all videos in batch
+
+        returning succeeded and failed video ids """
 
         succeeded = []
         failed = []

@@ -9,7 +9,6 @@
            body {background: {{ background_color }};}
         </style>
         <link id="favicon" rel="shortcut icon" href="profile.jpg" type="image/jpeg">
-        <script src="assets/zim_prefix.js"></script>
         <script src="assets/videojs/video.min.js"></script>
         <script src="assets/ogvjs/ogv-support.js"></script>
         <script src="assets/ogvjs/ogv.js"></script>
@@ -26,6 +25,9 @@
                     id="video_container"
                     poster="videos/{{ video_id }}/video.webp"
                     width="480px" height="270px"
+                    controls="true"
+                    {% if autoplay %}autoplay="true"{% endif %}
+                    preload="true"
                     data-setup='{"techOrder": ["html5", "ogvjs"], "ogvjs": {"base": "assets/ogvjs"}, "autoplay": {% if autoplay %}true{% else %}false{% endif %}, "preload": true, "controls": true, "controlBar": {"pictureInPictureToggle":false}}'>
                 <source src="videos/{{ video_id }}/video.{{ video_format }}" type="video/{{ video_format }}" />{% if subtitles %}
                 {% for language in subtitles %}<track kind="subtitles" src="videos/{{ video_id }}/video.{{ language.code }}.vtt" srclang="{{ language.code }}" label="{{ language.name }}" />

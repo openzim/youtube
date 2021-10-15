@@ -12,15 +12,15 @@ var videoDB = (function() {
   var  i
   var json_selected
   /**
-   * Load the data with or without an 
-   * applied language filter. 
-   * The data will be loaded from the json in 
+   * Load the data with or without an
+   * applied language filter.
+   * The data will be loaded from the json in
    * the data.js file.
    * @param {language} Language filter that you want
-   *                   to apply to the data set. 
-   *                   Pass in 'undefined' if you don't 
+   *                   to apply to the data set.
+   *                   Pass in 'undefined' if you don't
    *                   want any language filter.
-   * @param {callback} This callback will be called 
+   * @param {callback} This callback will be called
    *                   when the data is loaded.
    */
   db.getjson = function(){
@@ -38,8 +38,8 @@ var videoDB = (function() {
       // Clear the previously loaded data.
       data = [];
 
-      // Iterate through the whole data set and 
-      // add the video objects that have the language 
+      // Iterate through the whole data set and
+      // add the video objects that have the language
       // that we want to the data array.
       for (i in json_selected){
         if (json_selected[i].languages.indexOf(language) > -1) {
@@ -59,22 +59,22 @@ var videoDB = (function() {
   }
 
   /**
-   * Move one page forward. 
-   * @param {callback} This callback is called when 
-   *                   you have to load a new page. 
+   * Move one page forward.
+   * @param {callback} This callback is called when
+   *                   you have to load a new page.
    */
   db.pageForward = function(callback) {
     if (page < db.getPageCount()) {
       page++;
-      window.location.hash = '#' + page;  
+      window.location.hash = '#' + page;
       callback();
     }
   }
 
   /**
-   * Move one page back. 
-   * @param {callback} This callback is called when 
-   *                   you have to load a new page. 
+   * Move one page back.
+   * @param {callback} This callback is called when
+   *                   you have to load a new page.
    */
   db.pageBackwards = function(callback) {
     if (page != 1) {
@@ -105,7 +105,7 @@ var videoDB = (function() {
 
   /**
    * Get the video data for a certain page.
-   * @param {page} Page number for the page 
+   * @param {page} Page number for the page
    *               you want the data for.
    */
   db.getPage = function(page) {
