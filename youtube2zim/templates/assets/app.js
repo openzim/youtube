@@ -158,3 +158,5 @@ function firstVideo(video) {
             '</div>';
 }
 
+$("#header-playlists").on("change", genplaylist);
+$(".backtotop").on("click", function() { $('html, body').animate({ scrollTop: 0 }, 'slow'); });

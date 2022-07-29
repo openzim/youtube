@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - using zimscraperlib 1.6.2
 - fixed crash adding ogvjs's js.mem file
 - fixed playlists switching removing videos
+- Removed inline JS to comply with some CSP (#154)
 
 ## [2.1.13]
 

@@ -26,7 +26,7 @@
       </div>
       <div id="header-line"><p>{{ title }}</p></div>
       <div class="header-playlists">
-        <form name="playlist" id="header-playlists" class="{% if playlists|length < 2 %}hidden{% endif %}"><select class="chosen-select" name="list" onChange="genplaylist()">
+        <form name="playlist" id="header-playlists" class="{% if playlists|length < 2 %}hidden{% endif %}"><select class="chosen-select" name="list">
         {% for playlist in playlists %}<option value="{{ playlist.slug }}">{{ playlist.title }}</option>{% endfor %}</select>
         </form>
       </div>
@@ -46,7 +46,7 @@
         </div>
      <ul id="video-items" class="rig grid"></ul>
     </div>
-    <div class="backtotop" onclick="$('html, body').animate({ scrollTop: 0 }, 'slow');"><span>{{ back_label }}</span></div>
+    <div class="backtotop"><span>{{ back_label }}</span></div>
     <div class="pagination bottom">
       <div class="left-arrow">&#10096;</div>
       <span class="pagination-text" data-format="{{ page_label }}"></span>
@@ -59,6 +59,5 @@
   <script src="assets/data.js"></script>
   <script src="assets/db.js"></script>
   <script src="assets/app.js"></script>
-  <script>$(document).ready(function() { trigger_webp_polyfill(); });</script>
 </body>
 </html>

@@ -12,3 +12,5 @@ trigger_webp_polyfill = function () {
         }
     });
 }
+
+$(document).ready(function() { trigger_webp_polyfill(); });
