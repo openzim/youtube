@@ -1,156 +1,174 @@
-2.1.14.dev0
+## Changelog
 
-using zimscraperlib 1.3.5
-More YT language code mapping: zh-Hant-HK, zh-Hans-SG
+All notable changes to this project are documented in this file.
 
-2.1.13
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) (as of version 2.2.0).
 
-More YT language code mapping
+## [Unreleased]
 
-2.1.12
+### Added
 
-fixed inter-dependencies issue
+- Additional YT language code mapping: zh-Hant-HK, zh-Hans-SG
 
-2.1.11
+### Changed
 
-removed banner retrieval due to API change
+- using zimscraperlib 1.6.2
 
-2.1.10
+## [2.1.13]
 
-fixes to Webp for apple polyfill
+- More YT language code mapping
 
-2.1.9
+## [2.1.12]
 
-fixed WebP poster for apple on video pages
+- fixed inter-dependencies issue
 
-2.1.8
+## [2.1.11]
 
-fixed subtitles not showing on homepage preview video
-fixed crash on iw (Hebrew) subtitles
-fixed usage on older browsers (without ES6 support)
-use WebP for thumbnails
-fix seeking on Apple browsers
+- removed banner retrieval due to API change
 
-2.1.7
+## [2.1.10]
 
-using zimscraperlib 1.2.0
-replaced zimwriterfs with pylibzim
-tmp-dir now sanitized as build-dir
-fixed --debug not forwarded in playlists mode
-changed workdir to /output in docker image
+- fixes to Webp for apple polyfill
 
-2.1.6
+## [2.1.9]
 
-using video-js-7.8.1
-Added youtube2zim-playlists script to create one zim per playlist
---zim-file now supports the `{period}` replacement string to insert date (#99)
-picture-in-picture toggle now hidden
-using zimscraperlib to encode videos
-logging transfer before starting them
-added video_encoding_tester script in contrib/
---tmp-dir option to set where temp files are downloaded/handled (system temp otherwise)
-thumbnail now converted to JPEG if received as WebP
-thumbnail resize now supports upscaling if original is too small
-thumnail resize and conversion from zimscraperlib
-using zimscraperlib 1.1.2
-removed skip-download option
-removed only_test_branding option
-docker to use zimwriterfs 1.3.10
+- fixed WebP poster for apple on video pages
 
-Version 2.1.5
+## [2.1.8]
 
-Fixed regression causing S3 to only use videos from cache (never youtube)
+- fixed subtitles not showing on homepage preview video
+- fixed crash on iw (Hebrew) subtitles
+- fixed usage on older browsers (without ES6 support)
+- use WebP for thumbnails
+- fix seeking on Apple browsers
 
-Version 2.1.4
+## [2.1.7]
 
- Fixed compression issue on system without swap (#75)
- Using 44kHz audio sample rate on low-quality to save some space (#74)
- Added S3 Optimization Cache support (#69 #80)
- Bumped some dependencies (zimscraperlib, kiwixstorage)
- Filtering out videos with missing channel (#76)
+- using zimscraperlib 1.2.0
+- replaced zimwriterfs with pylibzim
+- tmp-dir now sanitized as build-dir
+- fixed --debug not forwarded in playlists mode
+- changed workdir to /output in docker image
 
-Version 2.1.3
- Fixed regresssion on --low-quality not working anymore
+## [2.1.6]
 
-Version 2.1.2
- Fixed video without sound due to change on Youtube side (#70)
+- using video-js-7.8.1
+- Added youtube2zim-playlists script to create one zim per playlist
+- --zim-file now supports the `{period}` replacement string to insert date (#99)
+- picture-in-picture toggle now hidden
+- using zimscraperlib to encode videos
+- logging transfer before starting them
+- added video_encoding_tester script in contrib/
+- --tmp-dir option to set where temp files are downloaded/handled (system temp otherwise)
+- thumbnail now converted to JPEG if received as WebP
+- thumbnail resize now supports upscaling if original is too small
+- thumnail resize and conversion from zimscraperlib
+- using zimscraperlib 1.1.2
+- removed skip-download option
+- removed only_test_branding option
+- docker to use zimwriterfs 1.3.10
 
-Version 2.1.1
- Using zimscraperlib
+## [2.1.5]
 
-Version 2.1.0
- Fixed not working with too much videos (URI too long)
- Secondary color now using 2nd most used color in profile picture
- Display playlists select only if there is multiple playlists
- Added --autoplay option
- Added kiwix-desktop workaround (no status check on XHR)
- Added support for playlists with missing videos
- Added period (YYYY-MM) to filename
- Fixed crash if using subtitles with non-iso language code
- Fixed missing subtitles (non-auto-generated)
- Added --pagination option to set max number of videos per page
- Added subtitles to welcome video as well
- Use (and convert from) `best` format if chosen (mp4|webm) not available
- Fixed colors assignation
- Added --only-test-branding option to generate a fake home page to test branding/colors
- Fixed playlists list for channels not saved to cache
- Removed `chosen` style on playlist select element (back to native)
- Playlists now sorted by title. First playlist remains `Uploads` one though.
- Docker container auto-updates youtube-dl on start
- Added concurrency via --concurrency (defaults to none)
- Fixed date formatting: localized medium-sized version as in Youtube
- Displaying error messages from youtube on API errors
- Fixed API requests for large number of videos in playlist
- Made --name mandatory
- Tags now specified as comma-separated list
- Fixed channel info retrieval in some cases
- Don't fail on non-matching language-to-locale (defaults to EN)
- Added --locale to specify locale to use for translations/dates
- Splitted logs into stdout and stderr
- Failed to download videos don't stop the process. Nb of failed displayed on stderr
+- Fixed regression causing S3 to only use videos from cache (never youtube)
 
+## [2.1.4]
 
-Version 2.0 (August 2019):
-  Rewrote scraper script
-   - using Youtube API instead of parsing DOM
-   - simpler code (less)
-   - using youtube-dl to download video, thumbnail, subtitles
-   - faster (bundled download for video, thumbnail and subtitles – single ytdl call)
-   - option to use auto-generated subtitles
-   - added favicon in HTML (for kiwix-serve use)
-   - kept FFMPEF options code for lower-quality
-   - kept UI: html, css, js.
-   - updated videojs
-   - added support for webm in all browsers via ogv.js and videosjs-ogvjs
-   - defaults to webm
-   - made sure video are included only once (even if on multiple playlists)
-   - Dockerfile runs current code, not a pypi version
-   - improved UI on mobile/responsive
-   - translatable UI-texts, using --language (supports EN,FR atm.)
-   - fixed audio in low-quality mp4 files on quicktime-based platforms
-  Known bugs:
-   - --all-subtitles is slow #38
-   - Safari (iOS/macOS) via kiwix-serve:
-       -  Fullscreen is broken in Safari #33
-   - firefox/chromium via kiwix-serve:
-       - Controls buggy in firefox/chrome #34
-       - Fullscreen-exit is broken in firefox/chrome #35
-   - android:
-       - No fullscreen support in android #36
-       - exit rotation is buggy on android #37
-   - iOS:
-       - fullscreen is broken on iOS #39
-   - macOS:
-       - not working on macOS #40
-   - desktop (linux/windows):
-       - no fullscreen support on kiwix-desktop #42
-       - subtitles don't work on kiwix-desktop #41
+- Fixed compression issue on system without swap (#75)
+- Using 44kHz audio sample rate on low-quality to save some space (#74)
+- Added S3 Optimization Cache support (#69 #80)
+- Bumped some dependencies (zimscraperlib, kiwixstorage)
+- Filtering out videos with missing channel (#76)
 
-Version 1.1 (04 April 2017):
-  Make it as python package
+## [2.1.3]
 
-Version 1.0 (23 June 2016):
-  Get playlist or user channel (and playlist of user) from youtube
-  the most view video is show on top and bigger
-  --lowquality option for downloading in mp4 and re-encode aggressively in webm
+- Fixed regresssion on --low-quality not working anymore
+
+## [2.1.2]
+
+- Fixed video without sound due to change on Youtube side (#70)
+
+## [2.1.1]
+
+- Using zimscraperlib
+
+## [2.1.0]
+
+- Fixed not working with too much videos (URI too long)
+- Secondary color now using 2nd most used color in profile picture
+- Display playlists select only if there is multiple playlists
+- Added --autoplay option
+- Added kiwix-desktop workaround (no status check on XHR)
+- Added support for playlists with missing videos
+- Added period (YYYY-MM) to filename
+- Fixed crash if using subtitles with non-iso language code
+- Fixed missing subtitles (non-auto-generated)
+- Added --pagination option to set max number of videos per page
+- Added subtitles to welcome video as well
+- Use (and convert from) `best` format if chosen (mp4|webm) not available
+- Fixed colors assignation
+- Added --only-test-branding option to generate a fake home page to test branding/colors
+- Fixed playlists list for channels not saved to cache
+- Removed `chosen` style on playlist select element (back to native)
+- Playlists now sorted by title. First playlist remains `Uploads` one though.
+- Docker container auto-updates youtube-dl on start
+- Added concurrency via --concurrency (defaults to none)
+- Fixed date formatting: localized medium-sized version as in Youtube
+- Displaying error messages from youtube on API errors
+- Fixed API requests for large number of videos in playlist
+- Made --name mandatory
+- Tags now specified as comma-separated list
+- Fixed channel info retrieval in some cases
+- Don't fail on non-matching language-to-locale (defaults to EN)
+- Added --locale to specify locale to use for translations/dates
+- Splitted logs into stdout and stderr
+- Failed to download videos don't stop the process. Nb of failed displayed on stderr
+
+## [2.0] 2019-08
+
+- Rewrote scraper script
+  - using Youtube API instead of parsing DOM
+  - simpler code (less)
+  - using youtube-dl to download video, thumbnail, subtitles
+  - faster (bundled download for video, thumbnail and subtitles – single ytdl call)
+  - option to use auto-generated subtitles
+  - added favicon in HTML (for kiwix-serve use)
+  - kept FFMPEF options code for lower-quality
+  - kept UI: html, css, js.
+  - updated videojs
+  - added support for webm in all browsers via ogv.js and videosjs-ogvjs
+  - defaults to webm
+  - made sure video are included only once (even if on multiple playlists)
+  - Dockerfile runs current code, not a pypi version
+  - improved UI on mobile/responsive
+  - translatable UI-texts, using --language (supports EN,FR atm.)
+  - fixed audio in low-quality mp4 files on quicktime-based platforms
+- Known bugs:
+  - --all-subtitles is slow #38
+  - Safari (iOS/macOS) via kiwix-serve:
+     -  Fullscreen is broken in Safari #33
+  - firefox/chromium via kiwix-serve:
+     - Controls buggy in firefox/chrome #34
+     - Fullscreen-exit is broken in firefox/chrome #35
+  - android:
+     - No fullscreen support in android #36
+     - exit rotation is buggy on android #37
+  - iOS:
+     - fullscreen is broken on iOS #39
+  - macOS:
+     - not working on macOS #40
+  - desktop (linux/windows):
+     - no fullscreen support on kiwix-desktop #42
+     - subtitles don't work on kiwix-desktop #41
+
+## [1.1] - 2017-04-04:
+
+- Make it as python package
+
+## [1.0] - 2016-06-23:
+
+- Get playlist or user channel (and playlist of user) from youtube
+- the most view video is show on top and bigger
+- --lowquality option for downloading in mp4 and re-encode aggressively in webm
 
