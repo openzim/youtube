@@ -30,7 +30,7 @@ var videoDB = (function() {
   }
   db.loadData = function(language, callback){
     if (typeof language === 'undefined'){
-      data = json_selected.slice(0, json_test_one.length);
+      data = json_selected.slice(0, json_selected.length);
       first_video = data.shift()
     }
     else {
