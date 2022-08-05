@@ -21,7 +21,7 @@ import concurrent.futures
 from gettext import gettext as _
 
 import jinja2
-import youtube_dl
+import yt_dlp
 from pif import get_public_ip
 from babel.dates import format_date
 from dateutil import parser as dt_parser
@@ -364,7 +364,7 @@ class Youtube2Zim:
 
     def validate_dateafter_input(self):
         try:
-            self.dateafter = youtube_dl.DateRange(self.dateafter)
+            self.dateafter = yt_dlp.DateRange(self.dateafter)
         except Exception as exc:
             logger.error(
                 "Invalid dateafter input. Valid dateafter format: "
@@ -627,7 +627,7 @@ class Youtube2Zim:
                     "writeautomaticsub": False,
                 }
             )
-            with youtube_dl.YoutubeDL(options_copy) as ydl:
+            with yt_dlp.YoutubeDL(options_copy) as ydl:
                 ydl.download([video_id])
             post_process_video(
                 video_location,
@@ -637,7 +637,7 @@ class Youtube2Zim:
                 self.low_quality,
             )
         except (
-            youtube_dl.utils.DownloadError,
+            yt_dlp.utils.DownloadError,
             FileNotFoundError,
             subprocess.CalledProcessError,
         ) as exc:
@@ -676,11 +676,11 @@ class Youtube2Zim:
                     "writeautomaticsub": False,
                 }
             )
-            with youtube_dl.YoutubeDL(options_copy) as ydl:
+            with yt_dlp.YoutubeDL(options_copy) as ydl:
                 ydl.download([video_id])
             process_thumbnail(thumbnail_path, preset)
         except (
-            youtube_dl.utils.DownloadError,
+            yt_dlp.utils.DownloadError,
             FileNotFoundError,
             subprocess.CalledProcessError,
         ) as exc:
@@ -699,7 +699,7 @@ class Youtube2Zim:
         options_copy = options.copy()
         options_copy.update({"skip_download": True, "writethumbnail": False})
         try:
-            with youtube_dl.YoutubeDL(options_copy) as ydl:
+            with yt_dlp.YoutubeDL(options_copy) as ydl:
                 ydl.download([video_id])
         except Exception:
             logger.error(f"Could not download subtitles for {video_id}")
