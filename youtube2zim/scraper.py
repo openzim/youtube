@@ -17,6 +17,7 @@ import subprocess
 import datetime
 import functools
 from pathlib import Path
+import re
 import concurrent.futures
 from gettext import gettext as _
 
@@ -33,7 +34,7 @@ from zimscraperlib.image.presets import WebpHigh
 from zimscraperlib.image.transformation import resize_image
 from zimscraperlib.image.probing import get_colors, is_hex_color
 from zimscraperlib.video.presets import VideoWebmLow, VideoMp4Low
-from zimscraperlib.i18n import get_language_details, setlocale
+from zimscraperlib.i18n import get_language_details, setlocale, NotFound
 
 from .youtube import (
     get_channel_json,
@@ -841,7 +842,14 @@ class Youtube2Zim:
 
             def to_jinja_subtitle(lang):
                 try:
-                    subtitle = get_language_details(YOUTUBE_LANG_MAP.get(lang, lang))
+                    try:
+                        subtitle = get_language_details(
+                            YOUTUBE_LANG_MAP.get(lang, lang)
+                        )
+                    except NotFound:
+                        subtitle = get_language_details(
+                                re.sub(r"^([a-z]{2})-.+$", r"\1", lang)
+                            )
                 except Exception:
                     logger.error(f"Failed to get language details for {lang}")
                     raise
