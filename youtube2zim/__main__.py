@@ -12,8 +12,8 @@ def main():
 
     from youtube2zim.entrypoint import main as entry
 
-    entry()
+    return entry()
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

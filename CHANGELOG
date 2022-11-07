@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Switched to yt-dlp instead of youtube_dl
 - Added fallback for subtitle languages with IDs-like suffixes (#161)
 - Removed a reference to ZIM namespace that would break if first video has subtitles
+- Fixed expected returncodes on errors (#166)
 
 ## [2.1.17] - 2022-08-01
 

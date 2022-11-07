@@ -4,6 +4,7 @@
 
 import logging
 import argparse
+import sys
 
 from .constants import NAME, SCRAPER, CHANNEL, PLAYLIST, USER, logger, YOUTUBE
 from .scraper import Youtube2Zim
@@ -199,13 +200,13 @@ def main():
         if args.max_concurrency < 1:
             raise ValueError(f"Invalid concurrency value: {args.max_concurrency}")
         scraper = Youtube2Zim(**dict(args._get_kwargs()), youtube_store=YOUTUBE)
-        scraper.run()
+        return scraper.run()
     except Exception as exc:
         logger.error(f"FAILED. An error occurred: {exc}")
         if args.debug:
             logger.exception(exc)
-        raise SystemExit(1)
+        return 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

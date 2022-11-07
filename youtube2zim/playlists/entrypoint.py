@@ -4,6 +4,7 @@
 
 import logging
 import argparse
+import sys
 
 from ..constants import NAME, SCRAPER, CHANNEL, PLAYLIST, USER, logger
 from ..utils import has_argument
@@ -85,13 +86,13 @@ def main():
 
     try:
         handler = YoutubeHandler(dict(args._get_kwargs()), extra_args=extra_args)
-        raise SystemExit(handler.run())
+        return handler.run()
     except Exception as exc:
         logger.error(f"FAILED. An error occurred: {exc}")
         if args.debug:
             logger.exception(exc)
-        raise SystemExit(1)
+        return 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

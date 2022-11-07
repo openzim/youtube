@@ -179,7 +179,7 @@ class YoutubeHandler:
         )
         if self.debug:
             args.append("--debug")
-        sys.exit(subprocess.run(args).returncode)
+        return subprocess.run(args).returncode
 
     @staticmethod
     def compute_format(playlist, fmt):
