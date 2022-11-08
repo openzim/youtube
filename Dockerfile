@@ -18,4 +18,5 @@ ENTRYPOINT ["entrypoint.sh"]
 
 RUN mkdir -p /output
 WORKDIR /output
+ENV ZIMSCRAPERLIB_DEBUG "1"
 CMD ["youtube2zim", "--help"]
