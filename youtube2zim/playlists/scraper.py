@@ -156,10 +156,11 @@ class YoutubeHandler:
         logger.debug(nicer_args_join(args))
         process = subprocess.run(
             args,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True,
+            # stdout=subprocess.PIPE,
+            # stderr=subprocess.STDOUT,
+            # universal_newlines=True,
         )
+        logger.debug(f"returncode={process.returncode}")
         return process.returncode == 0, process
 
     def handle_single_zim(self):
