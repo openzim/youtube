@@ -847,9 +847,10 @@ class Youtube2Zim:
                             YOUTUBE_LANG_MAP.get(lang, lang)
                         )
                     except NotFound:
+                        lang_simpl = re.sub(r"^([a-z]{2})-.+$", r"\1", lang)
                         subtitle = get_language_details(
-                                re.sub(r"^([a-z]{2})-.+$", r"\1", lang)
-                            )
+                            YOUTUBE_LANG_MAP.get(lang_simpl, lang_simpl)
+                        )
                 except Exception:
                     logger.error(f"Failed to get language details for {lang}")
                     raise
