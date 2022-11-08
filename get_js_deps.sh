@@ -22,19 +22,19 @@ ASSETS_PATH="${SCRIPT_PATH}/youtube2zim/templates/assets"
 echo "About to download JS assets to ${ASSETS_PATH}"
 
 echo "getting video.js"
-curl -L -O https://github.com/videojs/video.js/releases/download/v7.8.1/video-js-7.8.1.zip
+curl -L -O https://github.com/videojs/video.js/releases/download/v7.20.3/video-js-7.20.3.zip
 rm -rf $ASSETS_PATH/videojs
 mkdir -p $ASSETS_PATH/videojs
-unzip -o -d $ASSETS_PATH/videojs video-js-7.8.1.zip
+unzip -o -d $ASSETS_PATH/videojs video-js-7.20.3.zip
 rm -rf $ASSETS_PATH/videojs/alt $ASSETS_PATH/videojs/examples
-rm -f video-js-7.8.1.zip
+rm -f video-js-7.20.3.zip
 
 echo "getting ogv.js"
-curl -L -O https://github.com/brion/ogv.js/releases/download/1.6.1/ogvjs-1.6.1.zip
+curl -L -O https://github.com/brion/ogv.js/releases/download/1.8.9/ogvjs-1.8.9.zip
 rm -rf $ASSETS_PATH/ogvjs
-unzip -o ogvjs-1.6.1.zip
-mv ogvjs-1.6.1 $ASSETS_PATH/ogvjs
-rm -f ogvjs-1.6.1.zip
+unzip -o ogvjs-1.8.9.zip
+mv ogvjs-1.8.9 $ASSETS_PATH/ogvjs
+rm -f ogvjs-1.8.9.zip
 
 echo "getting chosen.jquery.js"
 curl -L -O https://github.com/harvesthq/chosen/releases/download/v1.8.7/chosen_v1.8.7.zip
@@ -45,12 +45,7 @@ rm -rf $ASSETS_PATH/chosen/docsupport $ASSETS_PATH/chosen/chosen.proto.* $ASSETS
 rm -f chosen_v1.8.7.zip
 
 echo "getting videojs-ogvjs.js"
-curl -L -O https://github.com/hartman/videojs-ogvjs/archive/v1.3.1.zip
-rm -f $ASSETS_PATH/videojs-ogvjs.js
-unzip -o v1.3.1.zip
-mv videojs-ogvjs-1.3.1/dist/videojs-ogvjs.js $ASSETS_PATH/videojs-ogvjs.js
-rm -rf videojs-ogvjs-1.3.1
-rm -f v1.3.1.zip
+curl -L -o $ASSETS_PATH/videojs-ogvjs.js https://dev.kiwix.org/videojs-ogvjs/videojs-ogvjs.min.js
 
 echo "getting jquery.js"
 curl -L -o $ASSETS_PATH/jquery.min.js https://code.jquery.com/jquery-1.12.4.min.js
