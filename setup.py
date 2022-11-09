@@ -4,6 +4,7 @@
 
 import pathlib
 import subprocess
+
 from setuptools import setup
 
 root_dir = pathlib.Path(__file__).parent

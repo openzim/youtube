@@ -9,15 +9,15 @@
 """
 
 
-import sys
+import collections
+import datetime
 import json
 import pathlib
-import datetime
 import subprocess
-import collections
+import sys
 
-import jinja2
 import humanfriendly
+import jinja2
 
 video_codecs = {"mp4": "h264", "webm": "libvpx"}
 audio_codecs = {"mp4": "aac", "webm": "libvorbis"}
@@ -45,7 +45,8 @@ def preset_240p(video_format):
         "128k",
         # scale to 240p 4:3, adding bars if necessary
         "-vf",
-        "scale=426:240:force_original_aspect_ratio=decrease,pad=426:240:(ow-iw)/2:(oh-ih)/2",
+        "scale=426:240:force_original_aspect_ratio=decrease,"
+        "pad=426:240:(ow-iw)/2:(oh-ih)/2",
         "-codec:a",
         audio_codecs[video_format],
         # constant bitrate
@@ -75,7 +76,8 @@ def preset_360p(video_format):
         "384k",
         # scale to 360p 4:3, adding bars if necessary
         "-vf",
-        "scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2",
+        "scale=640:360:force_original_aspect_ratio=decrease,"
+        "pad=640:360:(ow-iw)/2:(oh-ih)/2",
         "-codec:a",
         audio_codecs[video_format],
         # constant bitrate
@@ -284,7 +286,8 @@ def write_html_report(output_dir, report):
             <td>
                 {{video[video_format][preset].size|hsize}}<br />
                 {{video[video_format][preset].bitrate|hsize}}/s<br />
-                <strong>{{video[video_format][preset].bitrate|mn|hsize}}/mn</strong><br />
+                <strong>{{video[video_format][preset].bitrate|mn|hsize}}/mn</strong>
+                <br />
                 <a target="_blank"
                     href="{{youtube_id}}.{{preset}}.{{video_format}}">{{preset}}.{{video_format}}</a>
             </td>

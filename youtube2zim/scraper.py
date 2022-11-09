@@ -8,54 +8,54 @@
     Create credentials (Other non-UI, Public Data)
 """
 
-import os
-import json
-import locale
-import shutil
-import tempfile
-import subprocess
+import concurrent.futures
 import datetime
 import functools
-from pathlib import Path
+import json
+import locale
+import os
 import re
-import concurrent.futures
+import shutil
+import subprocess
+import tempfile
 from gettext import gettext as _
+from pathlib import Path
 
 import jinja2
 import yt_dlp
-from pif import get_public_ip
 from babel.dates import format_date
 from dateutil import parser as dt_parser
 from kiwixstorage import KiwixStorage
+from pif import get_public_ip
 from zimscraperlib.download import stream_file
-from zimscraperlib.zim import make_zim_file
 from zimscraperlib.fix_ogvjs_dist import fix_source_dir
+from zimscraperlib.i18n import NotFound, get_language_details, setlocale
 from zimscraperlib.image.presets import WebpHigh
-from zimscraperlib.image.transformation import resize_image
 from zimscraperlib.image.probing import get_colors, is_hex_color
-from zimscraperlib.video.presets import VideoWebmLow, VideoMp4Low
-from zimscraperlib.i18n import get_language_details, setlocale, NotFound
+from zimscraperlib.image.transformation import resize_image
+from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
+from zimscraperlib.zim import make_zim_file
 
+from .constants import (
+    CHANNEL,
+    PLAYLIST,
+    ROOT_DIR,
+    SCRAPER,
+    USER,
+    YOUTUBE_LANG_MAP,
+    logger,
+)
+from .processing import post_process_video, process_thumbnail
+from .utils import clean_text, get_slug, load_json, save_json
 from .youtube import (
-    get_channel_json,
     credentials_ok,
     extract_playlists_details_from,
-    get_videos_json,
+    get_channel_json,
     get_videos_authors_info,
+    get_videos_json,
     save_channel_branding,
     skip_deleted_videos,
     skip_outofrange_videos,
-)
-from .utils import clean_text, load_json, save_json, get_slug
-from .processing import post_process_video, process_thumbnail
-from .constants import (
-    logger,
-    ROOT_DIR,
-    CHANNEL,
-    PLAYLIST,
-    USER,
-    SCRAPER,
-    YOUTUBE_LANG_MAP,
 )
 
 
@@ -218,7 +218,7 @@ class Youtube2Zim:
 
     @property
     def sorted_playlists(self):
-        """ sorted list of playlists (by title) but with Uploads one at first if any """
+        """sorted list of playlists (by title) but with Uploads one at first if any"""
         if len(self.playlists) < 2:
             return self.playlists
 
@@ -237,11 +237,11 @@ class Youtube2Zim:
         return (
             [sorted_playlists[index]]
             + sorted_playlists[0:index]
-            + sorted_playlists[index + 1:]
+            + sorted_playlists[index + 1 :]
         )
 
     def run(self):
-        """ execute the scraper step by step """
+        """execute the scraper step by step"""
 
         self.validate_id()
 
@@ -382,7 +382,7 @@ class Youtube2Zim:
             raise ValueError("Invalid YoutubeId")
 
     def prepare_build_folder(self):
-        """ prepare build folder before we start downloading data """
+        """prepare build folder before we start downloading data"""
 
         # copy assets
         shutil.copytree(self.assets_src_dir, self.assets_dir)
@@ -572,7 +572,7 @@ class Youtube2Zim:
         return overall_succeeded, overall_failed
 
     def download_from_cache(self, key, video_path, encoder_version):
-        """ whether it successfully downloaded from cache """
+        """whether it successfully downloaded from cache"""
         if self.use_any_optimized_version:
             if not self.s3_storage.has_object(key, self.s3_storage.bucket_name):
                 return False
@@ -591,7 +591,7 @@ class Youtube2Zim:
         return True
 
     def upload_to_cache(self, key, video_path, encoder_version):
-        """ whether it successfully uploaded to cache """
+        """whether it successfully uploaded to cache"""
         try:
             self.s3_storage.upload_file(
                 video_path, key, meta={"encoder_version": f"v{encoder_version}"}
@@ -603,7 +603,7 @@ class Youtube2Zim:
         return True
 
     def download_video(self, video_id, options):
-        """ download the video from cache/youtube and return True if successful """
+        """download the video from cache/youtube and return True if successful"""
 
         preset = {"mp4": VideoMp4Low}.get(self.video_format, VideoWebmLow)()
         options_copy = options.copy()
@@ -652,7 +652,7 @@ class Youtube2Zim:
             return True
 
     def download_thumbnail(self, video_id, options):
-        """ download the thumbnail from cache/youtube and return True if successful """
+        """download the thumbnail from cache/youtube and return True if successful"""
 
         preset = WebpHigh()
         options_copy = options.copy()
@@ -695,7 +695,7 @@ class Youtube2Zim:
             return True
 
     def download_subtitles(self, video_id, options):
-        """ download subtitles for a video """
+        """download subtitles for a video"""
 
         options_copy = options.copy()
         options_copy.update({"skip_download": True, "writethumbnail": False})
@@ -706,9 +706,9 @@ class Youtube2Zim:
             logger.error(f"Could not download subtitles for {video_id}")
 
     def download_video_files_batch(self, options, videos_ids):
-        """ download video file and thumbnail for all videos in batch
+        """download video file and thumbnail for all videos in batch
 
-        returning succeeded and failed video ids """
+        returning succeeded and failed video ids"""
 
         succeeded = []
         failed = []
@@ -826,7 +826,7 @@ class Youtube2Zim:
                     shutil.rmtree(path, ignore_errors=True)
 
         def is_present(video):
-            """ whether this video has actually been succeffuly downloaded """
+            """whether this video has actually been succeffuly downloaded"""
             return video["contentDetails"]["videoId"] in actual_videos_ids
 
         def video_has_channel(videos_channels, video):

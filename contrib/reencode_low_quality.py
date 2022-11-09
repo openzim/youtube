@@ -10,13 +10,13 @@
     Usage: python youtube2zim/reencode_low_quality.py my/project/build/
 """
 
-import sys
 import json
 import logging
 import pathlib
+import sys
 
-from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
 from zimscraperlib.video.encoding import reencode
+from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
 
 logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
 logger = logging.getLogger(__name__)

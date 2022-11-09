@@ -7,9 +7,8 @@ from dateutil import parser as dt_parser
 from zimscraperlib.download import stream_file
 from zimscraperlib.image.transformation import resize_image
 
-from .constants import logger, YOUTUBE, USER, CHANNEL, PLAYLIST
-from .utils import save_json, load_json, get_slug
-
+from .constants import CHANNEL, PLAYLIST, USER, YOUTUBE, logger
+from .utils import get_slug, load_json, save_json
 
 YOUTUBE_API = "https://www.googleapis.com/youtube/v3"
 PLAYLIST_API = f"{YOUTUBE_API}/playlists"
@@ -54,7 +53,7 @@ class Playlist:
 
 
 def credentials_ok():
-    """ check that a Youtube search is successful, validating API_KEY """
+    """check that a Youtube search is successful, validating API_KEY"""
     req = requests.get(
         SEARCH_API, params={"part": "snippet", "maxResults": 1, "key": YOUTUBE.api_key}
     )
@@ -68,7 +67,7 @@ def credentials_ok():
 
 
 def get_channel_json(channel_id, for_username=False):
-    """ fetch or retieve-save and return the Youtube ChannelResult JSON """
+    """fetch or retieve-save and return the Youtube ChannelResult JSON"""
     fname = f"channel_{channel_id}"
     channel_json = load_json(YOUTUBE.cache_dir, fname)
     if channel_json is None:
@@ -97,7 +96,7 @@ def get_channel_json(channel_id, for_username=False):
 
 
 def get_channel_playlists_json(channel_id):
-    """ fetch or retieve-save and return the Youtube Playlists JSON for a channel"""
+    """fetch or retieve-save and return the Youtube Playlists JSON for a channel"""
     fname = f"channel_{channel_id}_playlists"
     channel_playlists_json = load_json(YOUTUBE.cache_dir, fname)
 
@@ -133,7 +132,7 @@ def get_channel_playlists_json(channel_id):
 
 
 def get_playlist_json(playlist_id):
-    """ fetch or retieve-save and return the Youtube PlaylistResult JSON """
+    """fetch or retieve-save and return the Youtube PlaylistResult JSON"""
     fname = f"playlist_{playlist_id}"
     playlist_json = load_json(YOUTUBE.cache_dir, fname)
     if playlist_json is None:
@@ -194,7 +193,7 @@ def get_videos_json(playlist_id):
 
 
 def get_videos_authors_info(videos_ids):
-    """ query authors' info for each video from their relative channel """
+    """query authors' info for each video from their relative channel"""
 
     items = load_json(YOUTUBE.cache_dir, "videos_channels")
 
@@ -208,7 +207,7 @@ def get_videos_authors_info(videos_ids):
     items = {}
 
     def retrieve_videos_for(videos_ids):
-        """ {videoId: {channelId: channelTitle}} for all videos_ids """
+        """{videoId: {channelId: channelTitle}} for all videos_ids"""
         req_items = {}
         page_token = None
         while True:
@@ -253,7 +252,7 @@ def get_videos_authors_info(videos_ids):
 
 
 def save_channel_branding(channels_dir, channel_id, save_banner=False):
-    """ download, save and resize profile [and banner] of a channel """
+    """download, save and resize profile [and banner] of a channel"""
     channel_json = get_channel_json(channel_id)
 
     thumbnails = channel_json["snippet"]["thumbnails"]
@@ -282,7 +281,7 @@ def save_channel_branding(channels_dir, channel_id, save_banner=False):
 
 
 def skip_deleted_videos(item):
-    """ filter func to filter-out deleted videos from list """
+    """filter func to filter-out deleted videos from list"""
     return (
         item["snippet"]["title"] != "Deleted video"
         and item["snippet"]["description"] != "This video is unavailable."
@@ -290,7 +289,7 @@ def skip_deleted_videos(item):
 
 
 def skip_outofrange_videos(date_range, item):
-    """ filter func to filter-out videos that are not within specified date range"""
+    """filter func to filter-out videos that are not within specified date range"""
     return dt_parser.parse(item["snippet"]["publishedAt"]).date() in date_range
 
 

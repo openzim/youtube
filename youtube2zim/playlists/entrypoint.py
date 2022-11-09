@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4 nu
 
-import logging
 import argparse
+import logging
 import sys
 
-from ..constants import NAME, SCRAPER, CHANNEL, PLAYLIST, USER, logger
+from ..constants import CHANNEL, NAME, PLAYLIST, SCRAPER, USER, logger
 from ..utils import has_argument
 
 
@@ -14,7 +14,10 @@ def main():
     parser = argparse.ArgumentParser(
         prog=f"{NAME}-playlists",
         description="Scraper to create ZIM file(s) from a Youtube Channel or Playlists",
-        epilog="Playlists titles, descriptions and names can use the following variables: {title}, {description}, {playlist_id}, {slug} (from title), {creator_id}, {creator_name}.",
+        epilog="Playlists titles, descriptions and names "
+        "can use the following variables: "
+        "{title}, {description}, {playlist_id}, {slug} (from title), "
+        "{creator_id}, {creator_name}.",
     )
 
     parser.add_argument(
@@ -39,11 +42,13 @@ def main():
 
     parser.add_argument(
         "--playlists-name",
-        help="Format for building individual --name argument. Required in playlist mode.",
+        help="Format for building individual --name argument. "
+        "Required in playlist mode.",
     )
     parser.add_argument(
         "--playlists-zim-file",
-        help="Format for building individual --zim-file argument. Uses --playlists-name otherwise",
+        help="Format for building individual --zim-file argument. "
+        "Uses --playlists-name otherwise",
     )
     parser.add_argument(
         "--playlists-title",
@@ -55,7 +60,8 @@ def main():
     )
     parser.add_argument(
         "--metadata-from",
-        help="File path or URL to a JSON file holding custom metadata for individual playlists. Format in README",
+        help="File path or URL to a JSON file holding custom metadata "
+        "for individual playlists. Format in README",
     )
     parser.add_argument(
         "--debug", help="Enable verbose output", action="store_true", default=False
@@ -73,7 +79,8 @@ def main():
     for arg in ("name", "title", "description", "zim-file"):
         if args.playlists_mode and has_argument(arg, extra_args):
             parser.error(
-                f"Can't use --{arg} in playlists mode. Use --playlists-{arg} to set format."
+                f"Can't use --{arg} in playlists mode. "
+                f"Use --playlists-{arg} to set format."
             )
 
     # playlists-name mandatory in playlist-mode

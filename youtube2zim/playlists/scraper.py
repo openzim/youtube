@@ -12,18 +12,18 @@
     - Only displays youtube2zim's output on failure
 """
 
-import sys
 import json
-import shutil
 import pathlib
-import tempfile
+import shutil
 import subprocess
+import sys
+import tempfile
 
 import requests
 from zimscraperlib.logging import nicer_args_join
 
-from ..constants import logger, NAME, YOUTUBE, PLAYLIST
-from ..youtube import extract_playlists_details_from, credentials_ok
+from ..constants import NAME, PLAYLIST, YOUTUBE, logger
+from ..youtube import credentials_ok, extract_playlists_details_from
 
 
 class YoutubeHandler:
@@ -54,7 +54,7 @@ class YoutubeHandler:
 
     @property
     def youtube2zim_exe(self):
-        """ youtube2zim executable """
+        """youtube2zim executable"""
 
         # handle either `python youtube2zim` and `youtube2zim`
         cmd = "youtube2zim"
@@ -70,7 +70,8 @@ class YoutubeHandler:
             return self.handle_single_zim()
 
         logger.info(
-            f"starting all-playlits {NAME} scraper for {self.collection_type}#{self.youtube_id}"
+            f"starting all-playlits {NAME} scraper "
+            f"for {self.collection_type}#{self.youtube_id}"
         )
 
         # create required sub folders
@@ -115,7 +116,7 @@ class YoutubeHandler:
                 return process.returncode
 
     def run_playlist_zim(self, playlist):
-        """ run youtube2zim for an individual playlist """
+        """run youtube2zim for an individual playlist"""
 
         playlist_id = playlist.playlist_id
         args = self.youtube2zim_exe + [
@@ -163,7 +164,7 @@ class YoutubeHandler:
         return process.returncode == 0, process
 
     def handle_single_zim(self):
-        """ redirect request to standard youtube2zim """
+        """redirect request to standard youtube2zim"""
 
         args = (
             self.youtube2zim_exe
@@ -186,7 +187,7 @@ class YoutubeHandler:
         return fmt.format(**playlist.__dict__(), **{"period": "{period}"})
 
     def fetch_metadata(self):
-        """ retrieves and loads metadata from --metadata-from """
+        """retrieves and loads metadata from --metadata-from"""
 
         if not self.metadata_from:
             return
