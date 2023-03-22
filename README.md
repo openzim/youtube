@@ -2,7 +2,7 @@ Youtube2zim
 =============
 
 [![CodeFactor](https://www.codefactor.io/repository/github/openzim/youtube/badge)](https://www.codefactor.io/repository/github/openzim/youtube)
-[![Docker](https://img.shields.io/docker/v/openzim/youtube?label=docker&sort=semver)](https://hub.docker.com/r/openzim/youtube)
+[![Docker](https://ghcr-badge.deta.dev/openzim/youtube/latest_tag?label=docker)](https://ghcr.io/openzim/youtube)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![PyPI version shields.io](https://img.shields.io/pypi/v/youtube2zim.svg)](https://pypi.org/project/youtube2zim/)
 
@@ -46,7 +46,7 @@ See `requirements.txt` for the list of python dependencies.
 ## Docker
 
 ```bash
-docker run -v my_dir:/output openzim/youtube youtube2zim --help
+docker run -v my_dir:/output ghcr.io/openzim/youtube youtube2zim --help
 ```
 
 ## Globally (on GNU/Linux)
