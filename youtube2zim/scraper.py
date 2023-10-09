@@ -422,6 +422,7 @@ class Youtube2Zim:
             if self.profile_image.startswith("http"):
                 stream_file(self.profile_image, self.profile_path)
             else:
+                self.profile_image = Path(self.profile_image)
                 if not self.profile_image.exists():
                     raise IOError(
                         f"--profile image could not be found: {self.profile_image}"
@@ -432,6 +433,7 @@ class Youtube2Zim:
             if self.banner_image.startswith("http"):
                 stream_file(self.banner_image, self.banner_path)
             else:
+                self.banner_image = Path(self.banner_image)
                 if not self.banner_image.exists():
                     raise IOError(
                         f"--banner image could not be found: {self.banner_image}"
