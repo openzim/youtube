@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 import argparse
 import logging
 import sys
 
-from ..constants import CHANNEL, NAME, PLAYLIST, SCRAPER, USER, logger
-from ..utils import has_argument
+from youtube2zim.constants import CHANNEL, NAME, PLAYLIST, SCRAPER, USER, logger
+from youtube2zim.utils import has_argument
 
 
 def main():
@@ -89,7 +88,7 @@ def main():
 
     logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
 
-    from .scraper import YoutubeHandler
+    from youtube2zim.playlists.scraper import YoutubeHandler
 
     try:
         handler = YoutubeHandler(dict(args._get_kwargs()), extra_args=extra_args)

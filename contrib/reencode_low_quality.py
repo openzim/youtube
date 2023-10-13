@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 """ turn a regular build-folder into a low-quality one by re-encoding all videos.
@@ -31,7 +30,7 @@ def main(build_path):
         sys.exit(1)
 
     # retrieve source video_format
-    with open(build_dir.joinpath("metadata.json"), "r") as fp:
+    with open(build_dir.joinpath("metadata.json")) as fp:
         metadata = json.load(fp)
         video_format = metadata["video_format"]
 
@@ -52,7 +51,8 @@ def main(build_path):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    nb_expected_args = 2
+    if len(sys.argv) != nb_expected_args:
         logger.error("you must supply a path to a build folder")
         sys.exit(1)
     main(sys.argv[-1])

@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 import argparse
 import logging
 import sys
 
-from .constants import CHANNEL, NAME, PLAYLIST, SCRAPER, USER, YOUTUBE, logger
-from .scraper import Youtube2Zim
+from youtube2zim.constants import (
+    CHANNEL,
+    NAME,
+    PLAYLIST,
+    SCRAPER,
+    USER,
+    YOUTUBE,
+    logger,
+)
+from youtube2zim.scraper import Youtube2Zim
 
 
 def main():

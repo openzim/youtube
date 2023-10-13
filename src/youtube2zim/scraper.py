@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 """
@@ -36,7 +35,7 @@ from zimscraperlib.image.transformation import resize_image
 from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
 from zimscraperlib.zim import make_zim_file
 
-from .constants import (
+from youtube2zim.constants import (
     CHANNEL,
     PLAYLIST,
     ROOT_DIR,
@@ -45,9 +44,16 @@ from .constants import (
     YOUTUBE_LANG_MAP,
     logger,
 )
-from .processing import post_process_video, process_thumbnail
-from .utils import clean_text, get_slug, load_json, save_json
-from .youtube import (
+from youtube2zim.processing import post_process_video, process_thumbnail
+from youtube2zim.utils import (
+    clean_text,
+    get_slug,
+    load_json,
+    load_mandatory_json,
+    render_template,
+    save_json,
+)
+from youtube2zim.youtube import (
     credentials_ok,
     extract_playlists_details_from,
     get_channel_json,
@@ -57,6 +63,8 @@ from .youtube import (
     skip_deleted_videos,
     skip_outofrange_videos,
 )
+
+MAXIMUM_YOUTUBEID_LENGTH = 24
 
 
 class Youtube2Zim:
@@ -214,12 +222,12 @@ class Youtube2Zim:
     def is_single_channel(self):
         if self.is_channel or self.is_user:
             return True
-        return len(list(set([pl.creator_id for pl in self.playlists]))) == 1
+        return len(list({pl.creator_id for pl in self.playlists})) == 1
 
     @property
     def sorted_playlists(self):
         """sorted list of playlists (by title) but with Uploads one at first if any"""
-        if len(self.playlists) < 2:
+        if len(self.playlists) <= 1:
             return self.playlists
 
         sorted_playlists = sorted(self.playlists, key=lambda x: x.title)
@@ -251,7 +259,7 @@ class Youtube2Zim:
         logger.info(
             f"starting youtube scraper for {self.collection_type}#{self.youtube_id}"
         )
-        logger.info("preparing build folder at {}".format(self.build_dir.resolve()))
+        logger.info(f"preparing build folder at {self.build_dir.resolve()}")
         self.prepare_build_folder()
 
         logger.info("testing Youtube credentials")
@@ -304,7 +312,7 @@ class Youtube2Zim:
             logger.error(f"{len(failed)} video(s) failed to download: {failed}")
             if len(failed) >= len(succeeded):
                 logger.critical("More than half of videos failed. exiting")
-                raise IOError("Too much videos failed to download")
+                raise OSError("Too much videos failed to download")
 
         logger.info("retrieve channel-info for all videos (author details)")
         get_videos_authors_info(succeeded)
@@ -321,7 +329,15 @@ class Youtube2Zim:
         # make zim file
         os.makedirs(self.output_dir, exist_ok=True)
         if not self.no_zim:
-            period = datetime.datetime.now().strftime("%Y-%m")
+            if not self.name:
+                raise Exception("name is mandatory")
+            if not self.title:
+                raise Exception("title is mandatory")
+            if not self.description:
+                raise Exception("description is mandatory")
+            if not self.creator:
+                raise Exception("creator is mandatory")
+            period = datetime.date.today().strftime("%Y-%m")
             self.fname = (
                 self.fname.format(period=period)
                 if self.fname
@@ -371,12 +387,15 @@ class Youtube2Zim:
                 "Invalid dateafter input. Valid dateafter format: "
                 "YYYYMMDD or (now|today)[+-][0-9](day|week|month|year)(s)."
             )
-            raise ValueError(f"Invalid dateafter input: {exc}")
+            raise ValueError(f"Invalid dateafter input: {exc}") from exc
 
     def validate_id(self):
         # space not allowed in youtube-ID
         self.youtube_id = self.youtube_id.replace(" ", "")
-        if self.collection_type == "channel" and len(self.youtube_id) > 24:
+        if (
+            self.collection_type == "channel"
+            and len(self.youtube_id) > MAXIMUM_YOUTUBEID_LENGTH
+        ):
             raise ValueError("Invalid ChannelId")
         if "," in self.youtube_id and self.collection_type != "playlist":
             raise ValueError("Invalid YoutubeId")
@@ -419,23 +438,27 @@ class Youtube2Zim:
             return
         logger.info("checking your branding files and values")
         if self.profile_image:
-            if self.profile_image.startswith("http"):
+            if isinstance(self.profile_image, str) and self.profile_image.startswith(
+                "http"
+            ):
                 stream_file(self.profile_image, self.profile_path)
             else:
                 self.profile_image = Path(self.profile_image)
                 if not self.profile_image.exists():
-                    raise IOError(
+                    raise OSError(
                         f"--profile image could not be found: {self.profile_image}"
                     )
                 shutil.move(self.profile_image, self.profile_path)
             resize_image(self.profile_path, width=100, height=100, method="thumbnail")
         if self.banner_image:
-            if self.banner_image.startswith("http"):
+            if isinstance(self.banner_image, str) and self.banner_image.startswith(
+                "http"
+            ):
                 stream_file(self.banner_image, self.banner_path)
             else:
                 self.banner_image = Path(self.banner_image)
                 if not self.banner_image.exists():
-                    raise IOError(
+                    raise OSError(
                         f"--banner image could not be found: {self.banner_image}"
                     )
                 shutil.move(self.banner_image, self.banner_path)
@@ -486,7 +509,6 @@ class Youtube2Zim:
         self.videos_ids = [*all_videos.keys()]  # unpacking so it's subscriptable
 
     def download_video_files(self, max_concurrency):
-
         audext, vidext = {"webm": ("webm", "webm"), "mp4": ("m4a", "mp4")}[
             self.video_format
         ]
@@ -575,14 +597,17 @@ class Youtube2Zim:
 
     def download_from_cache(self, key, video_path, encoder_version):
         """whether it successfully downloaded from cache"""
+        if not self.s3_storage:
+            raise Exception(
+                "Cannot download from cache if s3_storage is not configured"
+            )
         if self.use_any_optimized_version:
             if not self.s3_storage.has_object(key, self.s3_storage.bucket_name):
                 return False
-        else:
-            if not self.s3_storage.has_object_matching_meta(
-                key, tag="encoder_version", value=f"v{encoder_version}"
-            ):
-                return False
+        elif not self.s3_storage.has_object_matching_meta(
+            key, tag="encoder_version", value=f"v{encoder_version}"
+        ):
+            return False
         video_path.parent.mkdir(parents=True, exist_ok=True)
         try:
             self.s3_storage.download_file(key, video_path)
@@ -594,6 +619,8 @@ class Youtube2Zim:
 
     def upload_to_cache(self, key, video_path, encoder_version):
         """whether it successfully uploaded to cache"""
+        if not self.s3_storage:
+            raise Exception("Cannot upload to cache if s3_storage is not configured")
         try:
             self.s3_storage.upload_file(
                 video_path, key, meta={"encoder_version": f"v{encoder_version}"}
@@ -612,6 +639,7 @@ class Youtube2Zim:
         video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
         video_path = video_location.joinpath(f"video.{self.video_format}")
 
+        s3_key = None
         if self.s3_storage:
             s3_key = f"{self.video_format}/{self.video_quality}/{video_id}"
             logger.debug(
@@ -661,6 +689,7 @@ class Youtube2Zim:
         video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
         thumbnail_path = video_location.joinpath("video.webp")
 
+        s3_key = None
         if self.s3_storage:
             s3_key = f"thumbnails/high/{video_id}"
             logger.debug(
@@ -725,9 +754,9 @@ class Youtube2Zim:
         return succeeded, failed
 
     def download_authors_branding(self):
-        videos_channels_json = load_json(self.cache_dir, "videos_channels")
+        videos_channels_json = load_mandatory_json(self.cache_dir, "videos_channels")
         uniq_channel_ids = list(
-            set([chan["channelId"] for chan in videos_channels_json.values()])
+            {chan["channelId"] for chan in videos_channels_json.values()}
         )
         for channel_id in uniq_channel_ids:
             save_channel_branding(self.channels_dir, channel_id, save_banner=False)
@@ -744,6 +773,8 @@ class Youtube2Zim:
     def update_metadata(self):
         # we use title, description, profile and banner of channel/user
         # or channel of first playlist
+        if not self.main_channel_id:
+            raise Exception("main_channel_id is mandatory")
         try:
             main_channel_json = get_channel_json(self.main_channel_id)
         except KeyError:
@@ -797,8 +828,8 @@ class Youtube2Zim:
         # set colors from images if not supplied
         if self.main_color is None or self.secondary_color is None:
             profile_main, profile_secondary = get_colors(self.profile_path)
-        self.main_color = self.main_color or profile_main
-        self.secondary_color = self.secondary_color or profile_secondary
+            self.main_color = self.main_color or profile_main
+            self.secondary_color = self.secondary_color or profile_secondary
 
         resize_image(
             self.profile_path,
@@ -870,10 +901,11 @@ class Youtube2Zim:
             loader=jinja2.FileSystemLoader(str(self.templates_dir)), autoescape=True
         )
 
-        videos = load_json(self.cache_dir, "videos").values()
+        videos = load_mandatory_json(self.cache_dir, "videos")
+        videos = videos.values()
         # filter videos so we only include the ones we could retrieve
         videos = list(filter(is_present, videos))
-        videos_channels = load_json(self.cache_dir, "videos_channels")
+        videos_channels = load_mandatory_json(self.cache_dir, "videos_channels")
         has_channel = functools.partial(video_has_channel, videos_channels)
         # filter videos to exclude those for which we have no channel (#76)
         videos = list(filter(has_channel, videos))
@@ -889,7 +921,9 @@ class Youtube2Zim:
             subtitles = get_subtitles(video_id)
             video_url = f"https://www.youtube.com/watch?v={video_id}"
 
-            html = env.get_template("article.html").render(
+            html = render_template(
+                env=env,
+                template_name="article.html",
                 video_id=video_id,
                 video_format=self.video_format,
                 author=author,
@@ -909,7 +943,9 @@ class Youtube2Zim:
                 fp.write(html)
 
         # build homepage
-        html = env.get_template("home.html").render(
+        html = render_template(
+            env=env,
+            template_name="home.html",
             playlists=self.playlists,
             video_format=self.video_format,
             title=self.title,
@@ -925,14 +961,20 @@ class Youtube2Zim:
         # rewrite app.js including `format`
         with open(self.assets_dir.joinpath("app.js"), "w", encoding="utf-8") as fp:
             fp.write(
-                env.get_template("assets/app.js").render(video_format=self.video_format)
+                render_template(
+                    env=env,
+                    template_name="assets/app.js",
+                    video_format=self.video_format,
+                )
             )
 
         # rewrite app.js including `pagination`
         with open(self.assets_dir.joinpath("db.js"), "w", encoding="utf-8") as fp:
             fp.write(
-                env.get_template("assets/db.js").render(
-                    NB_VIDEOS_PER_PAGE=self.nb_videos_per_page
+                render_template(
+                    env=env,
+                    template_name="assets/db.js",
+                    NB_VIDEOS_PER_PAGE=self.nb_videos_per_page,
                 )
             )
 
@@ -955,7 +997,7 @@ class Youtube2Zim:
             # write all playlists as they are
             for playlist in self.playlists:
                 # retrieve list of videos for PL
-                playlist_videos = load_json(
+                playlist_videos = load_mandatory_json(
                     self.cache_dir, f"playlist_{playlist.playlist_id}_videos"
                 )
                 # filtering-out missing ones (deleted or not downloaded)
