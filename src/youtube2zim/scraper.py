@@ -448,7 +448,7 @@ class Youtube2Zim:
                     raise OSError(
                         f"--profile image could not be found: {self.profile_image}"
                     )
-                shutil.move(self.profile_image, self.profile_path)
+                shutil.copy(self.profile_image, self.profile_path)
             resize_image(self.profile_path, width=100, height=100, method="thumbnail")
         if self.banner_image:
             if isinstance(self.banner_image, str) and self.banner_image.startswith(
@@ -461,7 +461,7 @@ class Youtube2Zim:
                     raise OSError(
                         f"--banner image could not be found: {self.banner_image}"
                     )
-                shutil.move(self.banner_image, self.banner_path)
+                shutil.copy(self.banner_image, self.banner_path)
             resize_image(self.banner_path, width=1060, height=175, method="thumbnail")
 
         if self.main_color and not is_hex_color(self.main_color):
