@@ -138,7 +138,7 @@ function firstVideo(video) {
     }
     videoIntro.innerHTML = '' +
         '<video id="video_container" class="video-js vjs-default-skin" ' +
-               'width="480px" height="270px" crossorigin ' +
+               'width="480px" height="270px" ' +
                'controls="true" preload="true" ' +
                'data-setup=\'{"techOrder": ["html5", "ogvjs"], ' +
                             '"ogvjs": {"base": "assets/ogvjs"}, "autoplay": false, ' +
