@@ -155,7 +155,7 @@ def download_original(output_dir, youtube_id, video_format):
     fpath = expected_path.parent.joinpath(expected_path.stem)
     audext, vidext = {"webm": ("webm", "webm"), "mp4": ("m4a", "mp4")}[video_format]
     subprocess.run(
-        [  # noqa: S607
+        [  # noqa: S607 # nosec B607
             "youtube-dl",
             "-o",
             f"{fpath}.%(ext)s",
