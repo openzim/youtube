@@ -269,14 +269,13 @@ def save_channel_branding(channels_dir, channel_id, *, save_banner=False):
             thumnbail = thumbnails[quality]["url"]
             break
 
-    if not thumnbail:
-        raise Exception("thumnbail not found")
-
     channel_dir = channels_dir.joinpath(channel_id)
     channel_dir.mkdir(exist_ok=True)
 
     profile_path = channel_dir.joinpath("profile.jpg")
     if not profile_path.exists():
+        if not thumnbail:
+            raise Exception("thumnbail not found")
         stream_file(thumnbail, profile_path)
         # resize profile as we only use up 100px/80 sq
         resize_image(profile_path, width=100, height=100)

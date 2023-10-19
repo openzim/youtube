@@ -41,6 +41,7 @@ from youtube2zim.constants import (
     ROOT_DIR,
     SCRAPER,
     USER,
+    YOUTUBE,
     YOUTUBE_LANG_MAP,
     logger,
 )
@@ -85,7 +86,6 @@ class Youtube2Zim:
         tmp_dir,
         keep_build_dir,
         max_concurrency,
-        youtube_store,
         language,
         locale_name,
         tags,
@@ -149,9 +149,9 @@ class Youtube2Zim:
         self.max_concurrency = max_concurrency
 
         # update youtube credentials store
-        youtube_store.update(
-            build_dir=self.build_dir, api_key=self.api_key, cache_dir=self.cache_dir
-        )
+        YOUTUBE.build_dir = self.build_dir
+        YOUTUBE.api_key = self.api_key
+        YOUTUBE.cache_dir = self.cache_dir
 
         # Optimization-cache
         self.s3_url_with_credentials = s3_url_with_credentials
@@ -901,8 +901,7 @@ class Youtube2Zim:
             loader=jinja2.FileSystemLoader(str(self.templates_dir)), autoescape=True
         )
 
-        videos = load_mandatory_json(self.cache_dir, "videos")
-        videos = videos.values()
+        videos = load_mandatory_json(self.cache_dir, "videos").values()
         # filter videos so we only include the ones we could retrieve
         videos = list(filter(is_present, videos))
         videos_channels = load_mandatory_json(self.cache_dir, "videos_channels")

@@ -155,7 +155,8 @@ def download_original(output_dir, youtube_id, video_format):
     fpath = expected_path.parent.joinpath(expected_path.stem)
     audext, vidext = {"webm": ("webm", "webm"), "mp4": ("m4a", "mp4")}[video_format]
     subprocess.run(
-        [  # noqa: S607 # nosec B607
+        [
+            "/usr/bin/env",
             "youtube-dl",
             "-o",
             f"{fpath}.%(ext)s",
@@ -223,16 +224,14 @@ def write_html_report(output_dir, report):
         return humanfriendly.format_timespan(value)
 
     def hsduration(value):
-        seconds_per_hour = 3600
-        seconds_per_minute = 60
-        if value >= seconds_per_hour:
-            hours = value // seconds_per_hour
-            value = value % seconds_per_hour
+        if value >= 3600:  # noqa: PLR2004
+            hours = value // 3600
+            value = value % 3600
         else:
             hours = 0
-        if value >= seconds_per_minute:
-            minutes = value // seconds_per_minute
-            value = value % seconds_per_minute
+        if value >= 60:  # noqa: PLR2004
+            minutes = value // 60
+            value = value % 60
         else:
             minutes = 0
         return f"{hours:02}:{minutes:02}:{value:02}"

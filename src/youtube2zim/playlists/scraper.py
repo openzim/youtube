@@ -53,11 +53,9 @@ class YoutubeHandler:
         self.metadata = {}  # custom metadata holder
 
         # update youtube credentials store
-        YOUTUBE.update(
-            build_dir=self.build_dir,
-            api_key=self.api_key,
-            cache_dir=self.build_dir.joinpath("cache"),
-        )
+        YOUTUBE.build_dir = self.build_dir
+        YOUTUBE.api_key = self.api_key
+        YOUTUBE.cache_dir = self.build_dir.joinpath("cache")
 
     @property
     def youtube2zim_exe(self):

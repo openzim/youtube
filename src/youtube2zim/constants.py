@@ -2,13 +2,13 @@
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 import logging
-import pathlib
+from pathlib import Path
 
 from zimscraperlib.logging import getLogger
 
 from youtube2zim.__about__ import __version__
 
-ROOT_DIR = pathlib.Path(__file__).parent
+ROOT_DIR = Path(__file__).parent
 NAME = ROOT_DIR.name
 
 SCRAPER = f"{NAME} {__version__}"
@@ -33,14 +33,9 @@ logger = getLogger(NAME, level=logging.DEBUG)
 
 
 class Youtube:
-    def __init__(self):
-        self.build_dir = None
-        self.cache_dir = None
-        self.api_key = None
-
-    def update(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+    build_dir: Path
+    cache_dir: Path
+    api_key: str
 
 
 YOUTUBE = Youtube()

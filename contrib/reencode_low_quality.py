@@ -30,9 +30,8 @@ def main(build_path):
         sys.exit(1)
 
     # retrieve source video_format
-    with open(build_dir.joinpath("metadata.json")) as fp:
-        metadata = json.load(fp)
-        video_format = metadata["video_format"]
+    metadata = json.loads(build_dir.joinpath("metadata.json").read_bytes())
+    video_format = metadata["video_format"]
 
     if video_format == "mp4":
         args = VideoMp4Low().to_ffmpeg_args()
@@ -51,8 +50,7 @@ def main(build_path):
 
 
 if __name__ == "__main__":
-    nb_expected_args = 2
-    if len(sys.argv) != nb_expected_args:
+    if len(sys.argv) != 2:  # noqa: PLR2004
         logger.error("you must supply a path to a build folder")
         sys.exit(1)
     main(sys.argv[-1])

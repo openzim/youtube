@@ -11,7 +11,6 @@ from youtube2zim.constants import (
     PLAYLIST,
     SCRAPER,
     USER,
-    YOUTUBE,
     logger,
 )
 from youtube2zim.scraper import Youtube2Zim
@@ -217,7 +216,7 @@ def main():
     try:
         if args.max_concurrency < 1:
             raise ValueError(f"Invalid concurrency value: {args.max_concurrency}")
-        scraper = Youtube2Zim(**dict(args._get_kwargs()), youtube_store=YOUTUBE)
+        scraper = Youtube2Zim(**dict(args._get_kwargs()))
         return scraper.run()
     except Exception as exc:
         logger.error(f"FAILED. An error occurred: {exc}")

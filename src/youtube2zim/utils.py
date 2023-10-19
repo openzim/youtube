@@ -2,6 +2,7 @@
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 import json
+from pathlib import Path
 
 import jinja2
 from slugify import slugify
@@ -19,31 +20,26 @@ def clean_text(text):
     return text.strip().replace("\n", " ").replace("\r", " ")
 
 
-def save_json(cache_dir, key, data):
+def save_json(cache_dir: Path, key, data):
     """save JSON collection to path"""
     with open(cache_dir.joinpath(f"{key}.json"), "w") as fp:
         json.dump(data, fp, indent=4)
 
 
-def load_json(cache_dir, key):
+def load_json(cache_dir: Path, key):
     """load JSON collection from path or None"""
     fname = cache_dir.joinpath(f"{key}.json")
     if not fname.exists():
         return None
     try:
-        with open(fname) as fp:
-            return json.load(fp)
+        return json.loads(fname.read_bytes())
     except Exception:
         return None
 
 
-def load_mandatory_json(cache_dir, key):
-    """load mandatory JSON collection from path or raise an error"""
-    fname = cache_dir.joinpath(f"{key}.json")
-    if not fname.exists():
-        raise Exception(f"JSON file at {fname} not found")
-    with open(fname) as fp:
-        return json.load(fp)
+def load_mandatory_json(cache_dir: Path, key):
+    """load mandatory JSON collection from path"""
+    return json.loads(cache_dir.joinpath(f"{key}.json").read_bytes())
 
 
 def has_argument(arg_name, all_args):
