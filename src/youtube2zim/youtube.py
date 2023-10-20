@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4 nu
+
+from http import HTTPStatus
 
 import requests
 from dateutil import parser as dt_parser
 from zimscraperlib.download import stream_file
 from zimscraperlib.image.transformation import resize_image
 
-from .constants import CHANNEL, PLAYLIST, USER, YOUTUBE, logger
-from .utils import get_slug, load_json, save_json
+from youtube2zim.constants import CHANNEL, PLAYLIST, USER, YOUTUBE, logger
+from youtube2zim.utils import get_slug, load_json, save_json
 
 YOUTUBE_API = "https://www.googleapis.com/youtube/v3"
 PLAYLIST_API = f"{YOUTUBE_API}/playlists"
@@ -19,6 +20,7 @@ SEARCH_API = f"{YOUTUBE_API}/search"
 VIDEOS_API = f"{YOUTUBE_API}/videos"
 MAX_VIDEOS_PER_REQUEST = 50  # for VIDEOS_API
 RESULTS_PER_PAGE = 50  # max: 50
+REQUEST_TIMEOUT = 60
 
 
 class Playlist:
@@ -55,9 +57,11 @@ class Playlist:
 def credentials_ok():
     """check that a Youtube search is successful, validating API_KEY"""
     req = requests.get(
-        SEARCH_API, params={"part": "snippet", "maxResults": 1, "key": YOUTUBE.api_key}
+        SEARCH_API,
+        params={"part": "snippet", "maxResults": 1, "key": YOUTUBE.api_key},
+        timeout=REQUEST_TIMEOUT,
     )
-    if req.status_code > 400:
+    if req.status_code >= HTTPStatus.BAD_REQUEST:
         logger.error(f"HTTP {req.status_code} Error response: {req.text}")
     try:
         req.raise_for_status()
@@ -66,7 +70,7 @@ def credentials_ok():
         return False
 
 
-def get_channel_json(channel_id, for_username=False):
+def get_channel_json(channel_id, *, for_username=False):
     """fetch or retieve-save and return the Youtube ChannelResult JSON"""
     fname = f"channel_{channel_id}"
     channel_json = load_json(YOUTUBE.cache_dir, fname)
@@ -79,8 +83,9 @@ def get_channel_json(channel_id, for_username=False):
                 "part": "brandingSettings,snippet,contentDetails",
                 "key": YOUTUBE.api_key,
             },
+            timeout=REQUEST_TIMEOUT,
         )
-        if req.status_code > 400:
+        if req.status_code >= HTTPStatus.BAD_REQUEST:
             logger.error(f"HTTP {req.status_code} Error response: {req.text}")
         req.raise_for_status()
         try:
@@ -118,8 +123,9 @@ def get_channel_playlists_json(channel_id):
                 "maxResults": RESULTS_PER_PAGE,
                 "pageToken": page_token,
             },
+            timeout=REQUEST_TIMEOUT,
         )
-        if req.status_code > 400:
+        if req.status_code >= HTTPStatus.BAD_REQUEST:
             logger.error(f"HTTP {req.status_code} Error response: {req.text}")
         req.raise_for_status()
         channel_playlists_json = req.json()
@@ -140,8 +146,9 @@ def get_playlist_json(playlist_id):
         req = requests.get(
             PLAYLIST_API,
             params={"id": playlist_id, "part": "snippet", "key": YOUTUBE.api_key},
+            timeout=REQUEST_TIMEOUT,
         )
-        if req.status_code > 400:
+        if req.status_code >= HTTPStatus.BAD_REQUEST:
             logger.error(f"HTTP {req.status_code} Error response: {req.text}")
         req.raise_for_status()
         try:
@@ -178,8 +185,9 @@ def get_videos_json(playlist_id):
                 "maxResults": RESULTS_PER_PAGE,
                 "pageToken": page_token,
             },
+            timeout=REQUEST_TIMEOUT,
         )
-        if req.status_code > 400:
+        if req.status_code >= HTTPStatus.BAD_REQUEST:
             logger.error(f"HTTP {req.status_code} Error response: {req.text}")
         req.raise_for_status()
         videos_json = req.json()
@@ -200,9 +208,7 @@ def get_videos_authors_info(videos_ids):
     if items is not None:
         return items
 
-    logger.debug(
-        "query youtube-api for Video details of {} videos".format(len(videos_ids))
-    )
+    logger.debug(f"query youtube-api for Video details of {len(videos_ids)} videos")
 
     items = {}
 
@@ -220,8 +226,9 @@ def get_videos_authors_info(videos_ids):
                     "maxResults": RESULTS_PER_PAGE,
                     "pageToken": page_token,
                 },
+                timeout=REQUEST_TIMEOUT,
             )
-            if req.status_code > 400:
+            if req.status_code >= HTTPStatus.BAD_REQUEST:
                 logger.error(f"HTTP {req.status_code} Error response: {req.text}")
             req.raise_for_status()
             videos_json = req.json()
@@ -251,11 +258,12 @@ def get_videos_authors_info(videos_ids):
     return items
 
 
-def save_channel_branding(channels_dir, channel_id, save_banner=False):
+def save_channel_branding(channels_dir, channel_id, *, save_banner=False):
     """download, save and resize profile [and banner] of a channel"""
     channel_json = get_channel_json(channel_id)
 
     thumbnails = channel_json["snippet"]["thumbnails"]
+    thumnbail = None
     for quality in ("medium", "default"):  # high:800px, medium:240px, default:88px
         if quality in thumbnails.keys():
             thumnbail = thumbnails[quality]["url"]
@@ -266,6 +274,8 @@ def save_channel_branding(channels_dir, channel_id, save_banner=False):
 
     profile_path = channel_dir.joinpath("profile.jpg")
     if not profile_path.exists():
+        if not thumnbail:
+            raise Exception("thumnbail not found")
         stream_file(thumnbail, profile_path)
         # resize profile as we only use up 100px/80 sq
         resize_image(profile_path, width=100, height=100)
@@ -302,7 +312,7 @@ def extract_playlists_details_from(collection_type, youtube_id):
 
     uploads_playlist_id = None
     main_channel_id = None
-    if collection_type == USER or collection_type == CHANNEL:
+    if collection_type in (USER, CHANNEL):
         if collection_type == USER:
             # youtube_id is a Username, fetch actual channelId through channel
             channel_json = get_channel_json(youtube_id, for_username=True)

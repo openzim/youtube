@@ -51,7 +51,7 @@ table { width: 100%; }
 #header {
     border-color: #CCCCCC;
     border-style: solid;
-    border-width: 0 1px 0 1px;
+    border-width: 0 1px;
     background: white;
     background-image: url(../banner.jpg);
     /*height: 205px;*/
@@ -67,6 +67,8 @@ table { width: 100%; }
     background-repeat: repeat-x;
     box-sizing: border-box;
     position: relative;
+
+    width: 100%;
 }
 
 #header-profile {
@@ -99,7 +101,7 @@ table { width: 100%; }
     width: 100%;
     text-align: right;
     z-index: 100;
-    margin: .5em 0 .5em;
+    margin: .5em 0;
 }
 
 .hidden {
@@ -127,11 +129,6 @@ table { width: 100%; }
 
 .centered {
     text-align: center;
-}
-
-.container {
-    width: 1200px;
-    margin: 0 auto;
 }
 
 #video_container {
@@ -197,7 +194,7 @@ ul.grid-nav li a.active {
 ul.rig {
     list-style: none;
     font-size: 0;
-    margin-left: -2.5%;
+    margin: 0;
     padding: 0;
 }
 ul.rig li {
@@ -227,14 +224,14 @@ ul.rig li p {
 }
 
 ul.rig.grid li {
-    width: 22.5%; 
+    width: 22.5%;
     cursor: pointer;
 }
 
 
 div#menuwrapper {
-    margin-top: 10px;
     margin: 0 auto;
+    margin-top: 10px;
     text-align: left;
 }
 
@@ -273,7 +270,7 @@ nav ul li a {
     text-decoration: none;
     display: block;
     color: #333;
-    padding: 14px 34px 14px 34px;
+    padding: 14px 34px;
 
     transition: background 0.3s ease-out; /* explorer 10 */
     -webkit-transition: background 0.3s ease-out; /* chrome & safari */
@@ -320,7 +317,7 @@ div.backtotop {
     width: 250px;
     text-align: center;
     height: 35px;
-    display: flex; 
+    display: flex;
     display: -webkit-flex;
     float: left;
     color: #000000;
@@ -336,7 +333,7 @@ div.backtotop span { margin: auto; }
     width: 250px;
     text-align: center;
     height: 35px;
-    display: flex; 
+    display: flex;
     display: -webkit-flex;
     float: right;
     color: #000000;
@@ -357,7 +354,7 @@ div.backtotop span { margin: auto; }
     width:20px;
     padding-left:20px;
     /*padding-right:20px;*/
-    margin: auto auto auto auto;
+    margin: auto;
 }
 
 .right-arrow {
@@ -365,7 +362,7 @@ div.backtotop span { margin: auto; }
     width:20px;
     /*padding-left:20px;*/
     padding-right:20px;
-    margin: auto auto auto auto;
+    margin: auto;
  }
 
 a.nostyle:link {
@@ -397,9 +394,12 @@ p.description {
     white-space: pre-wrap;
 }
 
-.container { width: auto; padding: 0; }
-#header { width: 100%; }
-ul.rig { margin: 0; }
+.container {
+    width: auto;
+    margin: 0 auto;
+    padding: 0;
+}
+
 #video-intro { margin: 0; }
 
 

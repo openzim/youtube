@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 import argparse
 import logging
 import sys
 
-from .constants import CHANNEL, NAME, PLAYLIST, SCRAPER, USER, YOUTUBE, logger
-from .scraper import Youtube2Zim
+from youtube2zim.constants import (
+    CHANNEL,
+    NAME,
+    PLAYLIST,
+    SCRAPER,
+    USER,
+    logger,
+)
+from youtube2zim.scraper import Youtube2Zim
 
 
 def main():
@@ -210,7 +216,7 @@ def main():
     try:
         if args.max_concurrency < 1:
             raise ValueError(f"Invalid concurrency value: {args.max_concurrency}")
-        scraper = Youtube2Zim(**dict(args._get_kwargs()), youtube_store=YOUTUBE)
+        scraper = Youtube2Zim(**dict(args._get_kwargs()))
         return scraper.run()
     except Exception as exc:
         logger.error(f"FAILED. An error occurred: {exc}")

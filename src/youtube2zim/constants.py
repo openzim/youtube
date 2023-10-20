@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 import logging
-import pathlib
+from pathlib import Path
 
 from zimscraperlib.logging import getLogger
 
-ROOT_DIR = pathlib.Path(__file__).parent
+from youtube2zim.__about__ import __version__
+
+ROOT_DIR = Path(__file__).parent
 NAME = ROOT_DIR.name
 
-with open(ROOT_DIR.joinpath("VERSION"), "r") as fh:
-    VERSION = fh.read().strip()
-
-SCRAPER = f"{NAME} {VERSION}"
+SCRAPER = f"{NAME} {__version__}"
 
 CHANNEL = "channel"
 PLAYLIST = "playlist"
@@ -35,14 +33,9 @@ logger = getLogger(NAME, level=logging.DEBUG)
 
 
 class Youtube:
-    def __init__(self):
-        self.build_dir = None
-        self.cache_dir = None
-        self.api_key = None
-
-    def update(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+    build_dir: Path
+    cache_dir: Path
+    api_key: str
 
 
 YOUTUBE = Youtube()

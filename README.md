@@ -41,7 +41,7 @@ youtube2zim --help       # Display youtube2zim help
 
 At the end, call `deactivate` to quit the virtual environment.
 
-See `requirements.txt` for the list of python dependencies.
+See `pyproject.toml` for the list of python dependencies.
 
 ## Docker
 
@@ -67,7 +67,7 @@ To get an API:
 3. When asked, choose _Create Credentials_ and select the **API Key** type. ([Credentials page](https://console.developers.google.com/apis/credentials))
 
 ```bash
-youtube2zim --api-key "<your-api-key>" --type user --id "Vsauce"
+youtube2zim --api-key "<your-api-key>" --type user --id "Vsauce" --name "vsauce"
 ```
 
 ## Notes
@@ -78,11 +78,13 @@ youtube2zim --api-key "<your-api-key>" --type user --id "Vsauce"
 youtube2zim-playlists
 ---------------------
 
-`youtube2zim` produces a single ZIM file for a youtube request (`channel`, `user`, `playlists`.
+`youtube2zim` produces a single ZIM file for a youtube request (`channel`, `user`, `playlist`).
 
-`youtube2zim-playlists` allows you to **create one ZIM file per playlist** instead.
+`youtube2zim-playlists` allows you to ** automatically create one ZIM file per playlist** of a given channel or user instead.
 
 This script is a wrapper around `youtube2zim` and is bundled with the main package.
+
+The difference between a channel and a user is due to Youtube legacy. Some old users have to be searched as a user, while more recent ones have to be searched as a channel. Try your best bet, and if it fails try the ohter type.
 
 ## Usage
 

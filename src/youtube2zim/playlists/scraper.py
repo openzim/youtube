@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 """
@@ -22,8 +21,12 @@ import tempfile
 import requests
 from zimscraperlib.logging import nicer_args_join
 
-from ..constants import NAME, PLAYLIST, YOUTUBE, logger
-from ..youtube import credentials_ok, extract_playlists_details_from
+from youtube2zim.constants import NAME, PLAYLIST, YOUTUBE, logger
+from youtube2zim.youtube import (
+    REQUEST_TIMEOUT,
+    credentials_ok,
+    extract_playlists_details_from,
+)
 
 
 class YoutubeHandler:
@@ -32,9 +35,13 @@ class YoutubeHandler:
         options,
         extra_args,
     ):
-        # save options as properties
-        for key, value in options.items():
-            setattr(self, key, value)
+        # extract values from options
+        self.api_key = options["api_key"]
+        self.debug = options["debug"]
+        self.playlists_mode = options["playlists_mode"]
+        self.collection_type = options["collection_type"]
+        self.youtube_id = options["youtube_id"]
+
         self.extra_args = extra_args
 
         self.build_dir = pathlib.Path(tempfile.mkdtemp())
@@ -46,11 +53,9 @@ class YoutubeHandler:
         self.metadata = {}  # custom metadata holder
 
         # update youtube credentials store
-        YOUTUBE.update(
-            build_dir=self.build_dir,
-            api_key=self.api_key,
-            cache_dir=self.build_dir.joinpath("cache"),
-        )
+        YOUTUBE.build_dir = self.build_dir
+        YOUTUBE.api_key = self.api_key
+        YOUTUBE.cache_dir = self.build_dir.joinpath("cache")
 
     @property
     def youtube2zim_exe(self):
@@ -119,7 +124,8 @@ class YoutubeHandler:
         """run youtube2zim for an individual playlist"""
 
         playlist_id = playlist.playlist_id
-        args = self.youtube2zim_exe + [
+        args = [
+            *self.youtube2zim_exe,
             "--type",
             PLAYLIST,
             "--id",
@@ -155,32 +161,30 @@ class YoutubeHandler:
         args += self.extra_args
 
         logger.debug(nicer_args_join(args))
-        process = subprocess.run(
+        process = subprocess.run(  # noqa: PLW1510
             args,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            universal_newlines=True,
+            text=True,
         )
         return process.returncode == 0, process
 
     def handle_single_zim(self):
         """redirect request to standard youtube2zim"""
 
-        args = (
-            self.youtube2zim_exe
-            + [
-                "--type",
-                self.collection_type,
-                "--id",
-                self.youtube_id,
-                "--api-key",
-                self.api_key,
-            ]
-            + self.extra_args
-        )
+        args = [
+            *self.youtube2zim_exe,
+            "--type",
+            self.collection_type,
+            "--id",
+            self.youtube_id,
+            "--api-key",
+            self.api_key,
+            *self.extra_args,
+        ]
         if self.debug:
             args.append("--debug")
-        return subprocess.run(args).returncode
+        return subprocess.run(args).returncode  # noqa: PLW1510
 
     @staticmethod
     def compute_format(playlist, fmt):
@@ -196,19 +200,21 @@ class YoutubeHandler:
         # load JSON from source (URL or file)
         try:
             if str(self.metadata_from).startswith("http"):
-                self.metadata = requests.get(str(self.metadata_from)).json()
+                self.metadata = requests.get(
+                    str(self.metadata_from), timeout=REQUEST_TIMEOUT
+                ).json()
             else:
                 if not self.metadata_from.exists():
-                    raise IOError(
+                    raise OSError(
                         f"--metadata-from file could not be found: {self.metadata_from}"
                     )
-                with open(self.metadata_from, "r") as fh:
+                with open(self.metadata_from) as fh:
                     self.metadata = json.load(fh)
         except Exception as exc:
             logger.debug(exc)
             raise ValueError(
                 f"--metadata-from could not be loaded as JSON: {self.metadata_from}"
-            )
+            ) from exc
 
         # ensure the basic format is respected: dict of playlist ID to dict of meta
         if not isinstance(self.metadata, dict) or len(self.metadata) != sum(

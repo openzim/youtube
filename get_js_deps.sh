@@ -17,17 +17,17 @@ fi
 
 # Absolute path this script is in.
 SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
-ASSETS_PATH="${SCRIPT_PATH}/youtube2zim/templates/assets"
+ASSETS_PATH="${SCRIPT_PATH}/src/youtube2zim/templates/assets"
 
 echo "About to download JS assets to ${ASSETS_PATH}"
 
 echo "getting video.js"
-curl -L -O https://github.com/videojs/video.js/releases/download/v7.20.3/video-js-7.20.3.zip
+curl -L -O https://github.com/videojs/video.js/releases/download/v8.6.1/video-js-8.6.1.zip
 rm -rf $ASSETS_PATH/videojs
 mkdir -p $ASSETS_PATH/videojs
-unzip -o -d $ASSETS_PATH/videojs video-js-7.20.3.zip
+unzip -o -d $ASSETS_PATH/videojs video-js-8.6.1.zip
 rm -rf $ASSETS_PATH/videojs/alt $ASSETS_PATH/videojs/examples
-rm -f video-js-7.20.3.zip
+rm -f video-js-8.6.1.zip
 
 echo "getting ogv.js"
 curl -L -O https://github.com/brion/ogv.js/releases/download/1.8.9/ogvjs-1.8.9.zip
@@ -51,10 +51,10 @@ echo "getting jquery.js"
 curl -L -o $ASSETS_PATH/jquery.min.js https://code.jquery.com/jquery-1.12.4.min.js
 
 echo "getting webp-hero"
-curl -L -O https://unpkg.com/webp-hero@0.0.0-dev.26/dist-cjs/polyfills.js
+curl -L -O https://unpkg.com/webp-hero@0.0.2/dist-cjs/polyfills.js
 rm -f $ASSETS_PATH/polyfills.js
 mv polyfills.js $ASSETS_PATH/polyfills.js
-curl -L -O https://unpkg.com/webp-hero@0.0.0-dev.26/dist-cjs/webp-hero.bundle.js
+curl -L -O https://unpkg.com/webp-hero@0.0.2/dist-cjs/webp-hero.bundle.js
 rm -f $ASSETS_PATH/webp-hero.bundle.js
 mv webp-hero.bundle.js $ASSETS_PATH/webp-hero.bundle.js
 

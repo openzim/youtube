@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4 nu
+# ruff: noqa: T201, T203, DTZ003
 
 """
     video encoding comparator
@@ -156,6 +156,7 @@ def download_original(output_dir, youtube_id, video_format):
     audext, vidext = {"webm": ("webm", "webm"), "mp4": ("m4a", "mp4")}[video_format]
     subprocess.run(
         [
+            "/usr/bin/env",
             "youtube-dl",
             "-o",
             f"{fpath}.%(ext)s",
@@ -169,7 +170,7 @@ def download_original(output_dir, youtube_id, video_format):
     )
 
 
-def get_src_path(output_dir, youtube_id, video_format):
+def get_src_path(output_dir: pathlib.Path, youtube_id, video_format):
     video_format_path = output_dir.joinpath(f"{youtube_id}.orig.{video_format}")
     if video_format_path.exists():
         return video_format_path
@@ -223,12 +224,12 @@ def write_html_report(output_dir, report):
         return humanfriendly.format_timespan(value)
 
     def hsduration(value):
-        if value >= 3600:
+        if value >= 3600:  # noqa: PLR2004
             hours = value // 3600
             value = value % 3600
         else:
             hours = 0
-        if value >= 60:
+        if value >= 60:  # noqa: PLR2004
             minutes = value // 60
             value = value % 60
         else:
@@ -310,7 +311,7 @@ def write_html_report(output_dir, report):
         fh.write(page)
 
 
-def main(output_dir):
+def main(output_dir: pathlib.Path):
     if not output_dir.exists() or not output_dir.is_dir():
         print(f"{output_dir} is not a valid directory.")
         return 1
@@ -328,9 +329,12 @@ def main(output_dir):
                 report[youtube_id]["duration"] = get_duration_for(
                     output_dir, youtube_id
                 )
-            report[youtube_id][video_format]["size"] = (
-                get_src_path(output_dir, youtube_id, video_format).stat().st_size
-            )
+            src_path = get_src_path(output_dir, youtube_id, video_format)
+            if not src_path:
+                raise Exception(
+                    f"src_path of {output_dir}, {youtube_id}, {video_format} is missing"
+                )
+            report[youtube_id][video_format]["size"] = src_path.stat().st_size
 
             report[youtube_id][video_format]["bitrate"] = (
                 report[youtube_id][video_format]["size"]
@@ -361,7 +365,8 @@ def main(output_dir):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
+    nb_expected_args = 2
+    if len(sys.argv) != nb_expected_args:
         print("you must pass a target folder")
         sys.exit(1)
     sys.exit(main(pathlib.Path(sys.argv[1])))
