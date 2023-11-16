@@ -1,4 +1,4 @@
-FROM python:3.11-bookworm
+FROM python:3.10-bookworm
 LABEL org.opencontainers.image.source https://github.com/openzim/youtube
 
 # Install necessary packages

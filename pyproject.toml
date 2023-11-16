@@ -6,13 +6,13 @@ build-backend = "hatchling.build"
 name = "youtube2zim"
 authors = [{ name = "Kiwix", email = "dev@kiwix.org" }]
 keywords = ["kiwix", "zim", "offline", "youtube"]
-requires-python = ">=3.11"
+requires-python = ">=3.10,<3.11"
 description = "Make ZIM file from a Youtube channel, user or playlist(s)"
 readme = "README.md"
 license = { text = "GPL-3.0-or-later" }
 classifiers = [
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.10",
   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
 ]
 dependencies = [
@@ -61,7 +61,7 @@ exclude = ["/.github"]
 
 [tool.hatch.build.hooks.custom]
 path = "hatch_build.py"
-dependencies = ["zimscraperlib==3.1.1"]
+dependencies = ["zimscraperlib>=2.0.0,<2.1.0"]
 
 [tool.hatch.envs.default]
 features = ["dev"]
@@ -222,5 +222,5 @@ exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 include = ["src", "tests", "tasks.py"]
 exclude = [".env/**", ".venv/**", "src/youtube2zim/templates", ".hatch"]
 extraPaths = ["src"]
-pythonVersion = "3.11"
+pythonVersion = "3.10"
 typeCheckingMode = "basic"

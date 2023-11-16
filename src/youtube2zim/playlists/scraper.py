@@ -46,10 +46,11 @@ class YoutubeHandler:
 
         self.build_dir = pathlib.Path(tempfile.mkdtemp())
 
-        # metadata_from JSON file
-        self.metadata_from = (
-            pathlib.Path(self.metadata_from) if self.metadata_from else None
-        )
+        self.metadata_from = None
+        # metadata_from JSON file is broken for now
+        # self.metadata_from = (
+        #     pathlib.Path(self.metadata_from) if self.metadata_from else None
+        # )
         self.metadata = {}  # custom metadata holder
 
         # update youtube credentials store
