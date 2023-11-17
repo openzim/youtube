@@ -5,11 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) (as of version 2.1.15).
 
-## [Unreleased]
+## [2.2.0] - 2023-11-17
 
-### Changed
+### Changed
+
+- Using zimscraperlib 2.0.0 (#171)
+- Using python 3.10 + debian bookworm (dropped support for older Python versions) (#180)
+- Adopt Python bootstrap conventions (including hatch) (#180)
+
+### Fixed
 
 - Fixed local path media (profile, banner) not working (#178)
+- Unset `metadata_from` in `youtube2zim-playlists` (#185)
 
 ## [2.1.18] - 2022-11-09
 
@@ -203,4 +210,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Get playlist or user channel (and playlist of user) from youtube
 - the most view video is show on top and bigger
 - --lowquality option for downloading in mp4 and re-encode aggressively in webm
-
