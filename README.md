@@ -32,12 +32,27 @@ Here comes a few different ways to install `youtube2zim`.
 [virtualenv](https://virtualenv.pypa.io) to avoid installing software
 dependences on your system.
 
+
+
+
 ```bash
 virtualenv -p python3 ./ # Create virtualenv
 source bin/activate      # Activate the virtualenv
 pip3 install youtube2zim # Install dependencies
 youtube2zim --help       # Display youtube2zim help
 ```
+### Workaround for missing dependencies 
+download script to install  required js dependencies
+```bash
+curl -O https://raw.githubusercontent.com/openzim/youtube/main/get_js_deps.sh
+source ./get_js_deps.sh
+```
+overwrite the assets inside your youtube2zim library with the built assets
+```bash
+rm -r path/to/your/virtual/env/lib/<python_version>/site-packages/youtube2zim/templates/assets
+cp -r ./src/youtube2zim/templates/assets  /path/to/your/virtual/env/lib/<python_version>/site-packages/youtube2zim/templates
+```
+this is only a simple workaround until a better fix is released.
 
 At the end, call `deactivate` to quit the virtual environment.
 
@@ -132,6 +147,12 @@ Those are the required arguments for `youtube2zim-playlists` but **you can also 
 All fields are optional and taken from command-line/default if not found. `<playlist-id>` represents the Youtube Playlist ID.
 
 If you feel the need for setting additional details in this file, chances are you should run `youtube2zim` independently for that playlist (still possible!)
+
+## Common Setup Issues
+If you are facing a similar error 
+`ERROR:FAILED. An error occurred: [Errno 2] No such file or directory: '/tmp/tmpfft01q6g/assets/videojs-ogvjs.js'`
+then refer [this](#workaround-for-missing-dependencies)
+
 
 Development
 -----------
