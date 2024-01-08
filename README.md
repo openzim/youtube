@@ -27,32 +27,36 @@ Here comes a few different ways to install `youtube2zim`.
 
 ## Virtualenv
 
-`youtube2zim` is a Python3 software. If you are not using the
-[Docker](https://docker.com) image, you are advised to use it in a
-[virtualenv](https://virtualenv.pypa.io) to avoid installing software
-dependences on your system.
+`youtube2zim` is a Python3 software. If you are not using the [Docker](https://docker.com) image,
+you are advised to use it in a [virtualenv](https://virtualenv.pypa.io) to avoid installing software
+dependences on your system. [Hatch](https://hatch.pypa.io/) is the proper tool to create the
+virtualenv and install the software locally. Ensure to use proper Python version as well (see
+pyproject.toml).
 
-```bash
-virtualenv -p python3 ./ # Create virtualenv
-source bin/activate      # Activate the virtualenv
-pip3 install youtube2zim # Install dependencies
-youtube2zim --help       # Display youtube2zim help
+If you do not already have it on your system, install hatch to build the software and manage virtual
+environments (you might be interested by our detailed
+[Developer Setup](https://github.com/openzim/_python-bootstrap/wiki/Developer-Setup) as well,
+especially regarding how to configure hatch globaly for proper detection of its virtual environments
+by Visual Studio Code).
+
+``` bash
+pip3 install hatch
 ```
 
-At the end, call `deactivate` to quit the virtual environment.
+Start a hatch shell: this will install software including dependencies in an isolated virtual environment.
 
-See `pyproject.toml` for the list of python dependencies.
+``` bash
+hatch shell
+```
+
+```bash
+youtube2zim --help       # Display youtube2zim help
+```
 
 ## Docker
 
 ```bash
 docker run -v my_dir:/output ghcr.io/openzim/youtube youtube2zim --help
-```
-
-## Globally (on GNU/Linux)
-
-```bash
-sudo pip3 install -U youtube2zim
 ```
 
 Usage
