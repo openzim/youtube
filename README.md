@@ -27,47 +27,36 @@ Here comes a few different ways to install `youtube2zim`.
 
 ## Virtualenv
 
-`youtube2zim` is a Python3 software. If you are not using the
-[Docker](https://docker.com) image, you are advised to use it in a
-[virtualenv](https://virtualenv.pypa.io) to avoid installing software
-dependences on your system.
+`youtube2zim` is a Python3 software. If you are not using the [Docker](https://docker.com) image,
+you are advised to use it in a [virtualenv](https://virtualenv.pypa.io) to avoid installing software
+dependences on your system. [Hatch](https://hatch.pypa.io/) is the proper tool to create the
+virtualenv and install the software locally. Ensure to use proper Python version as well (see
+pyproject.toml).
 
+If you do not already have it on your system, install hatch to build the software and manage virtual
+environments (you might be interested by our detailed
+[Developer Setup](https://github.com/openzim/_python-bootstrap/wiki/Developer-Setup) as well,
+especially regarding how to configure hatch globaly for proper detection of its virtual environments
+by Visual Studio Code).
 
+``` bash
+pip3 install hatch
+```
 
+Start a hatch shell: this will install software including dependencies in an isolated virtual environment.
+
+``` bash
+hatch shell
+```
 
 ```bash
-virtualenv -p python3 ./ # Create virtualenv
-source bin/activate      # Activate the virtualenv
-pip3 install youtube2zim # Install dependencies
 youtube2zim --help       # Display youtube2zim help
 ```
-### Workaround for missing dependencies 
-download script to install  required js dependencies
-```bash
-curl -O https://raw.githubusercontent.com/openzim/youtube/main/get_js_deps.sh
-source ./get_js_deps.sh
-```
-overwrite the assets inside your youtube2zim library with the built assets
-```bash
-rm -r path/to/your/virtual/env/lib/<python_version>/site-packages/youtube2zim/templates/assets
-cp -r ./src/youtube2zim/templates/assets  /path/to/your/virtual/env/lib/<python_version>/site-packages/youtube2zim/templates
-```
-this is only a simple workaround until a better fix is released.
-
-At the end, call `deactivate` to quit the virtual environment.
-
-See `pyproject.toml` for the list of python dependencies.
 
 ## Docker
 
 ```bash
 docker run -v my_dir:/output ghcr.io/openzim/youtube youtube2zim --help
-```
-
-## Globally (on GNU/Linux)
-
-```bash
-sudo pip3 install -U youtube2zim
 ```
 
 Usage
@@ -147,12 +136,6 @@ Those are the required arguments for `youtube2zim-playlists` but **you can also 
 All fields are optional and taken from command-line/default if not found. `<playlist-id>` represents the Youtube Playlist ID.
 
 If you feel the need for setting additional details in this file, chances are you should run `youtube2zim` independently for that playlist (still possible!)
-
-## Common Setup Issues
-If you are facing a similar error 
-`ERROR:FAILED. An error occurred: [Errno 2] No such file or directory: '/tmp/tmpfft01q6g/assets/videojs-ogvjs.js'`
-then refer [this](#workaround-for-missing-dependencies)
-
 
 Development
 -----------

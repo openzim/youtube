@@ -3,34 +3,7 @@
 
 ## setup
 
-__Note__: make sure you've installed non-python dependencies first, as mentioned in the [README](README.md).
-
-Then, setup a python `virtualenv` using `python 3.8+` and install our python dependencies using `pip`:
-
-```bash
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-python get-pip.py  # you may use sudo
-pip install -U virtualenv  # sudo to install globally
-virtualenv -p python3.6 youtube-env
-source youtube-env/bin/activate
-pip install -r requirements.txt
-```
-
-You now have an isolated python installation in the `./youtube-env/` folder, containing all the python dependencies.
-
-__Note__: you must activate the `virtualenv` before running the scraper so it uses this virtual python installation
-
-``` bash
-source youtube-venv/bin/activate
-```
-
-and then run it:
-
-``` bash
-python youtube2zim --help
-# or, without activating the virtualenv:
-youtube-env/bin/python youtube2zim --help
-```
+See [README](README.md) for details about how to install with hatch virtualenv.
 
 ## contributions
 
