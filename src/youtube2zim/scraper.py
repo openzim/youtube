@@ -32,7 +32,9 @@ from zimscraperlib.i18n import NotFound, get_language_details, setlocale
 from zimscraperlib.image.presets import WebpHigh
 from zimscraperlib.image.probing import get_colors, is_hex_color
 from zimscraperlib.image.transformation import resize_image
+from zimscraperlib.image.convertion import convert_image
 from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
+from zimscraperlib.inputs import compute_descriptions
 from zimscraperlib.zim import make_zim_file
 
 from youtube2zim.constants import (
@@ -94,6 +96,7 @@ class Youtube2Zim:
         s3_url_with_credentials,
         title=None,
         description=None,
+        long_description=None,
         creator=None,
         publisher=None,
         name=None,
@@ -121,6 +124,7 @@ class Youtube2Zim:
         self.tags = [t.strip() for t in tags.split(",")]
         self.title = title
         self.description = description
+        self.long_description = long_description
         self.creator = creator
         self.publisher = publisher
         self.name = name
@@ -128,6 +132,7 @@ class Youtube2Zim:
         self.banner_image = banner_image
         self.main_color = main_color
         self.secondary_color = secondary_color
+        
 
         # directory setup
         self.output_dir = Path(output_dir).expanduser().resolve()
@@ -349,7 +354,7 @@ class Youtube2Zim:
                 fpath=self.output_dir / self.fname,
                 name=self.name,
                 main_page="home.html",
-                favicon="favicon.jpg",
+                illustration="favicon.jpg",
                 title=self.title,
                 description=self.description,
                 language=self.language,
@@ -799,7 +804,12 @@ class Youtube2Zim:
         )
         self.title = self.title or auto_title or "-"
         self.description = self.description or auto_description or "-"
-
+        self.long_description = self.long_description or auto_description  or "-"
+        self.description,self.long_description = compute_descriptions(
+            default_description=auto_description,
+            user_description=self.description,
+            user_long_description=self.long_description
+        )
         if self.creator is None:
             if self.is_single_channel:
                 self.creator = _("Youtube Channel “{title}”").format(
@@ -808,6 +818,7 @@ class Youtube2Zim:
             else:
                 self.creator = _("Youtube Channels")
         self.publisher = self.publisher or "Kiwix"
+
 
         self.tags = self.tags or ["youtube"]
         if "_videos:yes" not in self.tags:
@@ -830,13 +841,14 @@ class Youtube2Zim:
             profile_main, profile_secondary = get_colors(self.profile_path)
             self.main_color = self.main_color or profile_main
             self.secondary_color = self.secondary_color or profile_secondary
-
+            
+        convert_image(self.profile_path, self.profile_path, fmt="PNG")
         resize_image(
             self.profile_path,
             width=48,
             height=48,
             method="thumbnail",
-            dst=self.build_dir.joinpath("favicon.jpg"),
+            dst=self.build_dir.joinpath("favicon.png"),
         )
 
     def make_html_files(self, actual_videos_ids):
