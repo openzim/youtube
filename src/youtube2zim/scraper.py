@@ -36,7 +36,8 @@ from zimscraperlib.image.convertion import convert_image
 from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
 from zimscraperlib.inputs import compute_descriptions
 from zimscraperlib.zim import make_zim_file
-
+from zimscraperlib.zim import Creator
+from zimscraperlib.constants import MANDATORY_ZIM_METADATA_KEYS
 from youtube2zim.constants import (
     CHANNEL,
     PLAYLIST,
@@ -132,7 +133,6 @@ class Youtube2Zim:
         self.banner_image = banner_image
         self.main_color = main_color
         self.secondary_color = secondary_color
-        
 
         # directory setup
         self.output_dir = Path(output_dir).expanduser().resolve()
@@ -253,14 +253,32 @@ class Youtube2Zim:
             + sorted_playlists[index + 1 :]
         )
 
+    def populate_metadata(self, name, publisher, description, language):
+        metadata = {
+            "Name": name,
+            "publisher": publisher,
+            "description": description,
+            "language": language,
+        }
+        return metadata
+
     def run(self):
         """execute the scraper step by step"""
 
+        creator_obj = Creator(
+            filename=self.output_dir,
+            main_path="home.html",
+        )
+
+        # perform metadata validations
+        metadata = self.populate_metadata(
+            self.name, self.publisher, self.description, self.language
+        )
+        for name, value in metadata.items():
+            creator_obj.validate_metadata(name, value)
+
         self.validate_id()
-
-        # validate dateafter input
         self.validate_dateafter_input()
-
         logger.info(
             f"starting youtube scraper for {self.collection_type}#{self.youtube_id}"
         )
@@ -357,6 +375,7 @@ class Youtube2Zim:
                 illustration="favicon.jpg",
                 title=self.title,
                 description=self.description,
+                long_description=self.long_description,
                 language=self.language,
                 creator=self.creator,
                 publisher="Kiwix",
@@ -804,11 +823,11 @@ class Youtube2Zim:
         )
         self.title = self.title or auto_title or "-"
         self.description = self.description or auto_description or "-"
-        self.long_description = self.long_description or auto_description  or "-"
-        self.description,self.long_description = compute_descriptions(
+        self.long_description = self.long_description or auto_description or "-"
+        self.description, self.long_description = compute_descriptions(
             default_description=auto_description,
             user_description=self.description,
-            user_long_description=self.long_description
+            user_long_description=self.long_description,
         )
         if self.creator is None:
             if self.is_single_channel:
@@ -818,7 +837,6 @@ class Youtube2Zim:
             else:
                 self.creator = _("Youtube Channels")
         self.publisher = self.publisher or "Kiwix"
-
 
         self.tags = self.tags or ["youtube"]
         if "_videos:yes" not in self.tags:
@@ -841,7 +859,7 @@ class Youtube2Zim:
             profile_main, profile_secondary = get_colors(self.profile_path)
             self.main_color = self.main_color or profile_main
             self.secondary_color = self.secondary_color or profile_secondary
-            
+
         convert_image(self.profile_path, self.profile_path, fmt="PNG")
         resize_image(
             self.profile_path,
