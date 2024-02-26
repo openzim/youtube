@@ -25,34 +25,34 @@
 
 body {
     background: #fafafa;
-    font-family: Helvetica, Arial, sans-serif;
+    font-family: "RobotoRegular", Helvetica, Arial, sans-serif;
     font-weight: 400;
     margin-top: 30px;
+    max-width: 100%;
 }
 
 hr {
     margin-top: 25px;
     margin-left: 0;
     text-align: left;
-    width: 480px;
+    width: 100%;
 }
 
 #content {
     margin: 0 auto;
-    width: 480px;
+    width: 100%;
+    max-width: 480px;
     text-align: justify;
     text-justify: inter-word;
-    max-width:100%;
 }
 
 #description {
     font-family: 'RobotoLight';
     color: #333;
-    width: 480px;
+    width: 100%;
     font-size: 18px;
     text-align: justify;
     text-justify: inter-word;
-    max-width:100%;
 }
 
 #description p {
@@ -63,7 +63,6 @@ hr {
     font-family: "RobotoLight";
     font-size: 20px;
     margin: 0;
-    max-width:100%;
 }
 
 #title {
@@ -72,7 +71,6 @@ hr {
     font-size: 30px;
     text-align: left;
     text-justify: none;
-    max-width:100%;
 }
 
 #views {
@@ -106,15 +104,14 @@ hr {
 }
 
 #speaker_desc {
-    width: 480px;
+    width: 100%;
     margin: 0;
     font-family: "RobotoLight";
 }
 
 #date {
     text-align: right;
-    width: 480px;
-    max-width:100%;
+    width: 100%;
 }
 
 #backtolist {
