@@ -4,6 +4,7 @@
 from http import HTTPStatus
 
 import requests
+import multiprocessing
 from dateutil import parser as dt_parser
 from zimscraperlib.download import stream_file
 from zimscraperlib.image.transformation import resize_image
@@ -331,6 +332,14 @@ def extract_playlists_details_from(collection_type, youtube_id):
         uploads_playlist_id,
     )
 
+
+def generate_subs(video):
+    # code here to be added for the subtitles 
+    pass 
+
+def generate_all_subs(videos):
+    with multiprocessing.Pool() as pool: 
+        pool.map(generate_subs, videos)
 
 def main():
     
