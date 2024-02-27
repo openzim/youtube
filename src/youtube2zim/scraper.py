@@ -17,6 +17,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import multiprocessing
 from gettext import gettext as _
 from pathlib import Path
 
@@ -344,20 +345,20 @@ class Youtube2Zim:
                 else f"{self.name}_{period}.zim"
             )
             logger.info("building ZIM file")
-            make_zim_file(
-                build_dir=self.build_dir,
-                fpath=self.output_dir / self.fname,
-                name=self.name,
-                main_page="home.html",
-                favicon="favicon.jpg",
-                title=self.title,
-                description=self.description,
-                language=self.language,
-                creator=self.creator,
-                publisher="Kiwix",
-                tags=self.tags,
-                scraper=SCRAPER,
-            )
+            # make_zim_file(
+            #     build_dir=self.build_dir,
+            #     fpath=self.output_dir / self.fname,
+            #     name=self.name,
+            #     main_page="home.html",
+            #     favicon="favicon.jpg",
+            #     title=self.title,
+            #     description=self.description,
+            #     language=self.language,
+            #     creator=self.creator,
+            #     publisher="Kiwix",
+            #     tags=self.tags,
+            #     scraper=SCRAPER,
+            # )
 
             if not self.keep_build_dir:
                 logger.info("removing temp folder")
@@ -1023,3 +1024,14 @@ class Youtube2Zim:
 
         # clean videos left out in videos directory
         remove_unused_videos(videos)
+        
+        def generate_subs(video):
+            pass
+        
+        def generate_all_subs(videos):
+            with multiprocessing.Pool() as pool:
+            pool.map(generate_subs, videos)
+        
+        
+            
+        

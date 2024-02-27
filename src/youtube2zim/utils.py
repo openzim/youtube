@@ -3,6 +3,7 @@
 
 import json
 from pathlib import Path
+import multiprocessing
 
 import jinja2
 from slugify import slugify
@@ -53,3 +54,21 @@ def render_template(env: jinja2.Environment, template_name: str, **kwargs):
     if not isinstance(html, str):
         raise Exception("Jinja template did not returned a string")
     return html
+
+
+def generate_subtitles(video_id):
+    # this will just generate the subtitles, can change for the speed
+
+    pass
+
+
+def generate_all_subtitles(video_ids):
+    # using multiprocessing, generating all the video id's
+    with multiprocessing.Pool() as pool:
+        pool.map(generate_subtitles, video_ids)
+
+
+if __name__ == "__main__":
+    
+    video_ids = ["v1", "v2", "v3"]
+    generate_all_subtitles(video_ids)
