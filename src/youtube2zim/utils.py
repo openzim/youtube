@@ -4,6 +4,8 @@
 import json
 from pathlib import Path
 import multiprocessing
+import youtube_dl
+import re
 
 import jinja2
 from slugify import slugify
@@ -52,23 +54,38 @@ def render_template(env: jinja2.Environment, template_name: str, **kwargs):
     """render a Jinja template and ensures that result is a string"""
     html = env.get_template(template_name).render(kwargs)
     if not isinstance(html, str):
-        raise Exception("Jinja template did not returned a string")
+        raise Exception("Jinja template did not return a string")
     return html
 
 
 def generate_subtitles(video_id):
     # this will just generate the subtitles, can change for the speed
-
-    pass
+    options = {
+        'writesubtitles': True,
+        'subtitleslang': ['en'],
+        'outtmpl':f'{video_id}.%(ext)s' #ext here is the extension, just to specify the output file name 
+    }
+    with youtube_dl.YoutubeDL(options) as ydl:
+        ydl.download([f'http://www.youtube.com/watch?v={video_id}'])
+    
 
 
 def generate_all_subtitles(video_ids):
     # using multiprocessing, generating all the video id's
     with multiprocessing.Pool() as pool:
         pool.map(generate_subtitles, video_ids)
+        
+def extract_video_id(url):
+    match = re.match(r'^https?://(?:www\.)?youtube\.com/watch\?v=([^\s&]+)', url)
+    if match:
+        return match.group(1)
+    else:
+        raise ValueError("This URL is invalid")
+        
 
 
 if __name__ == "__main__":
     
-    video_ids = ["v1", "v2", "v3"]
+    video_ids = ["https://www.youtube.com/watch?v=4p2HsIAqitg"]
+    video_ids = [extract_video_id(url) for url in video_ids]
     generate_all_subtitles(video_ids)
