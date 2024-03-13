@@ -92,10 +92,10 @@ class Youtube2Zim:
         dateafter,
         use_any_optimized_version,
         s3_url_with_credentials,
+        publisher,
         title=None,
         description=None,
         creator=None,
-        publisher=None,
         name=None,
         profile_image=None,
         banner_image=None,
@@ -354,7 +354,7 @@ class Youtube2Zim:
                 description=self.description,
                 language=self.language,
                 creator=self.creator,
-                publisher="Kiwix",
+                publisher=self.publisher,
                 tags=self.tags,
                 scraper=SCRAPER,
             )
@@ -807,7 +807,6 @@ class Youtube2Zim:
                 )
             else:
                 self.creator = _("Youtube Channels")
-        self.publisher = self.publisher or "Kiwix"
 
         self.tags = self.tags or ["youtube"]
         if "_videos:yes" not in self.tags:
