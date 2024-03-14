@@ -29,14 +29,14 @@ Here comes a few different ways to install `youtube2zim`.
 
 `youtube2zim` is a Python3 software. If you are not using the [Docker](https://docker.com) image,
 you are advised to use it in a [virtualenv](https://virtualenv.pypa.io) to avoid installing software
-dependences on your system. [Hatch](https://hatch.pypa.io/) is the proper tool to create the
+dependencies on your system. [Hatch](https://hatch.pypa.io/) is the proper tool to create the
 virtualenv and install the software locally. Ensure to use proper Python version as well (see
 pyproject.toml).
 
 If you do not already have it on your system, install hatch to build the software and manage virtual
 environments (you might be interested by our detailed
 [Developer Setup](https://github.com/openzim/_python-bootstrap/wiki/Developer-Setup) as well,
-especially regarding how to configure hatch globaly for proper detection of its virtual environments
+especially regarding how to configure hatch globally for proper detection of its virtual environments
 by Visual Studio Code).
 
 ``` bash
@@ -84,11 +84,11 @@ youtube2zim-playlists
 
 `youtube2zim` produces a single ZIM file for a youtube request (`channel`, `user`, `playlist`).
 
-`youtube2zim-playlists` allows you to ** automatically create one ZIM file per playlist** of a given channel or user instead.
+`youtube2zim-playlists` allows you to **automatically create one ZIM file per playlist** of a given channel or user instead.
 
 This script is a wrapper around `youtube2zim` and is bundled with the main package.
 
-The difference between a channel and a user is due to Youtube legacy. Some old users have to be searched as a user, while more recent ones have to be searched as a channel. Try your best bet, and if it fails try the ohter type.
+The difference between a channel and a user is due to Youtube legacy. Some old users have to be searched as a user, while more recent ones have to be searched as a channel. Try your best bet, and if it fails try the other type.
 
 ## Usage
 
