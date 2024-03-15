@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed local path media (profile, banner) not working (#178)
 - Unset `metadata_from` in `youtube2zim-playlists` (#185)
+- Do not move local banner and profile images, copy them instead #179 
 
 ## [2.1.18] - 2022-11-09
 
