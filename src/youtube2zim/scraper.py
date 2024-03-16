@@ -32,9 +32,12 @@ from zimscraperlib.i18n import NotFound, get_language_details, setlocale
 from zimscraperlib.image.presets import WebpHigh
 from zimscraperlib.image.probing import get_colors, is_hex_color
 from zimscraperlib.image.transformation import resize_image
+from zimscraperlib.image.convertion import convert_image
 from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
+from zimscraperlib.inputs import compute_descriptions
 from zimscraperlib.zim import make_zim_file
-
+from zimscraperlib.zim import Creator
+from zimscraperlib.constants import MANDATORY_ZIM_METADATA_KEYS
 from youtube2zim.constants import (
     CHANNEL,
     PLAYLIST,
@@ -95,6 +98,7 @@ class Youtube2Zim:
         publisher,
         title=None,
         description=None,
+        long_description=None,
         creator=None,
         name=None,
         profile_image=None,
@@ -121,6 +125,7 @@ class Youtube2Zim:
         self.tags = [t.strip() for t in tags.split(",")]
         self.title = title
         self.description = description
+        self.long_description = long_description
         self.creator = creator
         self.publisher = publisher
         self.name = name
@@ -248,14 +253,32 @@ class Youtube2Zim:
             + sorted_playlists[index + 1 :]
         )
 
+    def populate_metadata(self, name, publisher, description, language):
+        metadata = {
+            "Name": name,
+            "publisher": publisher,
+            "description": description,
+            "language": language,
+        }
+        return metadata
+
     def run(self):
         """execute the scraper step by step"""
 
+        creator_obj = Creator(
+            filename=self.output_dir,
+            main_path="home.html",
+        )
+
+        # perform metadata validations
+        metadata = self.populate_metadata(
+            self.name, self.publisher, self.description, self.language
+        )
+        for name, value in metadata.items():
+            creator_obj.validate_metadata(name, value)
+
         self.validate_id()
-
-        # validate dateafter input
         self.validate_dateafter_input()
-
         logger.info(
             f"starting youtube scraper for {self.collection_type}#{self.youtube_id}"
         )
@@ -349,9 +372,10 @@ class Youtube2Zim:
                 fpath=self.output_dir / self.fname,
                 name=self.name,
                 main_page="home.html",
-                favicon="favicon.jpg",
+                illustration="favicon.jpg",
                 title=self.title,
                 description=self.description,
+                long_description=self.long_description,
                 language=self.language,
                 creator=self.creator,
                 publisher=self.publisher,
@@ -799,7 +823,12 @@ class Youtube2Zim:
         )
         self.title = self.title or auto_title or "-"
         self.description = self.description or auto_description or "-"
-
+        self.long_description = self.long_description or auto_description or "-"
+        self.description, self.long_description = compute_descriptions(
+            default_description=auto_description,
+            user_description=self.description,
+            user_long_description=self.long_description,
+        )
         if self.creator is None:
             if self.is_single_channel:
                 self.creator = _("Youtube Channel “{title}”").format(
@@ -830,12 +859,13 @@ class Youtube2Zim:
             self.main_color = self.main_color or profile_main
             self.secondary_color = self.secondary_color or profile_secondary
 
+        convert_image(self.profile_path, self.profile_path, fmt="PNG")
         resize_image(
             self.profile_path,
             width=48,
             height=48,
             method="thumbnail",
-            dst=self.build_dir.joinpath("favicon.jpg"),
+            dst=self.build_dir.joinpath("favicon.png"),
         )
 
     def make_html_files(self, actual_videos_ids):

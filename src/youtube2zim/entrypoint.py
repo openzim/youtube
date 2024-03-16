@@ -124,6 +124,11 @@ def main():
     )
 
     parser.add_argument(
+        "--long-description",
+        help="Custom long description for your ZIM, optional",
+    )
+
+    parser.add_argument(
         "--creator",
         help="Name of content creator. Defaults to Channel name or “Youtue Channels”",
     )
