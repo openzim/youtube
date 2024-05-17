@@ -7,9 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- New `long_description` CLI argument to set the ZIM long description
+- New `disable_metadata_check` CLI argument to disable the metadata checks which are automated since zimscraperlib 3.x
+
 ### Changed
 
 - Changed default publisher metadata to 'openZIM'
+- Validate ZIM metadata (tags, title, description, long_description) as early as possible
+- Migrate to zimscraperlib 3.3.2
+- Upgrade Python dependencies, including migration to Python 3.12
 
 ## [2.2.0] - 2023-11-17
 
@@ -23,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed local path media (profile, banner) not working (#178)
 - Unset `metadata_from` in `youtube2zim-playlists` (#185)
-- Do not move local banner and profile images, copy them instead #179 
+- Do not move local banner and profile images, copy them instead #179
 
 ## [2.1.18] - 2022-11-09
 
