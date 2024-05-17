@@ -29,11 +29,19 @@ from pif import get_public_ip
 from zimscraperlib.download import stream_file
 from zimscraperlib.fix_ogvjs_dist import fix_source_dir
 from zimscraperlib.i18n import NotFound, get_language_details, setlocale
+from zimscraperlib.image.convertion import convert_image
 from zimscraperlib.image.presets import WebpHigh
 from zimscraperlib.image.probing import get_colors, is_hex_color
 from zimscraperlib.image.transformation import resize_image
+from zimscraperlib.inputs import compute_descriptions
 from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
 from zimscraperlib.zim import make_zim_file
+from zimscraperlib.zim.metadata import (
+    validate_description,
+    validate_longdescription,
+    validate_tags,
+    validate_title,
+)
 
 from youtube2zim.constants import (
     CHANNEL,
@@ -93,8 +101,10 @@ class Youtube2Zim:
         use_any_optimized_version,
         s3_url_with_credentials,
         publisher,
+        disable_metadata_checks,
         title=None,
         description=None,
+        long_description=None,
         creator=None,
         name=None,
         profile_image=None,
@@ -121,6 +131,7 @@ class Youtube2Zim:
         self.tags = [t.strip() for t in tags.split(",")]
         self.title = title
         self.description = description
+        self.long_description = long_description
         self.creator = creator
         self.publisher = publisher
         self.name = name
@@ -128,6 +139,18 @@ class Youtube2Zim:
         self.banner_image = banner_image
         self.main_color = main_color
         self.secondary_color = secondary_color
+        self.disable_metadata_checks = disable_metadata_checks
+
+        if not self.disable_metadata_checks:
+            # Validate ZIM metadata early so that we do not waste time doing operations
+            # for a scraper which will fail anyway in the end
+            validate_tags("Tags", self.tags)
+            if self.title:
+                validate_title("Title", self.title)
+            if self.description:
+                validate_description("Description", self.description)
+            if self.long_description:
+                validate_longdescription("LongDescription", self.long_description)
 
         # directory setup
         self.output_dir = Path(output_dir).expanduser().resolve()
@@ -349,14 +372,16 @@ class Youtube2Zim:
                 fpath=self.output_dir / self.fname,
                 name=self.name,
                 main_page="home.html",
-                favicon="favicon.jpg",
+                illustration="favicon.png",
                 title=self.title,
                 description=self.description,
+                long_description=self.long_description,  # pyright: ignore[reportArgumentType]
                 language=self.language,
                 creator=self.creator,
                 publisher=self.publisher,
                 tags=self.tags,
                 scraper=SCRAPER,
+                disable_metadata_checks=self.disable_metadata_checks,
             )
 
             if not self.keep_build_dir:
@@ -796,9 +821,13 @@ class Youtube2Zim:
             clean_text(self.playlists[0].description)
             if self.is_playlist and len(self.playlists) == 1
             else clean_text(main_channel_json["snippet"]["description"])
-        )
+        ) or "-"
         self.title = self.title or auto_title or "-"
-        self.description = self.description or auto_description or "-"
+        self.description, self.long_description = compute_descriptions(
+            default_description=auto_description,
+            user_description=self.description,
+            user_long_description=self.long_description,
+        )
 
         if self.creator is None:
             if self.is_single_channel:
@@ -830,12 +859,16 @@ class Youtube2Zim:
             self.main_color = self.main_color or profile_main
             self.secondary_color = self.secondary_color or profile_secondary
 
+        # convert profile image to png for favicon
+        png_profile_path = self.build_dir.joinpath("profile.png")
+        convert_image(self.profile_path, png_profile_path)
+
         resize_image(
-            self.profile_path,
+            png_profile_path,
             width=48,
             height=48,
             method="thumbnail",
-            dst=self.build_dir.joinpath("favicon.jpg"),
+            dst=self.build_dir.joinpath("favicon.png"),
         )
 
     def make_html_files(self, actual_videos_ids):
