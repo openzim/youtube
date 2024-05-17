@@ -72,6 +72,14 @@ def main():
         version=SCRAPER,
     )
 
+    parser.add_argument(
+        "--disable-metadata-checks",
+        help="Disable validity checks of metadata according to openZIM conventions",
+        action="store_true",
+        default=False,
+        dest="disable_metadata_checks",
+    )
+
     args, extra_args = parser.parse_known_args()
 
     # prevent setting --title and --description

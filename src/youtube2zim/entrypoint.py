@@ -5,14 +5,7 @@ import argparse
 import logging
 import sys
 
-from youtube2zim.constants import (
-    CHANNEL,
-    NAME,
-    PLAYLIST,
-    SCRAPER,
-    USER,
-    logger,
-)
+from youtube2zim.constants import CHANNEL, NAME, PLAYLIST, SCRAPER, USER, logger
 from youtube2zim.scraper import Youtube2Zim
 
 
@@ -124,6 +117,11 @@ def main():
     )
 
     parser.add_argument(
+        "--long-description",
+        help="Custom long description for your ZIM.",
+    )
+
+    parser.add_argument(
         "--creator",
         help="Name of content creator. Defaults to Channel name or “Youtue Channels”",
     )
@@ -189,6 +187,13 @@ def main():
         help="Display scraper version and exit",
         action="version",
         version=SCRAPER,
+    )
+
+    parser.add_argument(
+        "--disable-metadata-checks",
+        help="Disable validity checks of metadata according to openZIM conventions",
+        action="store_true",
+        default=False,
     )
 
     parser.add_argument(
