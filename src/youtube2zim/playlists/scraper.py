@@ -139,7 +139,7 @@ class YoutubeHandler:
             args.append("--debug")
 
         if self.disable_metadata_checks:
-            args.append("--disable-metadatachecks")
+            args.append("--disable-metadata-checks")
 
         # set metadata args for playlist
         metadata = self.metadata.get(playlist_id, {})
@@ -192,7 +192,7 @@ class YoutubeHandler:
             args.append("--debug")
 
         if self.disable_metadata_checks:
-            args.append("--disable-metadatachecks")
+            args.append("--disable-metadata-checks")
 
         return subprocess.run(args).returncode  # noqa: PLW1510
 
