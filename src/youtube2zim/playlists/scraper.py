@@ -148,6 +148,7 @@ class YoutubeHandler:
             "zim-file",
             "title",
             "description",
+            "long-description",
             "tags",
             "creator",
             "profile",
