@@ -1,0 +1,44 @@
+[files.assets.config]
+target_dir="src/youtube2zim/templates/assets"
+execute_after=[
+    "fix_ogvjs_dist .",
+]
+
+[files.assets.actions."video.js"]
+action="extract_all"
+source="https://github.com/videojs/video.js/releases/download/v8.6.1/video-js-8.6.1.zip"
+target_dir="videojs"
+remove = ["alt","examples",]
+
+[files.assets.actions."chosen.jquery.js"]
+action="extract_all"
+source="https://github.com/harvesthq/chosen/releases/download/v1.8.7/chosen_v1.8.7.zip"
+target_dir="chosen"
+remove = ["docsupport","chosen.proto.*","*.html","*.md"]
+
+[files.assets.actions."jquery.min.js"]
+action="get_file"
+source="https://code.jquery.com/jquery-1.12.4.min.js"
+target_file="jquery.min.js"
+
+[files.assets.actions."ogv.js"]
+action="extract_items"
+source="https://github.com/brion/ogv.js/releases/download/1.8.9/ogvjs-1.8.9.zip"
+zip_paths=["ogvjs-1.8.9"]
+target_paths=["ogvjs"]
+remove = ["ogvjs/COPYING","ogvjs/*.txt","ogvjs/*.md",]
+
+[files.assets.actions."videojs-ogvjs.js"]
+action="get_file"
+source="https://dev.kiwix.org/videojs-ogvjs/videojs-ogvjs.min.js"
+target_file="videojs-ogvjs.js"
+
+[files.assets.actions."webp-hero.polyfills.js"]
+action="get_file"
+source="https://unpkg.com/webp-hero@0.0.2/dist-cjs/polyfills.js"
+target_file="polyfills.js"
+
+[files.assets.actions."webp-hero.bundle.js"]
+action="get_file"
+source="https://unpkg.com/webp-hero@0.0.2/dist-cjs/webp-hero.bundle.js"
+target_file="webp-hero.bundle.js"

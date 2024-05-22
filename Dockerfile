@@ -1,4 +1,4 @@
-FROM python:3.10-bookworm
+FROM python:3.12-bookworm
 LABEL org.opencontainers.image.source https://github.com/openzim/youtube
 
 # Install necessary packages
@@ -20,7 +20,7 @@ RUN mkdir -p /output
 WORKDIR /output
 
 # Copy pyproject.toml and its dependencies
-COPY pyproject.toml README.md get_js_deps.sh hatch_build.py /src/
+COPY pyproject.toml README.md openzim.toml /src/
 COPY src/youtube2zim/__about__.py /src/src/youtube2zim/__about__.py
 
 # Install Python dependencies

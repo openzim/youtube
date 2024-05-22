@@ -38,6 +38,7 @@ class YoutubeHandler:
         # extract values from options
         self.api_key = options["api_key"]
         self.debug = options["debug"]
+        self.disable_metadata_checks = options["disable_metadata_checks"]
         self.playlists_mode = options["playlists_mode"]
         self.collection_type = options["collection_type"]
         self.youtube_id = options["youtube_id"]
@@ -137,6 +138,9 @@ class YoutubeHandler:
         if self.debug:
             args.append("--debug")
 
+        if self.disable_metadata_checks:
+            args.append("--disable-metadata-checks")
+
         # set metadata args for playlist
         metadata = self.metadata.get(playlist_id, {})
         for key in (
@@ -144,6 +148,7 @@ class YoutubeHandler:
             "zim-file",
             "title",
             "description",
+            "long-description",
             "tags",
             "creator",
             "profile",
@@ -185,6 +190,10 @@ class YoutubeHandler:
         ]
         if self.debug:
             args.append("--debug")
+
+        if self.disable_metadata_checks:
+            args.append("--disable-metadata-checks")
+
         return subprocess.run(args).returncode  # noqa: PLW1510
 
     @staticmethod

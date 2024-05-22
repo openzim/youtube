@@ -58,6 +58,10 @@ def main():
         help="Custom description format for individual playlist ZIM",
     )
     parser.add_argument(
+        "--playlists-long-description",
+        help="Custom long description for individual playlist ZIM.",
+    )
+    parser.add_argument(
         "--metadata-from",
         help="File path or URL to a JSON file holding custom metadata "
         "for individual playlists. Format in README",
@@ -72,10 +76,18 @@ def main():
         version=SCRAPER,
     )
 
+    parser.add_argument(
+        "--disable-metadata-checks",
+        help="Disable validity checks of metadata according to openZIM conventions",
+        action="store_true",
+        default=False,
+        dest="disable_metadata_checks",
+    )
+
     args, extra_args = parser.parse_known_args()
 
     # prevent setting --title and --description
-    for arg in ("name", "title", "description", "zim-file"):
+    for arg in ("name", "title", "description", "long-description", "zim-file"):
         if args.playlists_mode and has_argument(arg, extra_args):
             parser.error(
                 f"Can't use --{arg} in playlists mode. "
