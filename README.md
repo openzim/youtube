@@ -14,6 +14,10 @@ recompress them in lower-quality, smaller size), the thumbnails, the
 subtitles and the authors' profile pictures ; then, it create a static
 HTML files folder of it before creating a ZIM off of it.
 
+This project adheres to openZIM's Contribution Guidelines.
+
+This project has implemented openZIM's Python bootstrap, conventions and policies v1.0.1.
+
 Requirements
 ------------
 
