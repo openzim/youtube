@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Move scraper files to `scraper` subfolder and update workflows
+
 ## [2.3.0] - 2024-05-22
 
 ### Added

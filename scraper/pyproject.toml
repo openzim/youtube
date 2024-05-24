@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "youtube2zim"
 requires-python = ">=3.12,<3.13"
 description = "Make ZIM file from a Youtube channel, user or playlist(s)"
-readme = "README.md"
+readme = "../README.md"
 dependencies = [
   "python-slugify==3.0.3",
   "yt-dlp",                      # youtube-dl should be updated as frequently as possible

@@ -14,24 +14,25 @@ RUN apt-get update \
       pip
 
 # Custom entrypoint
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY scraper/entrypoint.sh /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["entrypoint.sh"]
 RUN mkdir -p /output
 WORKDIR /output
 
 # Copy pyproject.toml and its dependencies
-COPY pyproject.toml README.md openzim.toml /src/
-COPY src/youtube2zim/__about__.py /src/src/youtube2zim/__about__.py
+COPY README.md /src/
+COPY scraper/pyproject.toml scraper/openzim.toml /src/scraper/
+COPY scraper/src/youtube2zim/__about__.py /src/scraper/src/youtube2zim/__about__.py
 
 # Install Python dependencies
-RUN pip install --no-cache-dir /src
+RUN pip install --no-cache-dir /src/scraper
 
 # Copy code + associated artifacts
-COPY src /src/src
+COPY scraper/src /src/scraper/src
 COPY *.md LICENSE CHANGELOG /src/
 
 # Install + cleanup
-RUN pip install --no-cache-dir /src \
- && rm -rf /src
+RUN pip install --no-cache-dir /src/scraper \
+ && rm -rf /src/scraper
 
 CMD ["youtube2zim", "--help"]
