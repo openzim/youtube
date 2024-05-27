@@ -1,3 +1,10 @@
+FROM node:20-alpine as zimui
+
+WORKDIR /src
+COPY zimui /src
+RUN yarn install --frozen-lockfile
+RUN yarn build
+
 FROM python:3.12-bookworm
 LABEL org.opencontainers.image.source https://github.com/openzim/youtube
 
@@ -34,5 +41,10 @@ COPY *.md LICENSE CHANGELOG /src/
 # Install + cleanup
 RUN pip install --no-cache-dir /src/scraper \
  && rm -rf /src/scraper
+
+# Copy zimui build output
+COPY --from=zimui /src/dist /src/zimui
+
+ENV KOLIBRI_ZIMUI_DIST=/src/zimui
 
 CMD ["youtube2zim", "--help"]

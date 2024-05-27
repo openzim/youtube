@@ -51,6 +51,25 @@ jobs:
           pip install -U pip build
           python3 -m build --sdist --wheel
 
+  build-zimui:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: zimui/.node-version
+
+      - name: Install dependencies
+        working-directory: zimui
+        run: |
+          yarn install
+      - name: Build
+        working-directory: zimui
+        run: |
+          yarn build
+
   build-docker:
     runs-on: ubuntu-22.04
     steps:

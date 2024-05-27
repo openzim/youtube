@@ -3,6 +3,7 @@
 
 import argparse
 import logging
+import os
 import sys
 
 from youtube2zim.constants import CHANNEL, NAME, PLAYLIST, SCRAPER, USER, logger
@@ -84,6 +85,15 @@ def main():
         help="Don't produce a ZIM file, create HTML folder only.",
         action="store_true",
         default=False,
+    )
+
+    parser.add_argument(
+        "--zimui-dist",
+        type=str,
+        help=(
+            "Directory containing Vite build output from the Zim UI Vue.JS application"
+        ),
+        default=os.getenv("KOLIBRI_ZIMUI_DIST", "../zimui/dist"),
     )
 
     parser.add_argument(

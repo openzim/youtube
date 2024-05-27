@@ -36,3 +36,27 @@ jobs:
       - name: Check pyright
         working-directory: scraper
         run: inv check-pyright
+
+  check-zimui-qa:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: zimui/.node-version
+
+      - name: Install JS dependencies
+        working-directory: zimui
+        run: |
+          yarn install
+      - name: Check prettier
+        working-directory: zimui
+        run: |
+          yarn format
+      - name: Check eslint
+        working-directory: zimui
+        run: |
+          yarn lint
