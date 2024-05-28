@@ -10,15 +10,15 @@ LABEL org.opencontainers.image.source https://github.com/openzim/youtube
 
 # Install necessary packages
 RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-      locales-all \
-      wget \
-      unzip \
-      ffmpeg \
-      aria2 \
- && rm -rf /var/lib/apt/lists/* \
- && python -m pip install --no-cache-dir -U \
-      pip
+     && apt-get install -y --no-install-recommends \
+     locales-all \
+     wget \
+     unzip \
+     ffmpeg \
+     aria2 \
+     && rm -rf /var/lib/apt/lists/* \
+     && python -m pip install --no-cache-dir -U \
+     pip
 
 # Custom entrypoint
 COPY scraper/entrypoint.sh /usr/local/bin/entrypoint.sh
@@ -45,6 +45,6 @@ RUN pip install --no-cache-dir /src/scraper \
 # Copy zimui build output
 COPY --from=zimui /src/dist /src/zimui
 
-ENV KOLIBRI_ZIMUI_DIST=/src/zimui
+ENV YOUTUBE_ZIMUI_DIST=/src/zimui
 
 CMD ["youtube2zim", "--help"]

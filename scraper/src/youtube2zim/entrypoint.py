@@ -93,7 +93,7 @@ def main():
         help=(
             "Directory containing Vite build output from the Zim UI Vue.JS application"
         ),
-        default=os.getenv("KOLIBRI_ZIMUI_DIST", "../zimui/dist"),
+        default=os.getenv("YOUTUBE_ZIMUI_DIST", "../zimui/dist"),
     )
 
     parser.add_argument(
