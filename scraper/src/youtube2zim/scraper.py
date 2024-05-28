@@ -35,7 +35,7 @@ from zimscraperlib.image.probing import get_colors, is_hex_color
 from zimscraperlib.image.transformation import resize_image
 from zimscraperlib.inputs import compute_descriptions
 from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
-from zimscraperlib.zim import make_zim_file
+from zimscraperlib.zim import Creator
 from zimscraperlib.zim.metadata import (
     validate_description,
     validate_longdescription,
@@ -66,7 +66,7 @@ from youtube2zim.youtube import (
     credentials_ok,
     extract_playlists_details_from,
     get_channel_json,
-    get_videos_authors_info,
+    # get_videos_authors_info,
     get_videos_json,
     save_channel_branding,
     skip_deleted_videos,
@@ -88,6 +88,7 @@ class Youtube2Zim:
         all_subtitles,
         autoplay,
         output_dir,
+        zimui_dist,
         no_zim,
         fname,
         debug,
@@ -158,6 +159,7 @@ class Youtube2Zim:
             tmp_dir = Path(tmp_dir).expanduser().resolve()
             tmp_dir.mkdir(parents=True, exist_ok=True)
         self.build_dir = Path(tempfile.mkdtemp(dir=tmp_dir))
+        self.zimui_dist = Path(zimui_dist)
 
         # process-related
         self.playlists = []
@@ -315,39 +317,42 @@ class Youtube2Zim:
             )
         logger.info(f"{nb_videos_msg}.")
 
+        # Commented out for now,
+        # but we have to rework this part to work with the new vuejs zimui
+
         # download videos (and recompress)
-        logger.info(
-            "downloading all videos, subtitles and thumbnails "
-            f"(concurrency={self.max_concurrency})"
-        )
-        logger.info(f"  format: {self.video_format}")
-        logger.info(f"  quality: {self.video_quality}")
-        logger.info(f"  generated-subtitles: {self.all_subtitles}")
-        if self.s3_storage:
-            logger.info(
-                f"  using cache: {self.s3_storage.url.netloc} "
-                f"with bucket: {self.s3_storage.bucket_name}"
-            )
-        succeeded, failed = self.download_video_files(
-            max_concurrency=self.max_concurrency
-        )
-        if failed:
-            logger.error(f"{len(failed)} video(s) failed to download: {failed}")
-            if len(failed) >= len(succeeded):
-                logger.critical("More than half of videos failed. exiting")
-                raise OSError("Too much videos failed to download")
+        # logger.info(
+        #     "downloading all videos, subtitles and thumbnails "
+        #     f"(concurrency={self.max_concurrency})"
+        # )
+        # logger.info(f"  format: {self.video_format}")
+        # logger.info(f"  quality: {self.video_quality}")
+        # logger.info(f"  generated-subtitles: {self.all_subtitles}")
+        # if self.s3_storage:
+        #     logger.info(
+        #         f"  using cache: {self.s3_storage.url.netloc} "
+        #         f"with bucket: {self.s3_storage.bucket_name}"
+        #     )
+        # succeeded, failed = self.download_video_files(
+        #     max_concurrency=self.max_concurrency
+        # )
+        # if failed:
+        #     logger.error(f"{len(failed)} video(s) failed to download: {failed}")
+        #     if len(failed) >= len(succeeded):
+        #         logger.critical("More than half of videos failed. exiting")
+        #         raise OSError("Too much videos failed to download")
 
-        logger.info("retrieve channel-info for all videos (author details)")
-        get_videos_authors_info(succeeded)
+        # logger.info("retrieve channel-info for all videos (author details)")
+        # get_videos_authors_info(succeeded)
 
-        logger.info("download all author's profile pictures")
-        self.download_authors_branding()
+        # logger.info("download all author's profile pictures")
+        # self.download_authors_branding()
 
         logger.info("update general metadata")
         self.update_metadata()
 
-        logger.info("creating HTML files")
-        self.make_html_files(succeeded)
+        # logger.info("creating HTML files")
+        # self.make_html_files(succeeded)
 
         # make zim file
         os.makedirs(self.output_dir, exist_ok=True)
@@ -366,29 +371,77 @@ class Youtube2Zim:
                 if self.fname
                 else f"{self.name}_{period}.zim"
             )
+
+            # check that build_dir is correct
+            if not self.build_dir.exists() or not self.build_dir.is_dir():
+                raise OSError(f"Incorrect build_dir: {self.build_dir}")
+
+            # check that illustration is correct
+            illustration = "favicon.png"
+            illustration_path = self.build_dir / illustration
+            if not illustration_path.exists() or not illustration_path.is_file():
+                raise OSError(
+                    f"Incorrect illustration: {illustration} ({illustration_path})"
+                )
+            with open(illustration_path, "rb") as fh:
+                illustration_data = fh.read()
+
             logger.info("building ZIM file")
-            make_zim_file(
-                build_dir=self.build_dir,
-                fpath=self.output_dir / self.fname,
-                name=self.name,
-                main_page="home.html",
-                illustration="favicon.png",
-                title=self.title,
-                description=self.description,
-                long_description=self.long_description,  # pyright: ignore[reportArgumentType]
-                language=self.language,
-                creator=self.creator,
-                publisher=self.publisher,
-                tags=self.tags,
-                scraper=SCRAPER,
+            self.zim_file = Creator(
+                filename=self.output_dir / self.fname,
+                main_path="index.html",
+                ignore_duplicates=True,
                 disable_metadata_checks=self.disable_metadata_checks,
             )
+            self.zim_file.config_metadata(
+                Name=self.name,  # pyright: ignore[reportArgumentType]
+                Language=self.language,  # pyright: ignore[reportArgumentType]
+                Title=self.title,
+                Description=self.description,
+                LongDescription=self.long_description,
+                Creator=self.creator,
+                Publisher=self.publisher,
+                tags=";".join(self.tags) if self.tags else "",
+                scraper=SCRAPER,
+                Date=datetime.date.today(),
+                Illustration_48x48_at_1=illustration_data,
+            )
+            self.zim_file.start()
+
+            try:
+                logger.debug(f"Preparing zimfile at {self.zim_file.filename}")
+                logger.debug(f"Recursively adding files from {self.build_dir}")
+                self.add_zimui()
+            except KeyboardInterrupt:
+                self.zim_file.can_finish = False
+                logger.error("KeyboardInterrupt, exiting.")
+            except Exception as exc:
+                # request Creator not to create a ZIM file on finish
+                self.zim_file.can_finish = False
+                logger.error(f"Interrupting process due to error: {exc}")
+                logger.exception(exc)
+            finally:
+                logger.info("Finishing ZIM file…")
+                self.zim_file.finish()
 
             if not self.keep_build_dir:
                 logger.info("removing temp folder")
                 shutil.rmtree(self.build_dir, ignore_errors=True)
 
         logger.info("all done!")
+
+    def add_zimui(self):
+        logger.info(f"Adding files in {self.zimui_dist}")
+        for file in self.zimui_dist.rglob("*"):
+            if file.is_dir():
+                continue
+            path = str(Path(file).relative_to(self.zimui_dist))
+            logger.debug(f"Adding {path} to ZIM")
+            self.zim_file.add_item_for(
+                path,
+                fpath=file,
+                is_front=path == "index.html",
+            )
 
     def s3_credentials_ok(self):
         logger.info("testing S3 Optimization Cache credentials")

@@ -6,6 +6,8 @@ Youtube2zim
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![PyPI version shields.io](https://img.shields.io/pypi/v/youtube2zim.svg)](https://pypi.org/project/youtube2zim/)
 
+`⚠️ Disclaimer:` The main branch is currently unstable as the scraper is undergoing significant rework for the 3.0 release. If an important patch needs to be applied before the v3 release, please refer to the [v2](https://github.com/openzim/youtube/tree/v2) branch.
+
 `youtube2zim` allows you to create a [ZIM file](https://openzim.org)
 from a Youtube Channel/Username or one-or-more Playlists.
 
@@ -50,6 +52,7 @@ pip3 install hatch
 Start a hatch shell: this will install software including dependencies in an isolated virtual environment.
 
 ``` bash
+cd scraper
 hatch shell
 ```
 

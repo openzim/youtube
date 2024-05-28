@@ -43,7 +43,7 @@ class Playlist:
             creator_name=playlist_json["snippet"]["channelTitle"],
         )
 
-    def __dict__(self):
+    def to_dict(self):
         return {
             "playlist_id": self.playlist_id,
             "title": self.title,

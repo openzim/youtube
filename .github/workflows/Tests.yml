@@ -16,15 +16,17 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version-file: pyproject.toml
+          python-version-file: scraper/pyproject.toml
           architecture: x64
 
       - name: Install dependencies (and project)
+        working-directory: scraper
         run: |
           pip install -U pip
           pip install -e .[test,scripts]
 
       - name: Run the tests
+        working-directory: scraper
         run: inv coverage --args "-vvv"
 
       - name: Upload coverage report to codecov
@@ -40,13 +42,33 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version-file: pyproject.toml
+          python-version-file: scraper/pyproject.toml
           architecture: x64
 
       - name: Ensure we can build Python targets
+        working-directory: scraper
         run: |
           pip install -U pip build
           python3 -m build --sdist --wheel
+
+  build-zimui:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: zimui/.node-version
+
+      - name: Install dependencies
+        working-directory: zimui
+        run: |
+          yarn install
+      - name: Build
+        working-directory: zimui
+        run: |
+          yarn build
 
   build-docker:
     runs-on: ubuntu-22.04
