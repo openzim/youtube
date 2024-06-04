@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Move scraper files to `scraper` subfolder and update workflows
 - Bump `requests` package from 2.32.0 to 2.32.2
 - Initialize new Vue.js project in `zimui` subfolder
+- Update dependencies in pyproject.toml (pydantic, pyhumps, python-slugify)
+- Update scraper to generate JSON files for `zimui` (#212)
 
 ## [2.3.0] - 2024-05-22
 
