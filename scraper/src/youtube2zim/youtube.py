@@ -24,12 +24,21 @@ REQUEST_TIMEOUT = 60
 
 
 class Playlist:
-    def __init__(self, playlist_id, title, description, creator_id, creator_name):
+    def __init__(
+        self,
+        playlist_id,
+        title,
+        description,
+        creator_id,
+        creator_name,
+        published_at=None,
+    ):
         self.playlist_id = playlist_id
         self.title = title
         self.description = description
         self.creator_id = creator_id
         self.creator_name = creator_name
+        self.published_at = published_at
         self.slug = get_slug(title, js_safe=True)
 
     @classmethod
@@ -41,6 +50,7 @@ class Playlist:
             description=playlist_json["snippet"]["description"],
             creator_id=playlist_json["snippet"]["channelId"],
             creator_name=playlist_json["snippet"]["channelTitle"],
+            published_at=playlist_json["snippet"]["publishedAt"],
         )
 
     def to_dict(self):
@@ -221,7 +231,7 @@ def get_videos_authors_info(videos_ids):
                 VIDEOS_API,
                 params={
                     "id": ",".join(videos_ids),
-                    "part": "snippet",
+                    "part": "snippet,contentDetails",
                     "key": YOUTUBE.api_key,
                     "maxResults": RESULTS_PER_PAGE,
                     "pageToken": page_token,
@@ -238,6 +248,7 @@ def get_videos_authors_info(videos_ids):
                         item["id"]: {
                             "channelId": item["snippet"]["channelId"],
                             "channelTitle": item["snippet"]["channelTitle"],
+                            "duration": item["contentDetails"]["duration"],
                         }
                     }
                 )

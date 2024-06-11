@@ -10,7 +10,6 @@
 import concurrent.futures
 import datetime
 import functools
-import json
 import locale
 import os
 import re
@@ -20,10 +19,7 @@ import tempfile
 from gettext import gettext as _
 from pathlib import Path
 
-import jinja2
 import yt_dlp
-from babel.dates import format_date
-from dateutil import parser as dt_parser
 from kiwixstorage import KiwixStorage
 from pif import get_public_ip
 from zimscraperlib.download import stream_file
@@ -36,6 +32,7 @@ from zimscraperlib.image.transformation import resize_image
 from zimscraperlib.inputs import compute_descriptions
 from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
 from zimscraperlib.zim import Creator
+from zimscraperlib.zim.filesystem import FileItem
 from zimscraperlib.zim.metadata import (
     validate_description,
     validate_longdescription,
@@ -54,19 +51,28 @@ from youtube2zim.constants import (
     logger,
 )
 from youtube2zim.processing import post_process_video, process_thumbnail
+from youtube2zim.schemas import (
+    Author,
+    Channel,
+    Playlist,
+    PlaylistPreview,
+    Playlists,
+    Subtitle,
+    Video,
+    VideoPreview,
+)
 from youtube2zim.utils import (
     clean_text,
     get_slug,
     load_json,
     load_mandatory_json,
-    render_template,
     save_json,
 )
 from youtube2zim.youtube import (
     credentials_ok,
     extract_playlists_details_from,
     get_channel_json,
-    # get_videos_authors_info,
+    get_videos_authors_info,
     get_videos_json,
     save_channel_branding,
     skip_deleted_videos,
@@ -317,42 +323,36 @@ class Youtube2Zim:
             )
         logger.info(f"{nb_videos_msg}.")
 
-        # Commented out for now,
-        # but we have to rework this part to work with the new vuejs zimui
-
         # download videos (and recompress)
-        # logger.info(
-        #     "downloading all videos, subtitles and thumbnails "
-        #     f"(concurrency={self.max_concurrency})"
-        # )
-        # logger.info(f"  format: {self.video_format}")
-        # logger.info(f"  quality: {self.video_quality}")
-        # logger.info(f"  generated-subtitles: {self.all_subtitles}")
-        # if self.s3_storage:
-        #     logger.info(
-        #         f"  using cache: {self.s3_storage.url.netloc} "
-        #         f"with bucket: {self.s3_storage.bucket_name}"
-        #     )
-        # succeeded, failed = self.download_video_files(
-        #     max_concurrency=self.max_concurrency
-        # )
-        # if failed:
-        #     logger.error(f"{len(failed)} video(s) failed to download: {failed}")
-        #     if len(failed) >= len(succeeded):
-        #         logger.critical("More than half of videos failed. exiting")
-        #         raise OSError("Too much videos failed to download")
+        logger.info(
+            "downloading all videos, subtitles and thumbnails "
+            f"(concurrency={self.max_concurrency})"
+        )
+        logger.info(f"  format: {self.video_format}")
+        logger.info(f"  quality: {self.video_quality}")
+        logger.info(f"  generated-subtitles: {self.all_subtitles}")
+        if self.s3_storage:
+            logger.info(
+                f"  using cache: {self.s3_storage.url.netloc} "
+                f"with bucket: {self.s3_storage.bucket_name}"
+            )
+        succeeded, failed = self.download_video_files(
+            max_concurrency=self.max_concurrency
+        )
+        if failed:
+            logger.error(f"{len(failed)} video(s) failed to download: {failed}")
+            if len(failed) >= len(succeeded):
+                logger.critical("More than half of videos failed. exiting")
+                raise OSError("Too much videos failed to download")
 
-        # logger.info("retrieve channel-info for all videos (author details)")
-        # get_videos_authors_info(succeeded)
+        logger.info("retrieve channel-info for all videos (author details)")
+        get_videos_authors_info(succeeded)
 
-        # logger.info("download all author's profile pictures")
-        # self.download_authors_branding()
+        logger.info("download all author's profile pictures")
+        self.download_authors_branding()
 
         logger.info("update general metadata")
         self.update_metadata()
-
-        # logger.info("creating HTML files")
-        # self.make_html_files(succeeded)
 
         # make zim file
         os.makedirs(self.output_dir, exist_ok=True)
@@ -412,6 +412,12 @@ class Youtube2Zim:
                 logger.debug(f"Preparing zimfile at {self.zim_file.filename}")
                 logger.debug(f"Recursively adding files from {self.build_dir}")
                 self.add_zimui()
+
+                logger.info("creating JSON files")
+                self.make_json_files(succeeded)
+
+                logger.info("Adding files to ZIM")
+                self.add_files_to_zim(self.build_dir, self.zim_file)
             except KeyboardInterrupt:
                 self.zim_file.can_finish = False
                 logger.error("KeyboardInterrupt, exiting.")
@@ -923,18 +929,10 @@ class Youtube2Zim:
             method="thumbnail",
             dst=self.build_dir.joinpath("favicon.png"),
         )
+        png_profile_path.unlink()
 
-    def make_html_files(self, actual_videos_ids):
-        """make up HTML structure to read the content
-
-        /home.html                                  Homepage
-
-        for each video:
-            - <slug-title>.html                     HTML article
-            - videos/<videoId>/video.<ext>          video file
-            - videos/<videoId>/video.<lang>.vtt     subtititle(s)
-            - videos/<videoId>/video.webp            template
-        """
+    def make_json_files(self, actual_videos_ids):
+        """Generate JSON files to be consumed by the frontend"""
 
         def remove_unused_videos(videos):
             video_ids = [video["contentDetails"]["videoId"] for video in videos]
@@ -950,7 +948,10 @@ class Youtube2Zim:
         def video_has_channel(videos_channels, video):
             return video["contentDetails"]["videoId"] in videos_channels
 
-        def get_subtitles(video_id):
+        def get_thumbnail_path(video_id):
+            return f"videos/{video_id}/video.webp"
+
+        def get_subtitles(video_id) -> list[Subtitle]:
             video_dir = self.videos_dir.joinpath(video_id)
             languages = [
                 x.stem.split(".")[1]
@@ -958,7 +959,7 @@ class Youtube2Zim:
                 if x.is_file() and x.name.endswith(".vtt")
             ]
 
-            def to_jinja_subtitle(lang):
+            def to_subtitle_object(lang):
                 try:
                     try:
                         subtitle = get_language_details(
@@ -972,19 +973,96 @@ class Youtube2Zim:
                 except Exception:
                     logger.error(f"Failed to get language details for {lang}")
                     raise
-                return {
-                    "code": lang,
-                    # Youtube.com uses `English - code` format.
-                    # Note: videojs displays it lowercased anyway
-                    "name": f"{subtitle['english'].title()} - {subtitle['query']}",
-                }
+                return Subtitle(
+                    code=lang,
+                    name=f"{subtitle['english'].title()} - {subtitle['query']}",
+                )
 
             # Youtube.com sorts subtitles by English name
-            return sorted(map(to_jinja_subtitle, languages), key=lambda x: x["name"])
+            return sorted(map(to_subtitle_object, languages), key=lambda x: x.name)
 
-        env = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(str(self.templates_dir)), autoescape=True
-        )
+        def get_videos_list(playlist):
+            videos = load_mandatory_json(
+                self.cache_dir, f"playlist_{playlist.playlist_id}_videos"
+            )
+            videos = list(filter(skip_deleted_videos, videos))
+            videos = list(filter(is_present, videos))
+            videos = list(filter(has_channel, videos))
+            videos = sorted(videos, key=lambda v: v["snippet"]["position"])
+            return videos
+
+        def generate_video_object(video) -> Video:
+            video_id = video["contentDetails"]["videoId"]
+            author = videos_channels[video_id]
+            subtitles_list = get_subtitles(video_id)
+            return Video(
+                id=video_id,
+                title=video["snippet"]["title"],
+                description=video["snippet"]["description"],
+                author=Author(
+                    channel_id=author["channelId"],
+                    channel_title=author["channelTitle"],
+                    profile_path=f"channels/{author['channelId']}/profile.jpg",
+                    banner_path=f"channels/{author['channelId']}/banner.jpg",
+                ),
+                publication_date=video["contentDetails"]["videoPublishedAt"],
+                video_path=f"videos/{video_id}/video.{self.video_format}",
+                thumbnail_path=get_thumbnail_path(video_id),
+                subtitle_path=f"videos/{video_id}" if len(subtitles_list) > 0 else None,
+                subtitle_list=subtitles_list,
+                duration=videos_channels[video_id]["duration"],
+            )
+
+        def generate_video_preview_object(video) -> VideoPreview:
+            video_id = video["contentDetails"]["videoId"]
+            return VideoPreview(
+                slug=get_video_slug(video),
+                id=video_id,
+                title=video["snippet"]["title"],
+                thumbnail_path=get_thumbnail_path(video_id),
+                duration=videos_channels[video_id]["duration"],
+            )
+
+        def get_video_slug(video) -> str:
+            title = video["snippet"]["title"]
+            video_id = video["contentDetails"]["videoId"]
+            return f"{get_slug(title)}-{video_id[:4]}"
+
+        def generate_playlist_object(playlist) -> Playlist:
+            videos = get_videos_list(playlist)
+            return Playlist(
+                id=playlist.playlist_id,
+                title=playlist.title,
+                description=playlist.description,
+                videos=[generate_video_preview_object(video) for video in videos],
+                publication_date=playlist.published_at,
+                author=Author(
+                    channel_id=playlist.creator_id,
+                    channel_title=playlist.creator_name,
+                    profile_path=f"channels/{playlist.creator_id}/profile.jpg",
+                    banner_path=f"channels/{playlist.creator_id}/banner.jpg",
+                ),
+                videos_count=len(videos),
+                thumbnail_path=get_thumbnail_path(
+                    videos[0]["contentDetails"]["videoId"]
+                ),
+            )
+
+        def generate_playlist_preview_object(playlist) -> PlaylistPreview:
+            videos = get_videos_list(playlist)
+            return PlaylistPreview(
+                slug=get_playlist_slug(playlist),
+                id=playlist.playlist_id,
+                title=playlist.title,
+                thumbnail_path=get_thumbnail_path(
+                    videos[0]["contentDetails"]["videoId"]
+                ),
+                videos_count=len(videos),
+                main_video_slug=get_video_slug(videos[0]),
+            )
+
+        def get_playlist_slug(playlist) -> str:
+            return f"{get_slug(playlist.title)}-{playlist.playlist_id[-4:]}"
 
         videos = load_mandatory_json(self.cache_dir, "videos").values()
         # filter videos so we only include the ones we could retrieve
@@ -994,117 +1072,85 @@ class Youtube2Zim:
         # filter videos to exclude those for which we have no channel (#76)
         videos = list(filter(has_channel, videos))
         for video in videos:
-            video_id = video["contentDetails"]["videoId"]
-            title = video["snippet"]["title"]
-            slug = get_slug(title)
-            description = video["snippet"]["description"]
-            publication_date = dt_parser.parse(
-                video["contentDetails"]["videoPublishedAt"]
-            )
-            author = videos_channels[video_id]
-            subtitles = get_subtitles(video_id)
-            video_url = f"https://www.youtube.com/watch?v={video_id}"
-
-            html = render_template(
-                env=env,
-                template_name="article.html",
-                video_id=video_id,
-                video_format=self.video_format,
-                author=author,
-                title=title,
-                description=description,
-                date=format_date(publication_date, format="medium", locale=self.locale),
-                subtitles=subtitles,
-                url=video_url,
-                channel_id=video["snippet"]["channelId"],
-                color=self.main_color,
-                background_color=self.secondary_color,
-                autoplay=self.autoplay,
-            )
-            with open(
-                self.build_dir.joinpath(f"{slug}.html"), "w", encoding="utf-8"
-            ) as fp:
-                fp.write(html)
-
-        # build homepage
-        html = render_template(
-            env=env,
-            template_name="home.html",
-            playlists=self.playlists,
-            video_format=self.video_format,
-            title=self.title,
-            description=self.description,
-            color=self.main_color,
-            background_color=self.secondary_color,
-            page_label=_("Page {current}/{total}"),
-            back_label=_("Back to top"),
-        )
-        with open(self.build_dir.joinpath("home.html"), "w", encoding="utf-8") as fp:
-            fp.write(html)
-
-        # rewrite app.js including `format`
-        with open(self.assets_dir.joinpath("app.js"), "w", encoding="utf-8") as fp:
-            fp.write(
-                render_template(
-                    env=env,
-                    template_name="assets/app.js",
-                    video_format=self.video_format,
-                )
-            )
-
-        # rewrite app.js including `pagination`
-        with open(self.assets_dir.joinpath("db.js"), "w", encoding="utf-8") as fp:
-            fp.write(
-                render_template(
-                    env=env,
-                    template_name="assets/db.js",
-                    NB_VIDEOS_PER_PAGE=self.nb_videos_per_page,
-                )
-            )
-
-        # write list of videos in data.js
-        def to_data_js(video):
-            return {
-                "id": video["contentDetails"]["videoId"],
-                "title": video["snippet"]["title"],
-                "slug": get_slug(video["snippet"]["title"]),
-                "description": video["snippet"]["description"],
-                "subtitles": get_subtitles(video["contentDetails"]["videoId"]),
-                "thumbnail": str(
-                    Path("videos").joinpath(
-                        video["contentDetails"]["videoId"], "video.webp"
-                    )
+            slug = get_video_slug(video)
+            self.zim_file.add_item_for(
+                path=f"videos/{slug}.json",
+                title=slug,
+                content=generate_video_object(video).model_dump_json(
+                    by_alias=True, indent=2
                 ),
-            }
+                mimetype="application/json",
+                is_front=False,
+            )
 
-        with open(self.assets_dir.joinpath("data.js"), "w", encoding="utf-8") as fp:
-            # write all playlists as they are
-            for playlist in self.playlists:
-                # retrieve list of videos for PL
-                playlist_videos = load_mandatory_json(
-                    self.cache_dir, f"playlist_{playlist.playlist_id}_videos"
+        # write playlists JSON files
+        playlist_list = []
+
+        main_playlist_slug = None
+        if len(self.playlists) > 0:
+            main_playlist_slug = get_playlist_slug(
+                self.playlists[0]
+            )  # set first playlist as main playlist
+
+        for playlist in self.playlists:
+            playlist_slug = get_playlist_slug(playlist)
+            playlist_path = f"playlists/{playlist_slug}.json"
+
+            if playlist.playlist_id != self.uploads_playlist_id:
+                playlist_list.append(generate_playlist_preview_object(playlist))
+            else:
+                main_playlist_slug = (
+                    playlist_slug  # set uploads playlist as main playlist
                 )
-                # filtering-out missing ones (deleted or not downloaded)
-                playlist_videos = list(filter(skip_deleted_videos, playlist_videos))
-                playlist_videos = list(filter(is_present, playlist_videos))
-                playlist_videos = list(filter(has_channel, playlist_videos))
-                # sorting them based on playlist
-                playlist_videos.sort(key=lambda v: v["snippet"]["position"])
 
-                fp.write(
-                    "var json_{slug} = {json_str};\n".format(
-                        slug=playlist.slug,
-                        json_str=json.dumps(
-                            list(map(to_data_js, playlist_videos)), indent=4
-                        ),
-                    )
-                )
+            self.zim_file.add_item_for(
+                path=playlist_path,
+                title=playlist.title,
+                content=generate_playlist_object(playlist).model_dump_json(
+                    by_alias=True, indent=2
+                ),
+                mimetype="application/json",
+                is_front=False,
+            )
 
-        # write a metadata.json file with some content-related data
-        with open(
-            self.build_dir.joinpath("metadata.json"), "w", encoding="utf-8"
-        ) as fp:
-            json.dump({"video_format": self.video_format}, fp, indent=4)
+        # write playlists.json file
+        self.zim_file.add_item_for(
+            path="playlists.json",
+            title="Playlists",
+            content=Playlists(playlists=playlist_list).model_dump_json(
+                by_alias=True, indent=2
+            ),
+            mimetype="application/json",
+            is_front=False,
+        )
+
+        # write channel.json file
+        channel_data = get_channel_json(self.main_channel_id)
+        self.zim_file.add_item_for(
+            path="channel.json",
+            title=self.title,
+            content=Channel(
+                id=str(self.main_channel_id),
+                title=str(self.title),
+                description=str(self.description),
+                channel_name=channel_data["snippet"]["title"],
+                channel_description=channel_data["snippet"]["description"],
+                profile_path="profile.jpg",
+                banner_path="banner.jpg",
+                collection_type=self.collection_type,
+                main_playlist=main_playlist_slug,
+                joined_date=channel_data["snippet"]["publishedAt"],
+            ).model_dump_json(by_alias=True, indent=2),
+            mimetype="application/json",
+            is_front=False,
+        )
 
         # clean videos left out in videos directory
         remove_unused_videos(videos)
+
+    def add_files_to_zim(self, dir_path: Path, zim_file: Creator):
+        """recursively add a path to a zim file"""
+        for file_path in filter(
+            lambda file_path: file_path.is_file(), dir_path.rglob("*")
+        ):
+            zim_file.add_item(FileItem(dir_path, file_path))

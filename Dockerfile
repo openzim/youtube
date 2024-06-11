@@ -11,7 +11,6 @@ LABEL org.opencontainers.image.source https://github.com/openzim/youtube
 # Install necessary packages
 RUN apt-get update \
      && apt-get install -y --no-install-recommends \
-     locales-all \
      wget \
      unzip \
      ffmpeg \
