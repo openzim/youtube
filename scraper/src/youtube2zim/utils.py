@@ -4,7 +4,6 @@
 import json
 from pathlib import Path
 
-import jinja2
 from slugify import slugify
 
 
@@ -45,11 +44,3 @@ def load_mandatory_json(cache_dir: Path, key):
 def has_argument(arg_name, all_args):
     """whether --arg_name is specified in all_args"""
     return list(filter(lambda x: x.startswith(f"--{arg_name}"), all_args))
-
-
-def render_template(env: jinja2.Environment, template_name: str, **kwargs):
-    """render a Jinja template and ensures that result is a string"""
-    html = env.get_template(template_name).render(kwargs)
-    if not isinstance(html, str):
-        raise Exception("Jinja template did not returned a string")
-    return html
