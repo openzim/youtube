@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update dependencies in pyproject.toml (pydantic, pyhumps, python-slugify)
 - Update scraper to generate JSON files for `zimui` (#212)
 - Remove old UI files and methods: template files (home.html, article.html) and `make_html_files` method in scraper.py
+- Remove broken locale folder and files used for translation; translation will be restored with #222
 
 ## [2.3.0] - 2024-05-22
 
