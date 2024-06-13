@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import HelloWorld from '../components/HelloWorld.vue'
+import ChannelHeader from '@/components/channel/ChannelHeader.vue'
 </script>
 
 <template>
-  <HelloWorld />
+  <channel-header />
+  <router-view />
 </template>

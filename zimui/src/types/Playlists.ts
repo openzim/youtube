@@ -9,15 +9,15 @@ export interface Playlist {
   publicationDate: string
   thumbnailPath?: string
   videos: VideoPreview[]
-  count: number
+  videosCount: number
 }
 export interface PlaylistPreview {
   slug: string
   id: string
   title: string
   thumbnailPath?: string
-  count: number
-  videoSlug: string
+  videosCount: number
+  mainVideoSlug: string
 }
 
 export interface Playlists {
