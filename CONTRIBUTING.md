@@ -72,7 +72,7 @@ docker run --rm -it -v "$PWD/output":/output local-youtube2zim youtube2zim --api
 Extract interesting ZIM content and move it to `public` folder.
 
 ```
-find zimui/public/ -mindepth 1 -maxdepth 1 ! -name ".gitignore" -delete
+find zimui/public/ -mindepth 1 ! -name ".gitignore" -delete
 docker run -it --rm -v $(pwd)/output:/data ghcr.io/openzim/zim-tools:latest zimdump dump --dir=/data/openZIM_testing /data/openZIM_testing.zim
 sudo chown -R $(id -u -n):$(id -g -n) output/openZIM_testing
 mv output/openZIM_testing/* zimui/public/
@@ -87,3 +87,17 @@ yarn dev
 ```
 
 Do not forget to cleanup `public` folder before building the docker image again, otherwise all assets will be pushed to the ZIM.
+
+## testing with cypress
+
+Cypress is used for end-to-end testing of the ZIM UI. It allows you to write tests that simulate user interactions with the application to ensure everything works as expected.
+
+To run the tests, you need to start the ZIM UI locally and then run the tests.
+
+```
+cd zimui
+yarn dev
+yarn test:e2e
+```
+
+On Linux, you might need to install additional dependencies, see [Linux Prerequisites](https://docs.cypress.io/guides/getting-started/installing-cypress#Linux-Prerequisites) in the Cypress documentation.
