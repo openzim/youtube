@@ -1,0 +1,28 @@
+{
+  "playlists": [
+    {
+      "slug": "timelapses-QgGI",
+      "id": "PLMK6hZr9PcsjcF5mnaQk8Fi-xnb0AQgGI",
+      "title": "Timelapses",
+      "thumbnailPath": "videos/9TgosbGRsTk/video.webp",
+      "videosCount": 2,
+      "mainVideoSlug": "timelapse-9Tgo"
+    },
+    {
+      "slug": "trailers-5Gph",
+      "id": "PLMK6hZr9PcshJpNSRVaKReGlwhVlh5Gph",
+      "title": "Trailers",
+      "thumbnailPath": "videos/TcMBFSGVi1c/video.webp",
+      "videosCount": 1,
+      "mainVideoSlug": "marvel_studios_avengers_endgame_official_trailer-TcMB"
+    },
+    {
+      "slug": "coffee-O2wS",
+      "id": "PLMK6hZr9PcsjTJ5u2z-khzvDNXlqdO2wS",
+      "title": "Coffee",
+      "thumbnailPath": "videos/DYvYGQHYScc/video.webp",
+      "videosCount": 1,
+      "mainVideoSlug": "coffee_machine-DYvY"
+    }
+  ]
+}

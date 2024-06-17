@@ -51,7 +51,7 @@ jobs:
           pip install -U pip build
           python3 -m build --sdist --wheel
 
-  build-zimui:
+  build-and-test-zimui:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
@@ -65,10 +65,25 @@ jobs:
         working-directory: zimui
         run: |
           yarn install
+
       - name: Build
         working-directory: zimui
         run: |
           yarn build
+
+      - name: Start web server
+        working-directory: zimui
+        run: |
+          yarn preview &
+
+      - name: Wait for web server to be ready
+        run: |
+          npx wait-on http://localhost:5173
+
+      - name: Run frontend tests
+        run: |
+          cd zimui
+          $(yarn bin)/cypress run
 
   build-docker:
     runs-on: ubuntu-22.04

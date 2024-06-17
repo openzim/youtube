@@ -1,0 +1,30 @@
+{
+  "id": "UU8elThf5TGMpQfQc_VE917Q",
+  "author": {
+    "channelId": "UC8elThf5TGMpQfQc_VE917Q",
+    "channelTitle": "openZIM_testing",
+    "profilePath": "channels/UC8elThf5TGMpQfQc_VE917Q/profile.jpg",
+    "bannerPath": "channels/UC8elThf5TGMpQfQc_VE917Q/banner.jpg"
+  },
+  "title": "Uploads from openZIM_testing",
+  "description": "",
+  "publicationDate": "2024-06-04T14:57:45Z",
+  "thumbnailPath": "videos/DYvYGQHYScc/video.webp",
+  "videos": [
+    {
+      "slug": "coffee_machine-DYvY",
+      "id": "DYvYGQHYScc",
+      "title": "Coffee Machine",
+      "thumbnailPath": "videos/DYvYGQHYScc/video.webp",
+      "duration": "PT9S"
+    },
+    {
+      "slug": "timelapse-9Tgo",
+      "id": "9TgosbGRsTk",
+      "title": "Timelapse",
+      "thumbnailPath": "videos/9TgosbGRsTk/video.webp",
+      "duration": "PT11S"
+    }
+  ],
+  "videosCount": 2
+}

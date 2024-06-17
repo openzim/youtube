@@ -844,15 +844,6 @@ class Youtube2Zim:
         )
         for channel_id in uniq_channel_ids:
             save_channel_branding(self.channels_dir, channel_id, save_banner=False)
-            self.copy_default_banner(channel_id)
-
-    def copy_default_banner(self, channel_id):
-        banner_path = self.channels_dir / channel_id / "banner.jpg"
-        if not banner_path.exists():
-            shutil.copy(
-                self.templates_dir / "assets" / "banner.jpg",
-                self.channels_dir / channel_id / "banner.jpg",
-            )
 
     def update_metadata(self):
         # we use title, description, profile and banner of channel/user
@@ -867,7 +858,6 @@ class Youtube2Zim:
             save_channel_branding(
                 self.channels_dir, self.main_channel_id, save_banner=True
             )
-        self.copy_default_banner(self.main_channel_id)
 
         # if a single playlist was requested, use if for names;
         # otherwise, use main_channel's details.
@@ -905,11 +895,6 @@ class Youtube2Zim:
             shutil.copy(
                 self.channels_dir.joinpath(self.main_channel_id, "profile.jpg"),
                 self.profile_path,
-            )
-        if not self.banner_path.exists():
-            shutil.copy(
-                self.channels_dir.joinpath(self.main_channel_id, "banner.jpg"),
-                self.banner_path,
             )
 
         # set colors from images if not supplied
