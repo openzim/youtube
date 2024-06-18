@@ -62,7 +62,10 @@ const videoOptions = ref({
   enableSmoothSeeking: true,
   controlBar: { pictureInPictureToggle: false },
   playbackRates: [0.25, 0.5, 1, 1.5, 2],
-  techOrder: ['html5'],
+  techOrder: ['html5', 'ogvjs'],
+  ogvjs: {
+    base: '/node_modules/ogv/dist/'
+  },
   poster: videoPoster,
   sources: [
     {
