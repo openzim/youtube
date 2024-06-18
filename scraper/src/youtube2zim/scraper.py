@@ -10,7 +10,6 @@
 import concurrent.futures
 import datetime
 import functools
-import locale
 import os
 import re
 import shutil
@@ -24,7 +23,7 @@ from kiwixstorage import KiwixStorage
 from pif import get_public_ip
 from zimscraperlib.download import stream_file
 from zimscraperlib.fix_ogvjs_dist import fix_source_dir
-from zimscraperlib.i18n import NotFound, get_language_details, setlocale
+from zimscraperlib.i18n import NotFound, get_language_details
 from zimscraperlib.image.convertion import convert_image
 from zimscraperlib.image.presets import WebpHigh
 from zimscraperlib.image.probing import get_colors, is_hex_color
@@ -102,7 +101,6 @@ class Youtube2Zim:
         keep_build_dir,
         max_concurrency,
         language,
-        locale_name,
         tags,
         dateafter,
         use_any_optimized_version,
@@ -189,17 +187,6 @@ class Youtube2Zim:
         self.use_any_optimized_version = use_any_optimized_version
         self.video_quality = "low" if self.low_quality else "high"
         self.s3_storage = None
-
-        # set and record locale for translations
-        locale_name = locale_name or get_language_details(self.language)["iso-639-1"]
-        try:
-            self.locale = setlocale(ROOT_DIR, locale_name)
-        except locale.Error:
-            logger.error(
-                f"No locale for {locale_name}. Use --locale to specify it. "
-                "defaulting to en_US"
-            )
-            self.locale = setlocale(ROOT_DIR, "en")
 
     @property
     def root_dir(self):
