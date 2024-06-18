@@ -18,10 +18,12 @@
     "axios": "^1.7.2",
     "dayjs": "^1.11.11",
     "pinia": "^2.1.7",
+    "video.js": "^8.12.0",
     "vite-plugin-vuetify": "^2.0.3",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0",
-    "vuetify": "^3.6.7"
+    "vuetify": "^3.6.7",
+    "webp-hero": "^0.0.2"
   },
   "devDependencies": {
     "@mdi/font": "^7.4.47",
