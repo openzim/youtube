@@ -1,0 +1,49 @@
+.vjs-youtube,
+.vjs-youtube video {
+  border-radius: 8px;
+}
+
+.vjs-youtube .vjs-control-bar {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.vjs-youtube .vjs-poster img {
+  border-radius: 8px;
+}
+
+.vjs-youtube .vjs-big-play-button {
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 1rem;
+  border: none;
+}
+
+.vjs-youtube .vjs-big-play-button:hover,
+.vjs-youtube .vjs-big-play-button:focus,
+.vjs-youtube:hover .vjs-big-play-button {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.vjs-youtube .vjs-control-bar,
+.vjs-youtube .vjs-menu-button-popup .vjs-menu .vjs-menu-content,
+.vjs-youtube .vjs-modal-dialog.vjs-text-track-settings {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.vjs-youtube .vjs-progress-holder {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.vjs-youtube .vjs-load-progress div {
+  background-color: rgb(0, 0, 0, 0.3);
+}
+
+.vjs-youtube .vjs-modal-dialog-content select {
+  color: rgb(190, 190, 190);
+}
+
+.vjs-youtube .vjs-track-settings-controls button {
+  padding-right: 5px;
+  padding-left: 5px;
+  border-radius: 8px;
+}
