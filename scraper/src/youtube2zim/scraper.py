@@ -967,6 +967,7 @@ class Youtube2Zim:
             video_id = video["contentDetails"]["videoId"]
             author = videos_channels[video_id]
             subtitles_list = get_subtitles(video_id)
+            channel_data = get_channel_json(author["channelId"])
             return Video(
                 id=video_id,
                 title=video["snippet"]["title"],
@@ -974,6 +975,8 @@ class Youtube2Zim:
                 author=Author(
                     channel_id=author["channelId"],
                     channel_title=author["channelTitle"],
+                    channel_description=channel_data["snippet"]["description"],
+                    channel_joined_date=channel_data["snippet"]["publishedAt"],
                     profile_path=f"channels/{author['channelId']}/profile.jpg",
                     banner_path=f"channels/{author['channelId']}/banner.jpg",
                 ),
@@ -1001,6 +1004,7 @@ class Youtube2Zim:
             return f"{get_slug(title)}-{video_id[:4]}"
 
         def generate_playlist_object(playlist) -> Playlist:
+            channel_data = get_channel_json(playlist.creator_id)
             videos = get_videos_list(playlist)
             return Playlist(
                 id=playlist.playlist_id,
@@ -1011,6 +1015,8 @@ class Youtube2Zim:
                 author=Author(
                     channel_id=playlist.creator_id,
                     channel_title=playlist.creator_name,
+                    channel_description=channel_data["snippet"]["description"],
+                    channel_joined_date=channel_data["snippet"]["publishedAt"],
                     profile_path=f"channels/{playlist.creator_id}/profile.jpg",
                     banner_path=f"channels/{playlist.creator_id}/banner.jpg",
                 ),
