@@ -13,6 +13,8 @@ class CamelModel(BaseModel):
 class Author(CamelModel):
     channel_id: str
     channel_title: str
+    channel_description: str
+    channel_joined_date: str
     profile_path: str | None = None
     banner_path: str | None = None
 
