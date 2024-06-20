@@ -6,13 +6,15 @@ const main = useMainStore()
 </script>
 
 <template>
-  <div class="error-container h-screen d-flex flex-column justify-center">
-    <div>
-      <img :src="errImage" class="error-image" />
-      <p class="error-text">{{ main.errorMessage }}</p>
-      <p class="error-text">{{ main.errorDetails }}</p>
-    </div>
-  </div>
+  <v-empty-state
+    headline="Something went wrong"
+    :title="main.errorMessage"
+    :text="main.errorDetails"
+    class="h-screen"
+    :image="errImage"
+  >
+    <v-btn href="/" variant="tonal">Go back home</v-btn>
+  </v-empty-state>
 </template>
 
 <style scoped>

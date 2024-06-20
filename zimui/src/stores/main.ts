@@ -49,6 +49,7 @@ export const useMainStore = defineStore('main', {
       return axios.get(`./playlists/${title}.json`).then(
         (response) => {
           this.isLoading = false
+          this.checkResponseObject(response.data, 'Playlist not found.')
           return response.data as Playlist
         },
         (error) => {
@@ -87,6 +88,7 @@ export const useMainStore = defineStore('main', {
       return axios.get(`./videos/${slug}.json`).then(
         (response) => {
           this.isLoading = false
+          this.checkResponseObject(response.data, 'Video not found.')
           const video: Video = response.data
           return video
         },
@@ -98,6 +100,14 @@ export const useMainStore = defineStore('main', {
           }
         }
       )
+    },
+    checkResponseObject(response: unknown, msg: string = '') {
+      if (response === null || typeof response !== 'object') {
+        if (msg !== '') {
+          this.errorDetails = msg
+        }
+        throw new Error('Invalid response object.')
+      }
     },
     handleAxiosError(error: AxiosError<object>) {
       if (axios.isAxiosError(error) && error.response) {

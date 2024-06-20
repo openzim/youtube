@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 
 import HomeView from '../views/HomeView.vue'
 import VideoPlayerView from '../views/VideoPlayerView.vue'
+import NotFoundView from '../views/NotFoundView.vue'
 
 import VideosTab from '@/components/channel/tabs/VideosTab.vue'
 import PlaylistsTab from '@/components/channel/tabs/PlaylistsTab.vue'
@@ -31,7 +32,8 @@ const router = createRouter({
       path: '/watch/:slug',
       name: 'watch-video',
       component: VideoPlayerView
-    }
+    },
+    { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView }
   ],
   scrollBehavior() {
     return { top: 0, behavior: 'smooth' }
