@@ -14,6 +14,8 @@ export interface Channel {
 export interface Author {
   channelId: string
   channelTitle: string
+  channelDescription: string
+  channelJoinedDate: string
   profilePath?: string
   bannerPath?: string
 }

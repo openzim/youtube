@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove old UI files and methods: template files (home.html, article.html) and `make_html_files` method in scraper.py
 - Remove `--locale` arg, broken locale folder, files used for translation; translation will be restored with #222
 - Create "Videos" and "Playlists" tabs for homepage in new Vue.js UI (#213, #214)
+- Create video player page in new Vue.js UI (#215)
+- Add support for variable playback speed in video player (#174)
 
 ## [2.3.0] - 2024-05-22
 
