@@ -9,14 +9,14 @@ Youtube2zim
 `youtube2zim` allows you to create a [ZIM file](https://openzim.org)
 from a Youtube Channel/Username or one-or-more Playlists.
 
-It downloads the video (`webm` or `mp4` extension – optionnaly
+It downloads the video (`webm` or `mp4` extension – optionaly
 recompress them in lower-quality, smaller size), the thumbnails, the
 subtitles and the authors' profile pictures ; then, it create a static
 HTML files folder of it before creating a ZIM off of it.
 
-This project adheres to openZIM's Contribution Guidelines.
+`youtube2zim` adheres to openZIM's [Contribution Guidelines](https://github.com/openzim/overview/wiki/Contributing).
 
-This project has implemented openZIM's Python bootstrap, conventions and policies v1.0.1.
+`youtube2zim` has implemented openZIM's [Python bootstrap, conventions and policies](https://github.com/openzim/_python-bootstrap/docs/Policy.md) **v1.0.2**.
 
 Requirements
 ------------
