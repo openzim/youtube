@@ -24,6 +24,7 @@ def report_cov(ctx: Context, *, html: bool = False):
     """report coverage"""
     ctx.run("coverage combine", warn=True, pty=use_pty)
     ctx.run("coverage report --show-missing", pty=use_pty)
+    ctx.run("coverage xml", pty=use_pty)
     if html:
         ctx.run("coverage html", pty=use_pty)
 
