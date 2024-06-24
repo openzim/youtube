@@ -12,9 +12,9 @@ dependencies = [
   "yt-dlp",                      # youtube-dl should be updated as frequently as possible
   "python-dateutil==2.9.0.post0",
   "jinja2==3.1.4",
-  "zimscraperlib==3.3.2",
-  "requests==2.32.2",
-  "kiwixstorage==0.8.3",
+  "zimscraperlib==3.4.0",
+  "requests==2.32.3",
+  "kiwixstorage==0.9.0",
   "pif==0.8.2",
   "pydantic==2.7.2",
   "pyhumps==3.8.0",
@@ -29,13 +29,13 @@ kind = "scraper"
 additional-keywords = ["youtube"]
 
 [tool.hatch.build.hooks.openzim-build]
-dependencies = [ "zimscraperlib==3.3.2"] # required for fix_ogv_dist
+dependencies = [ "zimscraperlib==3.4.0"] # required for fix_ogv_dist
 
 [project.optional-dependencies]
 scripts = ["invoke==2.2.0"]
-lint = ["black==24.4.2", "ruff==0.4.4"]
-check = ["pyright==1.1.363"]
-test = ["pytest==8.1.1", "coverage==7.4.4"]
+lint = ["black==24.4.2", "ruff==0.4.10"]
+check = ["pyright==1.1.368"]
+test = ["pytest==8.2.2", "coverage==7.5.3"]
 dev = [
   "pre-commit==3.7.1",
   "debugpy==1.8.1",
