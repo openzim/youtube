@@ -23,3 +23,9 @@ export interface PlaylistPreview {
 export interface Playlists {
   playlists: PlaylistPreview[]
 }
+
+export enum LoopOptions {
+  off = 'off',
+  loopVideo = 'loop-video',
+  loopPlaylist = 'loop-playlist'
+}

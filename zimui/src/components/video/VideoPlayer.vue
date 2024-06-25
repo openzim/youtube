@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import videojs from 'video.js'
 import type Player from 'video.js/dist/types/player'
 
@@ -10,18 +10,54 @@ const props = defineProps({
   options: {
     type: Object,
     default: () => ({})
+  },
+  loop: {
+    type: Boolean,
+    default: false
   }
 })
 
 const videoPlayer = ref<HTMLVideoElement>()
 const player = ref<Player>()
 
+const emit = defineEmits(['video-ended'])
+
 // Initialize video.js when the component is mounted
 onMounted(() => {
   if (videoPlayer.value) {
     player.value = videojs(videoPlayer.value, props.options)
+    player.value.loop(props.loop)
+    player.value.on('ended', () => {
+      emit('video-ended')
+    })
   }
 })
+
+// Watch for changes in the options prop
+watch(
+  () => props.options,
+  (newOptions) => {
+    if (player.value) {
+      player.value.src(newOptions.sources)
+      if (newOptions.autoplay === true) {
+        player.value.play()
+      } else {
+        player.value.poster(newOptions.poster)
+      }
+    }
+  },
+  { deep: true }
+)
+
+// Watch for changes in the loop prop
+watch(
+  () => props.loop,
+  (newLoop) => {
+    if (player.value) {
+      player.value.loop(newLoop)
+    }
+  }
+)
 
 // Destroy video.js when the component is unmounted
 onBeforeUnmount(() => {

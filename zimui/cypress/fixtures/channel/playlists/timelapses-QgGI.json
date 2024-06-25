@@ -1,0 +1,32 @@
+{
+  "id": "PLMK6hZr9PcsjcF5mnaQk8Fi-xnb0AQgGI",
+  "author": {
+    "channelId": "UC8elThf5TGMpQfQc_VE917Q",
+    "channelTitle": "openZIM_testing",
+    "channelDescription": "",
+    "channelJoinedDate": "2024-06-04T13:30:16.232286Z",
+    "profilePath": "channels/UC8elThf5TGMpQfQc_VE917Q/profile.jpg",
+    "bannerPath": "channels/UC8elThf5TGMpQfQc_VE917Q/banner.jpg"
+  },
+  "title": "Timelapses",
+  "description": "",
+  "publicationDate": "2024-06-04T15:04:46Z",
+  "thumbnailPath": "videos/9TgosbGRsTk/video.webp",
+  "videos": [
+    {
+      "slug": "timelapse-9Tgo",
+      "id": "9TgosbGRsTk",
+      "title": "Timelapse",
+      "thumbnailPath": "videos/9TgosbGRsTk/video.webp",
+      "duration": "PT11S"
+    },
+    {
+      "slug": "cloudy_sky_time_lapse-k02q",
+      "id": "k02qXOcCrbo",
+      "title": "Cloudy Sky Time Lapse",
+      "thumbnailPath": "videos/k02qXOcCrbo/video.webp",
+      "duration": "PT36S"
+    }
+  ],
+  "videosCount": 2
+}

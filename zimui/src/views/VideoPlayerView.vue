@@ -1,25 +1,48 @@
 <script setup lang="ts">
-import { ref, type Ref, onMounted, computed } from 'vue'
+import { ref, type Ref, computed, watch } from 'vue'
 import { useMainStore } from '@/stores/main'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useDisplay } from 'vuetify'
 
 import type { Video } from '@/types/Videos'
+import { LoopOptions, type Playlist } from '@/types/Playlists'
 
 import VideoPlayer from '@/components/video/VideoPlayer.vue'
 import VideoTitleInfo from '@/components/video/player/VideoTitleInfo.vue'
 import VideoChannelInfo from '@/components/video/player/VideoChannelInfo.vue'
 import VideoDescription from '@/components/video/player/VideoDescription.vue'
+import PlaylistPanel from '@/components/playlist/panel/PlaylistPanel.vue'
+import PlaylistPanelPreview from '@/components/playlist/panel/PlaylistPanelPreview.vue'
 
 const main = useMainStore()
 const route = useRoute()
-const slug: string = route.params.slug as string
+const router = useRouter()
+const video_slug = ref(route.params.slug as string)
+const playlist_slug = ref(route.query.list as string)
+
 const video: Ref<Video> = ref<Video>() as Ref<Video>
+const playlist: Ref<Playlist> = ref<Playlist>() as Ref<Playlist>
+const showPlaylistPanel = ref<boolean>(false)
+
+// Fetch playlist data
+const fetchPlaylistData = async function (playlist_slug: string) {
+  if (playlist_slug) {
+    try {
+      const resp = await main.fetchPlaylist(playlist_slug)
+      if (resp) {
+        playlist.value = resp
+      }
+    } catch (error) {
+      main.setErrorMessage('An unexpected error occured when fetching playlist data.')
+    }
+  }
+}
 
 // Fetch video data
-const fetchData = async function () {
-  if (slug) {
+const fetchVideoData = async function (video_slug: string) {
+  if (video_slug) {
     try {
-      const resp = await main.fetchVideo(slug)
+      const resp = await main.fetchVideo(video_slug)
       if (resp) {
         video.value = resp
       }
@@ -29,10 +52,24 @@ const fetchData = async function () {
   }
 }
 
-// Fetch the data on component mount
-onMounted(() => {
-  fetchData()
-})
+// Watch for changes in the route params and query
+watch(
+  () => route.params.slug,
+  (newSlug) => {
+    video_slug.value = newSlug as string
+    fetchVideoData(video_slug.value)
+  },
+  { immediate: true }
+)
+
+watch(
+  () => route.query.list,
+  (newList) => {
+    playlist_slug.value = newList as string
+    fetchPlaylistData(playlist_slug.value)
+  },
+  { immediate: true }
+)
 
 const videoURL = computed<string>(() => {
   return video.value?.videoPath || ''
@@ -71,30 +108,114 @@ const videoOptions = ref({
   ],
   tracks: subtitles
 })
+
+const currentVideoIndex = computed(() => {
+  return playlist.value.videos.findIndex((video) => video.slug === video_slug.value) || 0
+})
+
+const onVideoEnded = () => {
+  if (!playlist.value) return
+  if (main.loop === LoopOptions.loopVideo) return
+  if (main.shuffle) {
+    let randomIndex: number
+    do {
+      randomIndex = Math.floor(Math.random() * playlist.value.videos.length)
+    } while (randomIndex === currentVideoIndex.value)
+    video_slug.value = playlist.value.videos[randomIndex].slug
+    router.push({
+      name: 'watch-video',
+      params: { slug: video_slug.value },
+      query: { list: playlist_slug.value }
+    })
+  } else {
+    // If the current video is the last video in the playlist and loop is disabled, do nothing
+    if (
+      currentVideoIndex.value === playlist.value.videos.length - 1 &&
+      main.loop === LoopOptions.off
+    ) {
+      return
+    }
+    video_slug.value =
+      playlist.value.videos[(currentVideoIndex.value + 1) % playlist.value.videos.length].slug
+    router.push({
+      name: 'watch-video',
+      params: { slug: video_slug.value },
+      query: { list: playlist_slug.value }
+    })
+  }
+}
+
+const { smAndDown } = useDisplay()
+
+const loopOptions: LoopOptions[] = [
+  LoopOptions.off,
+  LoopOptions.loopPlaylist,
+  LoopOptions.loopVideo
+]
+const cycleLoopOption = () => {
+  const currentIndex = loopOptions.indexOf(main.loop)
+  main.setLoop(loopOptions[(currentIndex + 1) % loopOptions.length])
+}
 </script>
 
 <template>
   <v-container v-if="video">
-    <!-- Video Player -->
     <v-row>
       <v-spacer />
-      <v-col cols="12" md="8">
-        <video-player :options="videoOptions" />
-      </v-col>
-      <v-spacer />
-    </v-row>
-    <!-- Video Details -->
-    <v-row>
-      <v-spacer />
-      <v-col cols="12" md="8">
-        <video-title-info :title="video.title" :publication-date="video.publicationDate" />
-        <video-channel-info
-          :profile-path="video.author.profilePath || ''"
-          :channel-title="video.author.channelTitle || ''"
-          :channel-description="video.author.channelDescription || ''"
-          :joined-date="video.author.channelJoinedDate || ''"
+      <v-col cols="12" md="7" lg="8" xl="6">
+        <!-- Video Player -->
+        <video-player
+          :options="videoOptions"
+          :loop="main.loop === LoopOptions.loopVideo"
+          @video-ended="onVideoEnded"
         />
-        <video-description :description="video.description" />
+        <!-- Playlist panel for mobile devices -->
+        <div v-if="smAndDown && playlist" class="mt-5">
+          <playlist-panel-preview
+            v-if="!showPlaylistPanel"
+            :playlist="playlist"
+            :current-video-index="currentVideoIndex"
+            @click="() => (showPlaylistPanel = !showPlaylistPanel)"
+          />
+          <playlist-panel
+            v-else
+            :playlist="playlist"
+            :video-slug="video_slug"
+            :playlist-slug="playlist_slug"
+            :current-video-index="currentVideoIndex"
+            :loop="main.loop"
+            :shuffle="main.shuffle"
+            :show-toggle="true"
+            @shuffle="() => main.setShuffle(!main.shuffle)"
+            @loop="cycleLoopOption"
+            @hide-panel="() => (showPlaylistPanel = false)"
+          />
+        </div>
+        <!-- Video Details -->
+        <div class="mt-5">
+          <video-title-info :title="video.title" :publication-date="video.publicationDate" />
+          <video-channel-info
+            :profile-path="video.author.profilePath || ''"
+            :channel-title="video.author.channelTitle || ''"
+            :channel-description="video.author.channelDescription || ''"
+            :joined-date="video.author.channelJoinedDate || ''"
+          />
+          <video-description :description="video.description" />
+        </div>
+      </v-col>
+      <!-- Playlist Panel -->
+      <v-col v-if="!smAndDown && playlist" cols="12" md="5" lg="4" xl="3">
+        <playlist-panel
+          :playlist="playlist"
+          :video-slug="video_slug"
+          :playlist-slug="playlist_slug"
+          :current-video-index="currentVideoIndex"
+          :loop="main.loop"
+          :shuffle="main.shuffle"
+          :show-toggle="false"
+          @shuffle="() => main.setShuffle(!main.shuffle)"
+          @loop="cycleLoopOption"
+        />
       </v-col>
       <v-spacer />
     </v-row>
