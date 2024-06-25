@@ -92,7 +92,7 @@ const subtitles = computed(() => {
 
 const videoOptions = ref({
   controls: true,
-  autoplay: false,
+  autoplay: true,
   preload: true,
   fluid: true,
   responsive: true,
