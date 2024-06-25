@@ -91,7 +91,6 @@ class Youtube2Zim:
         low_quality,
         nb_videos_per_page,
         all_subtitles,
-        autoplay,
         output_dir,
         zimui_dist,
         no_zim,
@@ -130,7 +129,6 @@ class Youtube2Zim:
         # options & zim params
         self.nb_videos_per_page = nb_videos_per_page
         self.all_subtitles = all_subtitles
-        self.autoplay = autoplay
         self.fname = fname
         self.language = language
         self.tags = [t.strip() for t in tags.split(",")]
