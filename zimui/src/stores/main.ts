@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import axios, { AxiosError } from 'axios'
 import type { Channel } from '@/types/Channel'
-import type { Playlist, Playlists } from '@/types/Playlists'
+import type { LoopOptions, Playlist, Playlists } from '@/types/Playlists'
 import type { Video } from '@/types/Videos'
 
 export type RootState = {
@@ -9,6 +9,8 @@ export type RootState = {
   isLoading: boolean
   errorMessage: string
   errorDetails: string
+  loop: LoopOptions
+  shuffle: boolean
 }
 
 export const useMainStore = defineStore('main', {
@@ -17,7 +19,9 @@ export const useMainStore = defineStore('main', {
       channel: null,
       isLoading: false,
       errorMessage: '',
-      errorDetails: ''
+      errorDetails: '',
+      loop: 'off',
+      shuffle: false
     }) as RootState,
   getters: {},
   actions: {
@@ -130,6 +134,12 @@ export const useMainStore = defineStore('main', {
     },
     setErrorMessage(message: string) {
       this.errorMessage = message
+    },
+    setLoop(value: LoopOptions) {
+      this.loop = value
+    },
+    setShuffle(value: boolean) {
+      this.shuffle = value
     }
   }
 })

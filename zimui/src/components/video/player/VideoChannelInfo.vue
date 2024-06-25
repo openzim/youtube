@@ -24,10 +24,12 @@ const props = defineProps({
 <template>
   <v-row>
     <v-col cols="6" class="d-flex align-center py-2">
-      <v-avatar size="50" class="border-thin">
-        <v-img :src="props.profilePath" />
-      </v-avatar>
-      <span class="video-channel ml-2 font-weight-medium">{{ props.channelTitle }}</span>
+      <router-link :to="{ name: 'home' }">
+        <v-avatar size="50" class="border-thin">
+          <v-img :src="props.profilePath" />
+        </v-avatar>
+        <span class="video-channel ml-2 font-weight-medium">{{ props.channelTitle }}</span>
+      </router-link>
     </v-col>
     <v-col cols="6" class="d-flex justify-end align-center">
       <about-dialog-button
@@ -38,3 +40,9 @@ const props = defineProps({
     </v-col>
   </v-row>
 </template>
+
+<style scoped>
+.video-channel {
+  color: initial;
+}
+</style>
