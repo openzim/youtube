@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import type { VideoPreview } from '@/types/Videos'
 import { formatTimestamp, truncateText } from '@/utils/format-utils'
 import { useDisplay } from 'vuetify'
+import thumbnailPlaceholder from '@/assets/images/thumbnail-placeholder.webp'
 
 const { smAndDown } = useDisplay()
 
@@ -48,6 +49,7 @@ const truncatedTitle = computed<string>(() => {
           </div>
           <v-img
             class="border-thin rounded-lg"
+            :lazy-src="thumbnailPlaceholder"
             :src="props.video.thumbnailPath"
             min-width="50"
             max-width="250"

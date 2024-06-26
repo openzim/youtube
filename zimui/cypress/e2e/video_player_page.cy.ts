@@ -4,6 +4,9 @@ describe('video player page', () => {
     cy.intercept('GET', '/playlists/uploads_from_openzim_testing-917Q.json', {
       fixture: 'channel/playlists/uploads_from_openzim_testing-917Q.json'
     }).as('getUploads')
+    cy.intercept('GET', '/videos/sample/video.webm', {
+      fixture: 'channel/videos/sample/video.webm,null'
+    }).as('getVideoFile')
     cy.visit('/')
     cy.wait('@getChannel')
     cy.wait('@getUploads')
@@ -15,12 +18,15 @@ describe('video player page', () => {
     }).as('getVideo')
     cy.contains('.v-card-title ', 'Timelapse').click()
     cy.wait('@getVideo')
+    cy.wait('@getVideoFile')
 
     cy.url().should('include', '/watch')
     cy.contains('.video-title', 'Timelapse')
     cy.contains('.video-date', 'Published on Jun 4, 2024')
     cy.contains('.video-channel', 'openZIM_testing')
     cy.contains('.video-description', 'This is a short video of a timelapse.')
+
+    cy.get('video').should('have.prop', 'paused', false)
   })
 
   it('loads the playlist panel', () => {
@@ -43,11 +49,14 @@ describe('video player page', () => {
 
     cy.wait('@getPlaylist')
     cy.wait('@getVideo1')
+    cy.wait('@getVideoFile')
 
     cy.contains('Timelapses').should('be.visible')
     cy.contains('openZIM_testing - 1/2').should('be.visible')
+    cy.get('video').should('have.prop', 'paused', false)
 
     cy.contains('Cloudy Sky Time Lapse').click()
     cy.contains('openZIM_testing - 2/2').should('be.visible')
+    cy.get('video').should('have.prop', 'paused', false)
   })
 })
