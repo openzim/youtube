@@ -79,8 +79,7 @@ const videoCount = computed<string>(() => {
             :title="props.playlist.title"
             >{{ truncatedTitle }}</v-card-title
           >
-          <!-- Commented out for now. Will implement with (#223) -->
-          <!-- <router-link
+          <router-link
             :to="{
               name: 'view-playlist',
               params: { slug: props.playlist.slug }
@@ -89,7 +88,7 @@ const videoCount = computed<string>(() => {
             <v-card-subtitle class="view-playlist-link text-caption text-wrap px-4 px-md-0">
               View full playlist
             </v-card-subtitle>
-          </router-link> -->
+          </router-link>
         </v-col>
       </v-row>
     </v-card>
