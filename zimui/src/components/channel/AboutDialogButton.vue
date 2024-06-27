@@ -41,7 +41,7 @@ const formattedDate = computed(() => {
           </v-col>
           <v-col cols="12">
             <p class="text-h6">Description</p>
-            <p>{{ props.description || notAvailable }}</p>
+            <p class="text-pre-wrap">{{ props.description || notAvailable }}</p>
           </v-col>
           <v-col cols="12">
             <p class="text-h6">Joined Date</p>

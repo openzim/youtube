@@ -111,7 +111,10 @@ onMounted(() => {
             <v-icon icon="mdi-arrow-left" start></v-icon>
             Back to Playlists
           </v-btn>
-          <p v-if="playlist.description !== ''" class="playlist-description text-caption mt-4">
+          <p
+            v-if="playlist.description !== ''"
+            class="playlist-description text-caption text-pre-wrap mt-4"
+          >
             {{ playlist.description }}
           </p>
         </v-card>
