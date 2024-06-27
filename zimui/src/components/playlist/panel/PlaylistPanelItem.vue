@@ -52,7 +52,7 @@ const truncatedTitle = computed<string>(() => {
             :lazy-src="thumbnailPlaceholder"
             :src="props.video.thumbnailPath"
             min-width="50"
-            max-width="250"
+            max-width="300"
           ></v-img>
           <v-chip
             class="bg-black opacity-80 position-absolute bottom-0 right-0 pa-1 mb-1 mr-1 text-caption"

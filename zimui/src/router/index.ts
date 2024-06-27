@@ -6,6 +6,7 @@ import NotFoundView from '../views/NotFoundView.vue'
 
 import VideosTab from '@/components/channel/tabs/VideosTab.vue'
 import PlaylistsTab from '@/components/channel/tabs/PlaylistsTab.vue'
+import PlaylistView from '@/views/PlaylistView.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -32,6 +33,11 @@ const router = createRouter({
       path: '/watch/:slug',
       name: 'watch-video',
       component: VideoPlayerView
+    },
+    {
+      path: '/playlist/:slug',
+      name: 'view-playlist',
+      component: PlaylistView
     },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView }
   ],
