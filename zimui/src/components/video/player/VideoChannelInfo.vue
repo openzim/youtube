@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import profilePlaceholder from '@/assets/images/profile-placeholder.jpg'
 import AboutDialogButton from '@/components/channel/AboutDialogButton.vue'
 
 const props = defineProps({
@@ -26,7 +27,7 @@ const props = defineProps({
     <v-col cols="6" class="d-flex align-center py-2">
       <router-link :to="{ name: 'home' }">
         <v-avatar size="50" class="border-thin">
-          <v-img :src="props.profilePath" />
+          <v-img :src="props.profilePath" :lazy-src="profilePlaceholder" />
         </v-avatar>
         <span class="video-channel ml-2 font-weight-medium">{{ props.channelTitle }}</span>
       </router-link>
