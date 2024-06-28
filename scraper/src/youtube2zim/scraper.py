@@ -428,11 +428,27 @@ class Youtube2Zim:
                 continue
             path = str(Path(file).relative_to(self.zimui_dist))
             logger.debug(f"Adding {path} to ZIM")
-            self.zim_file.add_item_for(
-                path,
-                fpath=file,
-                is_front=path == "index.html",
-            )
+            if path == "index.html":  # Change index.html title and add to ZIM
+                index_html_path = self.zimui_dist / path
+                html_content = index_html_path.read_text(encoding="utf-8")
+                new_html_content = re.sub(
+                    r"(<title>)(.*?)(</title>)",
+                    rf"\1{self.title}\3",
+                    html_content,
+                    flags=re.IGNORECASE,
+                )
+                self.zim_file.add_item_for(
+                    path=path,
+                    content=new_html_content,
+                    mimetype="text/html",
+                    is_front=True,
+                )
+            else:
+                self.zim_file.add_item_for(
+                    path,
+                    fpath=file,
+                    is_front=False,
+                )
 
     def s3_credentials_ok(self):
         logger.info("testing S3 Optimization Cache credentials")
