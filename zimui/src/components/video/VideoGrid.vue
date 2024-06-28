@@ -7,6 +7,7 @@ const { mdAndDown } = useDisplay()
 
 const props = defineProps<{
   videos: VideoPreview[]
+  playlistSlug?: string
 }>()
 </script>
 
@@ -23,7 +24,7 @@ const props = defineProps<{
         xxl="1"
         class="mb-2 mb-md-6"
       >
-        <video-card :video="video" />
+        <video-card :video="video" :playlist-slug="playlistSlug" />
       </v-col>
     </v-row>
   </v-container>
