@@ -437,6 +437,7 @@ class Youtube2Zim:
                     html_content,
                     flags=re.IGNORECASE,
                 )
+                logger.debug("TEST")
                 self.zim_file.add_item_for(
                     path=path,
                     content=new_html_content,
