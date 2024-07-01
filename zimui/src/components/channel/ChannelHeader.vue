@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useDisplay } from 'vuetify'
 
 import AboutDialogButton from '@/components/channel/AboutDialogButton.vue'
 import { useMainStore } from '@/stores/main'
 
 import profilePlaceholder from '@/assets/images/profile-placeholder.jpg'
 import bannerPlaceholder from '@/assets/images/banner-placeholder.jpg'
+
+const { mdAndDown } = useDisplay()
 
 // Fetch the channel data
 const main = useMainStore()
@@ -34,7 +37,7 @@ const tab = ref<number>(tabs[0].id)
 </script>
 
 <template>
-  <v-container class="pt-0 pt-md-4 px-0 px-md-4">
+  <v-container class="pt-0 pt-md-4 px-0 px-md-4" :fluid="mdAndDown">
     <v-card flat class="header-card border-thin border-t-0 rounded-lg">
       <!-- Banner -->
       <v-parallax
@@ -46,7 +49,7 @@ const tab = ref<number>(tabs[0].id)
       ></v-parallax>
 
       <!-- Channel Info -->
-      <v-container class="channel-info px-8">
+      <v-container class="channel-info px-8" :fluid="mdAndDown">
         <v-row>
           <v-col cols="12" md="8" class="d-flex flex-column flex-md-row align-center">
             <v-avatar size="75" class="channel-avatar border-thin">

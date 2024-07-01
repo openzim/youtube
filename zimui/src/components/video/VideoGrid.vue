@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useDisplay } from 'vuetify'
 import type { VideoPreview } from '@/types/Videos'
 import VideoCard from './VideoCard.vue'
+
+const { mdAndDown } = useDisplay()
 
 const props = defineProps<{
   videos: VideoPreview[]
@@ -8,7 +11,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <v-container>
+  <v-container class="px-1" :fluid="mdAndDown">
     <v-row dense>
       <v-col
         v-for="video in props.videos"
