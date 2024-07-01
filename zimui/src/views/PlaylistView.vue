@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, type Ref, onMounted } from 'vue'
+import { useDisplay } from 'vuetify'
 import { useMainStore } from '@/stores/main'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -54,13 +55,15 @@ const onShuffleClick = function () {
 onMounted(() => {
   fetchPlaylistData()
 })
+
+const { mdAndDown } = useDisplay()
 </script>
 
 <template>
-  <v-container v-if="playlist">
+  <v-container v-if="playlist" :fluid="mdAndDown">
     <v-row>
       <v-spacer />
-      <v-col cols="12" md="4" xl="3" xxl="2">
+      <v-col cols="12" md="5" lg="4" xl="3" xxl="2">
         <v-card flat class="header-card rounded-lg pa-5 bg-grey-lighten-4">
           <v-img
             :lazy-src="thumbnailPlaceholder"
@@ -119,7 +122,7 @@ onMounted(() => {
           </p>
         </v-card>
       </v-col>
-      <v-col cols="12" md="8" xl="6" xxl="4">
+      <v-col cols="12" md="7" lg="8" xl="6" xxl="4">
         <v-container class="pa-0">
           <v-row dense>
             <v-col

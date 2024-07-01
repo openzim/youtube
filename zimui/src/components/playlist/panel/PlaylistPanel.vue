@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 
 import type { Playlist } from '@/types/Playlists'
@@ -19,15 +19,18 @@ const props = defineProps<{
   shuffle: boolean
 }>()
 
+const windowHeight = ref(
+  window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+)
+
 // Calculate the height of the playlist panel container
 const panelContainerHeight = computed<string>(() => {
-  if (props.playlist.videos.length > 5) {
-    if (smAndDown.value) {
-      return '350px'
-    }
-    return '500px'
-  }
-  return '100%'
+  if (smAndDown.value) return '350px'
+
+  const panelHeight = Math.min(windowHeight.value - 150, 800)
+  const totalItemsHeight = props.playlist.videos.length * 90
+
+  return totalItemsHeight < panelHeight ? '100%' : `${panelHeight}px`
 })
 
 watch(

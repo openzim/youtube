@@ -145,7 +145,7 @@ const onVideoEnded = () => {
   }
 }
 
-const { smAndDown } = useDisplay()
+const { smAndDown, mdAndDown } = useDisplay()
 
 const loopOptions: LoopOptions[] = [
   LoopOptions.off,
@@ -159,7 +159,7 @@ const cycleLoopOption = () => {
 </script>
 
 <template>
-  <v-container v-if="video">
+  <v-container v-if="video" :fluid="mdAndDown">
     <v-row>
       <v-spacer />
       <v-col cols="12" md="7" lg="8" xl="6">
