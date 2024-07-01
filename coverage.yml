@@ -3,9 +3,9 @@ coverage:
     project:
       default:
         informational: true
-    patch:
+    changes:
       default:
         informational: true
-    changes:
+    patch:
       default:
         informational: true
