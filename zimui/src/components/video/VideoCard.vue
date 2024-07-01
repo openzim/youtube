@@ -11,6 +11,7 @@ const { smAndDown } = useDisplay()
 
 const props = defineProps<{
   video: VideoPreview
+  playlistSlug?: string
 }>()
 
 // Set the maximum length of the title based on the screen size
@@ -34,7 +35,13 @@ const duration = computed<string>(() => {
 </script>
 
 <template>
-  <router-link :to="{ name: 'watch-video', params: { slug: props.video.slug } }">
+  <router-link
+    :to="{
+      name: 'watch-video',
+      params: { slug: props.video.slug },
+      query: { list: props.playlistSlug }
+    }"
+  >
     <v-card flat class="mx-4">
       <v-row no-gutters>
         <v-col cols="5" md="12">
