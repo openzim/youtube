@@ -86,15 +86,21 @@ jobs:
           cd zimui
           $(yarn bin)/cypress run
 
-  build-docker:
+  # this job replaces the standard "build_docker" job since it builds the docker image
+  run-integration-tests:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
 
       - name: Ensure we can build the Docker image
         run: |
-          docker build -t testimage .
+          docker build -t youtube2zim .
 
-      - name: Ensure we can start the Docker image
-        run: |
-          docker run --rm testimage
+      - name: Run scraper
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          OPTIMIZATION_CACHE_URL: ${{ secrets.OPTIMIZATION_CACHE_URL }}
+        run: docker run -v $PWD/output:/output youtube2zim youtube2zim --api-key "$YOUTUBE_API_KEY" --optimization-cache "$OPTIMIZATION_CACHE_URL" --type channel --id "UC8elThf5TGMpQfQc_VE917Q" --name "openZIM_testing" --zim-file "openZIM_testing.zim"
+
+      - name: Run integration test suite
+        run: docker run -v $PWD/scraper/tests-integration/integration.py:/src/scraper/tests-integration/integration.py -v $PWD/output:/output youtube2zim bash -c "pip install pytest; pytest -v /src/scraper/tests-integration/integration.py"
