@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add playlist panel for playing videos in a playlist (#216)
 - Remove `--autoplay` CLI argument and set autoplay to always be true (#233)
 - Add playlist view page in new Vue.js UI (#223)
+- Add support for ogv.js in video-js player (#230)
+- Remove openzim.toml and install all dependencies using Yarn (#218)
 
 ## [2.3.0] - 2024-05-22
 

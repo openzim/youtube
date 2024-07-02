@@ -75,6 +75,10 @@ const videoURL = computed<string>(() => {
   return video.value?.videoPath || ''
 })
 
+const videoFormat = computed<string>(() => {
+  return 'video/' + videoURL.value?.split('.').pop()
+})
+
 const videoPoster = computed<string>(() => {
   return video.value?.thumbnailPath || ''
 })
@@ -99,11 +103,15 @@ const videoOptions = ref({
   enableSmoothSeeking: true,
   controlBar: { pictureInPictureToggle: false },
   playbackRates: [0.25, 0.5, 1, 1.5, 2],
-  techOrder: ['html5'],
+  techOrder: ['html5', 'ogvjs'],
+  ogvjs: {
+    base: './assets/ogvjs'
+  },
   poster: videoPoster,
   sources: [
     {
-      src: videoURL
+      src: videoURL,
+      type: videoFormat
     }
   ],
   tracks: subtitles
