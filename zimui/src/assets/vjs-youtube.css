@@ -8,7 +8,8 @@
   border-bottom-right-radius: 8px;
 }
 
-.vjs-youtube .vjs-poster img {
+.vjs-youtube .vjs-poster img,
+.vjs-youtube .ogvjs-poster {
   border-radius: 8px;
 }
 
@@ -45,5 +46,9 @@
 .vjs-youtube .vjs-track-settings-controls button {
   padding-right: 5px;
   padding-left: 5px;
+  border-radius: 8px;
+}
+
+.vjs-youtube .vjs-tech canvas {
   border-radius: 8px;
 }

@@ -22,7 +22,6 @@ import yt_dlp
 from kiwixstorage import KiwixStorage
 from pif import get_public_ip
 from zimscraperlib.download import stream_file
-from zimscraperlib.fix_ogvjs_dist import fix_source_dir
 from zimscraperlib.i18n import NotFound, get_language_details
 from zimscraperlib.image.convertion import convert_image
 from zimscraperlib.image.presets import WebpHigh
@@ -189,18 +188,6 @@ class Youtube2Zim:
     @property
     def root_dir(self):
         return ROOT_DIR
-
-    @property
-    def templates_dir(self):
-        return self.root_dir.joinpath("templates")
-
-    @property
-    def assets_src_dir(self):
-        return self.templates_dir.joinpath("assets")
-
-    @property
-    def assets_dir(self):
-        return self.build_dir.joinpath("assets")
 
     @property
     def channels_dir(self):
@@ -487,11 +474,6 @@ class Youtube2Zim:
 
     def prepare_build_folder(self):
         """prepare build folder before we start downloading data"""
-
-        # copy assets
-        shutil.copytree(self.assets_src_dir, self.assets_dir)
-
-        fix_source_dir(self.assets_dir)
 
         # cache folder to store youtube-api results
         self.cache_dir.mkdir(exist_ok=True)
