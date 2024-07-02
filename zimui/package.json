@@ -2,6 +2,7 @@
   "name": "zimui",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
@@ -41,9 +42,11 @@
     "eslint-plugin-vue": "^9.23.0",
     "jsdom": "^24.0.0",
     "npm-run-all2": "^6.1.2",
+    "ogv": "^1.9.0",
     "prettier": "^3.2.5",
     "typescript": "~5.4.0",
     "vite": "^5.2.8",
+    "vite-plugin-static-copy": "^1.0.5",
     "vitest": "^1.4.0",
     "vue-tsc": "^2.0.11"
   },

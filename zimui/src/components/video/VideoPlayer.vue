@@ -5,6 +5,7 @@ import type Player from 'video.js/dist/types/player'
 
 import 'video.js/dist/video-js.css'
 import '@/assets/vjs-youtube.css'
+import '@/plugins/videojs-ogvjs.js'
 
 const props = defineProps({
   options: {
