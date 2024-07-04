@@ -92,7 +92,6 @@ class Youtube2Zim:
         all_subtitles,
         output_dir,
         zimui_dist,
-        no_zim,
         fname,
         debug,
         tmp_dir,
@@ -169,7 +168,6 @@ class Youtube2Zim:
         self.main_channel_id = None  # use for branding
 
         # debug/devel options
-        self.no_zim = no_zim
         self.debug = debug
         self.keep_build_dir = keep_build_dir
         self.max_concurrency = max_concurrency
@@ -328,83 +326,82 @@ class Youtube2Zim:
 
         # make zim file
         os.makedirs(self.output_dir, exist_ok=True)
-        if not self.no_zim:
-            if not self.name:
-                raise Exception("name is mandatory")
-            if not self.title:
-                raise Exception("title is mandatory")
-            if not self.description:
-                raise Exception("description is mandatory")
-            if not self.creator:
-                raise Exception("creator is mandatory")
-            period = datetime.date.today().strftime("%Y-%m")
-            self.fname = (
-                self.fname.format(period=period)
-                if self.fname
-                else f"{self.name}_{period}.zim"
+        if not self.name:
+            raise Exception("name is mandatory")
+        if not self.title:
+            raise Exception("title is mandatory")
+        if not self.description:
+            raise Exception("description is mandatory")
+        if not self.creator:
+            raise Exception("creator is mandatory")
+        period = datetime.date.today().strftime("%Y-%m")
+        self.fname = (
+            self.fname.format(period=period)
+            if self.fname
+            else f"{self.name}_{period}.zim"
+        )
+
+        # check that build_dir is correct
+        if not self.build_dir.exists() or not self.build_dir.is_dir():
+            raise OSError(f"Incorrect build_dir: {self.build_dir}")
+
+        # check that illustration is correct
+        illustration = "favicon.png"
+        illustration_path = self.build_dir / illustration
+        if not illustration_path.exists() or not illustration_path.is_file():
+            raise OSError(
+                f"Incorrect illustration: {illustration} ({illustration_path})"
             )
+        with open(illustration_path, "rb") as fh:
+            illustration_data = fh.read()
 
-            # check that build_dir is correct
-            if not self.build_dir.exists() or not self.build_dir.is_dir():
-                raise OSError(f"Incorrect build_dir: {self.build_dir}")
+        logger.info("building ZIM file")
+        self.zim_file = Creator(
+            filename=self.output_dir / self.fname,
+            main_path="index.html",
+            ignore_duplicates=True,
+            disable_metadata_checks=self.disable_metadata_checks,
+        )
+        self.zim_file.config_metadata(
+            Name=self.name,  # pyright: ignore[reportArgumentType]
+            Language=self.language,  # pyright: ignore[reportArgumentType]
+            Title=self.title,
+            Description=self.description,
+            LongDescription=self.long_description,
+            Creator=self.creator,
+            Publisher=self.publisher,
+            tags=";".join(self.tags) if self.tags else "",
+            scraper=SCRAPER,
+            Date=datetime.date.today(),
+            Illustration_48x48_at_1=illustration_data,
+        )
+        self.zim_file.start()
 
-            # check that illustration is correct
-            illustration = "favicon.png"
-            illustration_path = self.build_dir / illustration
-            if not illustration_path.exists() or not illustration_path.is_file():
-                raise OSError(
-                    f"Incorrect illustration: {illustration} ({illustration_path})"
-                )
-            with open(illustration_path, "rb") as fh:
-                illustration_data = fh.read()
+        try:
+            logger.debug(f"Preparing zimfile at {self.zim_file.filename}")
+            logger.debug(f"Recursively adding files from {self.build_dir}")
+            self.add_zimui()
 
-            logger.info("building ZIM file")
-            self.zim_file = Creator(
-                filename=self.output_dir / self.fname,
-                main_path="index.html",
-                ignore_duplicates=True,
-                disable_metadata_checks=self.disable_metadata_checks,
-            )
-            self.zim_file.config_metadata(
-                Name=self.name,  # pyright: ignore[reportArgumentType]
-                Language=self.language,  # pyright: ignore[reportArgumentType]
-                Title=self.title,
-                Description=self.description,
-                LongDescription=self.long_description,
-                Creator=self.creator,
-                Publisher=self.publisher,
-                tags=";".join(self.tags) if self.tags else "",
-                scraper=SCRAPER,
-                Date=datetime.date.today(),
-                Illustration_48x48_at_1=illustration_data,
-            )
-            self.zim_file.start()
+            logger.info("creating JSON files")
+            self.make_json_files(succeeded)
 
-            try:
-                logger.debug(f"Preparing zimfile at {self.zim_file.filename}")
-                logger.debug(f"Recursively adding files from {self.build_dir}")
-                self.add_zimui()
+            logger.info("Adding files to ZIM")
+            self.add_files_to_zim(self.build_dir, self.zim_file)
+        except KeyboardInterrupt:
+            self.zim_file.can_finish = False
+            logger.error("KeyboardInterrupt, exiting.")
+        except Exception as exc:
+            # request Creator not to create a ZIM file on finish
+            self.zim_file.can_finish = False
+            logger.error(f"Interrupting process due to error: {exc}")
+            logger.exception(exc)
+        finally:
+            logger.info("Finishing ZIM file…")
+            self.zim_file.finish()
 
-                logger.info("creating JSON files")
-                self.make_json_files(succeeded)
-
-                logger.info("Adding files to ZIM")
-                self.add_files_to_zim(self.build_dir, self.zim_file)
-            except KeyboardInterrupt:
-                self.zim_file.can_finish = False
-                logger.error("KeyboardInterrupt, exiting.")
-            except Exception as exc:
-                # request Creator not to create a ZIM file on finish
-                self.zim_file.can_finish = False
-                logger.error(f"Interrupting process due to error: {exc}")
-                logger.exception(exc)
-            finally:
-                logger.info("Finishing ZIM file…")
-                self.zim_file.finish()
-
-            if not self.keep_build_dir:
-                logger.info("removing temp folder")
-                shutil.rmtree(self.build_dir, ignore_errors=True)
+        if not self.keep_build_dir:
+            logger.info("removing temp folder")
+            shutil.rmtree(self.build_dir, ignore_errors=True)
 
         logger.info("all done!")
 

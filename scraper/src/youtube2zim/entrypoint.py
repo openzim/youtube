@@ -74,13 +74,6 @@ def main():
     )
 
     parser.add_argument(
-        "--no-zim",
-        help="Don't produce a ZIM file, create HTML folder only.",
-        action="store_true",
-        default=False,
-    )
-
-    parser.add_argument(
         "--zimui-dist",
         type=str,
         help=(
