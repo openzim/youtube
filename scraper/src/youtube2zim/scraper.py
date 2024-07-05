@@ -15,13 +15,16 @@ import re
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Callable
 from gettext import gettext as _
 from pathlib import Path
+from typing import Any
 
 import yt_dlp
 from kiwixstorage import KiwixStorage
 from pif import get_public_ip
 from zimscraperlib.download import stream_file
+from zimscraperlib.filesystem import delete_callback
 from zimscraperlib.i18n import NotFound, get_language_details
 from zimscraperlib.image.convertion import convert_image
 from zimscraperlib.image.presets import WebpHigh
@@ -322,34 +325,6 @@ class Youtube2Zim:
         if not self.creator:
             raise Exception("creator is mandatory")
 
-        # download videos (and recompress)
-        logger.info(
-            "downloading all videos, subtitles and thumbnails "
-            f"(concurrency={self.max_concurrency})"
-        )
-        logger.info(f"  format: {self.video_format}")
-        logger.info(f"  quality: {self.video_quality}")
-        logger.info(f"  generated-subtitles: {self.all_subtitles}")
-        if self.s3_storage:
-            logger.info(
-                f"  using cache: {self.s3_storage.url.netloc} "
-                f"with bucket: {self.s3_storage.bucket_name}"
-            )
-        succeeded, failed = self.download_video_files(
-            max_concurrency=self.max_concurrency
-        )
-        if failed:
-            logger.error(f"{len(failed)} video(s) failed to download: {failed}")
-            if len(failed) >= len(succeeded):
-                logger.critical("More than half of videos failed. exiting")
-                raise OSError("Too much videos failed to download")
-
-        logger.info("retrieve channel-info for all videos (author details)")
-        get_videos_authors_info(succeeded)
-
-        logger.info("download all author's profile pictures")
-        self.download_authors_branding()
-
         # check that illustration is correct
         illustration = "favicon.png"
         illustration_path = self.build_dir / illustration
@@ -383,6 +358,34 @@ class Youtube2Zim:
         self.zim_file.start()
 
         try:
+            # download videos (and recompress)
+            logger.info(
+                "downloading all videos, subtitles and thumbnails "
+                f"(concurrency={self.max_concurrency})"
+            )
+            logger.info(f"  format: {self.video_format}")
+            logger.info(f"  quality: {self.video_quality}")
+            logger.info(f"  generated-subtitles: {self.all_subtitles}")
+            if self.s3_storage:
+                logger.info(
+                    f"  using cache: {self.s3_storage.url.netloc} "
+                    f"with bucket: {self.s3_storage.bucket_name}"
+                )
+            succeeded, failed = self.download_video_files(
+                max_concurrency=self.max_concurrency
+            )
+            if failed:
+                logger.error(f"{len(failed)} video(s) failed to download: {failed}")
+                if len(failed) >= len(succeeded):
+                    logger.critical("More than half of videos failed. exiting")
+                    raise OSError("Too much videos failed to download")
+
+            logger.info("retrieve channel-info for all videos (author details)")
+            get_videos_authors_info(succeeded)
+
+            logger.info("download all author's profile pictures")
+            self.download_authors_branding()
+
             logger.debug(f"Preparing zimfile at {self.zim_file.filename}")
             logger.debug(f"Recursively adding files from {self.build_dir}")
             self.add_zimui()
@@ -707,6 +710,7 @@ class Youtube2Zim:
         options_copy = options.copy()
         video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
         video_path = video_location.joinpath(f"video.{self.video_format}")
+        zim_path = f"videos/{video_id}/video.{self.video_format}"
 
         s3_key = None
         if self.s3_storage:
@@ -715,6 +719,9 @@ class Youtube2Zim:
                 f"Attempting to download video file for {video_id} from cache..."
             )
             if self.download_from_cache(s3_key, video_path, preset.VERSION):
+                self.add_file_to_zim(
+                    zim_path, video_path, callback=(delete_callback, video_path)
+                )
                 return True
 
         try:
@@ -735,6 +742,9 @@ class Youtube2Zim:
                 preset,
                 self.video_format,
                 self.low_quality,
+            )
+            self.add_file_to_zim(
+                zim_path, video_path, callback=(delete_callback, video_path)
             )
         except (
             yt_dlp.utils.DownloadError,
@@ -757,6 +767,7 @@ class Youtube2Zim:
         options_copy = options.copy()
         video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
         thumbnail_path = video_location.joinpath("video.webp")
+        zim_path = f"videos/{video_id}/video.webp"
 
         s3_key = None
         if self.s3_storage:
@@ -765,6 +776,9 @@ class Youtube2Zim:
                 f"Attempting to download thumbnail for {video_id} from cache..."
             )
             if self.download_from_cache(s3_key, thumbnail_path, preset.VERSION):
+                self.add_file_to_zim(
+                    zim_path, thumbnail_path, callback=(delete_callback, thumbnail_path)
+                )
                 return True
 
         try:
@@ -780,6 +794,9 @@ class Youtube2Zim:
             with yt_dlp.YoutubeDL(options_copy) as ydl:
                 ydl.download([video_id])
             process_thumbnail(thumbnail_path, preset)
+            self.add_file_to_zim(
+                zim_path, thumbnail_path, callback=(delete_callback, thumbnail_path)
+            )
         except (
             yt_dlp.utils.DownloadError,
             FileNotFoundError,
@@ -1130,3 +1147,16 @@ class Youtube2Zim:
             lambda file_path: file_path.is_file(), dir_path.rglob("*")
         ):
             zim_file.add_item(FileItem(dir_path, file_path))
+
+    def add_file_to_zim(
+        self,
+        path: str,
+        fpath: Path,
+        callback: Callable | tuple[Callable, Any] | None = None,
+    ):
+        """add a file to a zim file"""
+        self.zim_file.add_item_for(
+            path,
+            fpath=fpath,
+            callback=callback,
+        )
