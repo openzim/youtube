@@ -30,7 +30,7 @@ from zimscraperlib.image.transformation import resize_image
 from zimscraperlib.inputs import compute_descriptions
 from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
 from zimscraperlib.zim import Creator
-from zimscraperlib.zim.filesystem import FileItem
+from zimscraperlib.zim.filesystem import FileItem, validate_zimfile_creatable
 from zimscraperlib.zim.metadata import (
     validate_description,
     validate_longdescription,
@@ -257,6 +257,25 @@ class Youtube2Zim:
         # validate dateafter input
         self.validate_dateafter_input()
 
+        if not self.name:
+            raise Exception("name is mandatory")
+        period = datetime.date.today().strftime("%Y-%m")
+        self.fname = (
+            self.fname.format(period=period)
+            if self.fname
+            else f"{self.name}_{period}.zim"
+        )
+
+        # check that we can create a ZIM file in the output directory
+        validate_zimfile_creatable(self.output_dir, self.fname)
+
+        # create output directory if it does not exist
+        os.makedirs(self.output_dir, exist_ok=True)
+
+        # check that build_dir is correct
+        if not self.build_dir.exists() or not self.build_dir.is_dir():
+            raise OSError(f"Incorrect build_dir: {self.build_dir}")
+
         logger.info(
             f"starting youtube scraper for {self.collection_type}#{self.youtube_id}"
         )
@@ -293,6 +312,16 @@ class Youtube2Zim:
             )
         logger.info(f"{nb_videos_msg}.")
 
+        logger.info("update general metadata")
+        self.update_metadata()
+
+        if not self.title:
+            raise Exception("title is mandatory")
+        if not self.description:
+            raise Exception("description is mandatory")
+        if not self.creator:
+            raise Exception("creator is mandatory")
+
         # download videos (and recompress)
         logger.info(
             "downloading all videos, subtitles and thumbnails "
@@ -320,30 +349,6 @@ class Youtube2Zim:
 
         logger.info("download all author's profile pictures")
         self.download_authors_branding()
-
-        logger.info("update general metadata")
-        self.update_metadata()
-
-        # make zim file
-        os.makedirs(self.output_dir, exist_ok=True)
-        if not self.name:
-            raise Exception("name is mandatory")
-        if not self.title:
-            raise Exception("title is mandatory")
-        if not self.description:
-            raise Exception("description is mandatory")
-        if not self.creator:
-            raise Exception("creator is mandatory")
-        period = datetime.date.today().strftime("%Y-%m")
-        self.fname = (
-            self.fname.format(period=period)
-            if self.fname
-            else f"{self.name}_{period}.zim"
-        )
-
-        # check that build_dir is correct
-        if not self.build_dir.exists() or not self.build_dir.is_dir():
-            raise OSError(f"Incorrect build_dir: {self.build_dir}")
 
         # check that illustration is correct
         illustration = "favicon.png"
