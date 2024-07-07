@@ -386,6 +386,9 @@ class Youtube2Zim:
             logger.info("download all author's profile pictures")
             self.download_authors_branding()
 
+            logger.info("add main channel branding to ZIM")
+            self.add_main_channel_branding_to_zim()
+
             logger.debug(f"Preparing zimfile at {self.zim_file.filename}")
             logger.debug(f"Recursively adding files from {self.build_dir}")
             self.add_zimui()
@@ -846,6 +849,23 @@ class Youtube2Zim:
         )
         for channel_id in uniq_channel_ids:
             save_channel_branding(self.channels_dir, channel_id, save_banner=False)
+            channel_profile_path = self.channels_dir / channel_id / "profile.jpg"
+            self.add_file_to_zim(
+                f"channels/{channel_id}/profile.jpg",
+                channel_profile_path,
+                callback=(delete_callback, channel_profile_path),
+            )
+
+    def add_main_channel_branding_to_zim(self):
+        """add main channel branding to zim file"""
+        branding_items = [
+            ("profile.jpg", self.profile_path),
+            ("banner.jpg", self.banner_path),
+            ("favicon.png", self.build_dir / "favicon.png"),
+        ]
+        for filename, path in branding_items:
+            if path.exists():
+                self.add_file_to_zim(filename, path, callback=(delete_callback, path))
 
     def update_metadata(self):
         # we use title, description, profile and banner of channel/user
