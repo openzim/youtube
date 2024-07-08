@@ -98,7 +98,6 @@ class Youtube2Zim:
         fname,
         debug,
         tmp_dir,
-        keep_build_dir,
         max_concurrency,
         language,
         tags,
@@ -172,7 +171,6 @@ class Youtube2Zim:
 
         # debug/devel options
         self.debug = debug
-        self.keep_build_dir = keep_build_dir
         self.max_concurrency = max_concurrency
 
         # update youtube credentials store
@@ -409,9 +407,8 @@ class Youtube2Zim:
             logger.info("Finishing ZIM file…")
             self.zim_file.finish()
 
-        if not self.keep_build_dir:
-            logger.info("removing temp folder")
-            shutil.rmtree(self.build_dir, ignore_errors=True)
+        logger.info("removing temp folder")
+        shutil.rmtree(self.build_dir, ignore_errors=True)
 
         logger.info("all done!")
 
