@@ -33,7 +33,7 @@ from zimscraperlib.image.transformation import resize_image
 from zimscraperlib.inputs import compute_descriptions
 from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
 from zimscraperlib.zim import Creator
-from zimscraperlib.zim.filesystem import FileItem, validate_zimfile_creatable
+from zimscraperlib.zim.filesystem import validate_zimfile_creatable
 from zimscraperlib.zim.metadata import (
     validate_description,
     validate_longdescription,
@@ -400,9 +400,6 @@ class Youtube2Zim:
 
             logger.info("creating JSON files")
             self.make_json_files(succeeded)
-
-            logger.info("Adding files to ZIM")
-            self.add_files_to_zim(self.build_dir, self.zim_file)
         except KeyboardInterrupt:
             self.zim_file.can_finish = False
             logger.error("KeyboardInterrupt, exiting.")
@@ -1193,13 +1190,6 @@ class Youtube2Zim:
 
         # clean videos left out in videos directory
         remove_unused_videos(videos)
-
-    def add_files_to_zim(self, dir_path: Path, zim_file: Creator):
-        """recursively add a path to a zim file"""
-        for file_path in filter(
-            lambda file_path: file_path.is_file(), dir_path.rglob("*")
-        ):
-            zim_file.add_item(FileItem(dir_path, file_path))
 
     def add_file_to_zim(
         self,
