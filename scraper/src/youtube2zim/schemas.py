@@ -26,6 +26,12 @@ class Subtitle(CamelModel):
     name: str
 
 
+class Subtitles(CamelModel):
+    """Class to serialize data about a list of YouTube video subtitles."""
+
+    subtitles: list[Subtitle]
+
+
 class Video(CamelModel):
     """Class to serialize data about a YouTube video."""
 

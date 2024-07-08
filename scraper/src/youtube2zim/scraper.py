@@ -59,6 +59,7 @@ from youtube2zim.schemas import (
     PlaylistPreview,
     Playlists,
     Subtitle,
+    Subtitles,
     Video,
     VideoPreview,
 )
@@ -197,6 +198,10 @@ class Youtube2Zim:
     @property
     def cache_dir(self):
         return self.build_dir.joinpath("cache")
+
+    @property
+    def subtitles_cache_dir(self):
+        return self.cache_dir.joinpath("subtitles")
 
     @property
     def videos_dir(self):
@@ -485,6 +490,7 @@ class Youtube2Zim:
 
         # cache folder to store youtube-api results
         self.cache_dir.mkdir(exist_ok=True)
+        self.subtitles_cache_dir.mkdir(exist_ok=True)
 
         # make videos placeholder
         self.videos_dir.mkdir(exist_ok=True)
@@ -814,6 +820,49 @@ class Youtube2Zim:
                 self.upload_to_cache(s3_key, thumbnail_path, preset.VERSION)
             return True
 
+    def fetch_video_subtitles_list(self, video_id: str) -> Subtitles:
+        """fetch list of subtitles for a video"""
+
+        video_dir = self.videos_dir.joinpath(video_id)
+        languages = [
+            x.stem.split(".")[1]
+            for x in video_dir.iterdir()
+            if x.is_file() and x.name.endswith(".vtt")
+        ]
+
+        def to_subtitle_object(lang) -> Subtitle:
+            try:
+                try:
+                    subtitle = get_language_details(YOUTUBE_LANG_MAP.get(lang, lang))
+                except NotFound:
+                    lang_simpl = re.sub(r"^([a-z]{2})-.+$", r"\1", lang)
+                    subtitle = get_language_details(
+                        YOUTUBE_LANG_MAP.get(lang_simpl, lang_simpl)
+                    )
+            except Exception:
+                logger.error(f"Failed to get language details for {lang}")
+                raise
+            return Subtitle(
+                code=lang,
+                name=f"{subtitle['english'].title()} - {subtitle['query']}",
+            )
+
+        # Youtube.com sorts subtitles by English name
+        return Subtitles(
+            subtitles=sorted(map(to_subtitle_object, languages), key=lambda x: x.name)
+        )
+
+    def add_video_subtitles_to_zim(self, video_id: str):
+        """add subtitles files to zim file"""
+
+        for file in self.videos_dir.joinpath(video_id).iterdir():
+            if file.suffix == ".vtt":
+                self.add_file_to_zim(
+                    f"videos/{video_id}/{file.name}",
+                    file,
+                    callback=(delete_callback, file),
+                )
+
     def download_subtitles(self, video_id, options):
         """download subtitles for a video"""
 
@@ -822,6 +871,14 @@ class Youtube2Zim:
         try:
             with yt_dlp.YoutubeDL(options_copy) as ydl:
                 ydl.download([video_id])
+            subtitles_list = self.fetch_video_subtitles_list(video_id)
+            # save subtitles to cache for generating JSON files later
+            save_json(
+                self.subtitles_cache_dir,
+                video_id,
+                subtitles_list.dict(by_alias=True),
+            )
+            self.add_video_subtitles_to_zim(video_id)
         except Exception:
             logger.error(f"Could not download subtitles for {video_id}")
 
@@ -959,34 +1016,10 @@ class Youtube2Zim:
             return f"videos/{video_id}/video.webp"
 
         def get_subtitles(video_id) -> list[Subtitle]:
-            video_dir = self.videos_dir.joinpath(video_id)
-            languages = [
-                x.stem.split(".")[1]
-                for x in video_dir.iterdir()
-                if x.is_file() and x.name.endswith(".vtt")
-            ]
-
-            def to_subtitle_object(lang):
-                try:
-                    try:
-                        subtitle = get_language_details(
-                            YOUTUBE_LANG_MAP.get(lang, lang)
-                        )
-                    except NotFound:
-                        lang_simpl = re.sub(r"^([a-z]{2})-.+$", r"\1", lang)
-                        subtitle = get_language_details(
-                            YOUTUBE_LANG_MAP.get(lang_simpl, lang_simpl)
-                        )
-                except Exception:
-                    logger.error(f"Failed to get language details for {lang}")
-                    raise
-                return Subtitle(
-                    code=lang,
-                    name=f"{subtitle['english'].title()} - {subtitle['query']}",
-                )
-
-            # Youtube.com sorts subtitles by English name
-            return sorted(map(to_subtitle_object, languages), key=lambda x: x.name)
+            subtitles_list = load_json(self.subtitles_cache_dir, video_id)
+            if subtitles_list is None:
+                return []
+            return subtitles_list["subtitles"]
 
         def get_videos_list(playlist):
             videos = load_mandatory_json(
