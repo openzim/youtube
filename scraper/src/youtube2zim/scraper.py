@@ -10,7 +10,6 @@
 import concurrent.futures
 import datetime
 import functools
-import os
 import re
 import shutil
 import subprocess
@@ -277,9 +276,6 @@ class Youtube2Zim:
         # check that we can create a ZIM file in the output directory
         validate_zimfile_creatable(self.output_dir, self.fname)
 
-        # create output directory if it does not exist
-        os.makedirs(self.output_dir, exist_ok=True)
-
         # check that build_dir is correct
         if not self.build_dir.exists() or not self.build_dir.is_dir():
             raise OSError(f"Incorrect build_dir: {self.build_dir}")
@@ -363,6 +359,14 @@ class Youtube2Zim:
         self.zim_file.start()
 
         try:
+            logger.debug(f"Preparing zimfile at {self.zim_file.filename}")
+
+            logger.info("add main channel branding to ZIM")
+            self.add_main_channel_branding_to_zim()
+
+            logger.debug(f"add zimui files from {self.zimui_dist}")
+            self.add_zimui()
+
             # download videos (and recompress)
             logger.info(
                 "downloading all videos, subtitles and thumbnails "
@@ -390,13 +394,6 @@ class Youtube2Zim:
 
             logger.info("download all author's profile pictures")
             self.download_authors_branding()
-
-            logger.info("add main channel branding to ZIM")
-            self.add_main_channel_branding_to_zim()
-
-            logger.debug(f"Preparing zimfile at {self.zim_file.filename}")
-            logger.debug(f"Recursively adding files from {self.build_dir}")
-            self.add_zimui()
 
             logger.info("creating JSON files")
             self.make_json_files(succeeded)
