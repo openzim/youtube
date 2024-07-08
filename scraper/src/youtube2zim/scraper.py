@@ -1197,7 +1197,12 @@ class Youtube2Zim:
         fpath: Path,
         callback: Callable | tuple[Callable, Any] | None = None,
     ):
-        """add a file to a zim file"""
+        """add a file to a ZIM file"""
+
+        if not fpath.exists():
+            logger.error(f"File {fpath} does not exist")
+            return
+        logger.debug(f"Adding {path} to ZIM")
         self.zim_file.add_item_for(
             path,
             fpath=fpath,
