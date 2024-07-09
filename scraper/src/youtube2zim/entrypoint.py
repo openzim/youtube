@@ -69,15 +69,8 @@ def main():
 
     parser.add_argument(
         "--tmp-dir",
-        help="Path to create temp folder in. Used for building ZIM file. "
-        "Receives all data (storage space)",
-    )
-
-    parser.add_argument(
-        "--no-zim",
-        help="Don't produce a ZIM file, create HTML folder only.",
-        action="store_true",
-        default=False,
+        help="Path to create temp folder in."
+        "Used to temporarily store downloaded files before adding to ZIM",
     )
 
     parser.add_argument(
@@ -160,14 +153,6 @@ def main():
 
     parser.add_argument(
         "--debug", help="Enable verbose output", action="store_true", default=False
-    )
-
-    parser.add_argument(
-        "--keep",
-        help="Don't erase build folder on start (for debug/devel)",
-        default=False,
-        action="store_true",
-        dest="keep_build_dir",
     )
 
     parser.add_argument(

@@ -10,18 +10,20 @@
 import concurrent.futures
 import datetime
 import functools
-import os
 import re
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Callable
 from gettext import gettext as _
 from pathlib import Path
+from typing import Any
 
 import yt_dlp
 from kiwixstorage import KiwixStorage
 from pif import get_public_ip
 from zimscraperlib.download import stream_file
+from zimscraperlib.filesystem import delete_callback
 from zimscraperlib.i18n import NotFound, get_language_details
 from zimscraperlib.image.convertion import convert_image
 from zimscraperlib.image.presets import WebpHigh
@@ -30,7 +32,7 @@ from zimscraperlib.image.transformation import resize_image
 from zimscraperlib.inputs import compute_descriptions
 from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
 from zimscraperlib.zim import Creator
-from zimscraperlib.zim.filesystem import FileItem
+from zimscraperlib.zim.filesystem import validate_zimfile_creatable
 from zimscraperlib.zim.metadata import (
     validate_description,
     validate_longdescription,
@@ -56,6 +58,7 @@ from youtube2zim.schemas import (
     PlaylistPreview,
     Playlists,
     Subtitle,
+    Subtitles,
     Video,
     VideoPreview,
 )
@@ -92,11 +95,9 @@ class Youtube2Zim:
         all_subtitles,
         output_dir,
         zimui_dist,
-        no_zim,
         fname,
         debug,
         tmp_dir,
-        keep_build_dir,
         max_concurrency,
         language,
         tags,
@@ -169,9 +170,7 @@ class Youtube2Zim:
         self.main_channel_id = None  # use for branding
 
         # debug/devel options
-        self.no_zim = no_zim
         self.debug = debug
-        self.keep_build_dir = keep_build_dir
         self.max_concurrency = max_concurrency
 
         # update youtube credentials store
@@ -196,6 +195,10 @@ class Youtube2Zim:
     @property
     def cache_dir(self):
         return self.build_dir.joinpath("cache")
+
+    @property
+    def subtitles_cache_dir(self):
+        return self.cache_dir.joinpath("subtitles")
 
     @property
     def videos_dir(self):
@@ -259,6 +262,22 @@ class Youtube2Zim:
         # validate dateafter input
         self.validate_dateafter_input()
 
+        if not self.name:
+            raise Exception("name is mandatory")
+        period = datetime.date.today().strftime("%Y-%m")
+        self.fname = (
+            self.fname.format(period=period)
+            if self.fname
+            else f"{self.name}_{period}.zim"
+        )
+
+        # check that we can create a ZIM file in the output directory
+        validate_zimfile_creatable(self.output_dir, self.fname)
+
+        # check that build_dir is correct
+        if not self.build_dir.exists() or not self.build_dir.is_dir():
+            raise OSError(f"Incorrect build_dir: {self.build_dir}")
+
         logger.info(
             f"starting youtube scraper for {self.collection_type}#{self.youtube_id}"
         )
@@ -295,116 +314,101 @@ class Youtube2Zim:
             )
         logger.info(f"{nb_videos_msg}.")
 
-        # download videos (and recompress)
-        logger.info(
-            "downloading all videos, subtitles and thumbnails "
-            f"(concurrency={self.max_concurrency})"
-        )
-        logger.info(f"  format: {self.video_format}")
-        logger.info(f"  quality: {self.video_quality}")
-        logger.info(f"  generated-subtitles: {self.all_subtitles}")
-        if self.s3_storage:
-            logger.info(
-                f"  using cache: {self.s3_storage.url.netloc} "
-                f"with bucket: {self.s3_storage.bucket_name}"
-            )
-        succeeded, failed = self.download_video_files(
-            max_concurrency=self.max_concurrency
-        )
-        if failed:
-            logger.error(f"{len(failed)} video(s) failed to download: {failed}")
-            if len(failed) >= len(succeeded):
-                logger.critical("More than half of videos failed. exiting")
-                raise OSError("Too much videos failed to download")
-
-        logger.info("retrieve channel-info for all videos (author details)")
-        get_videos_authors_info(succeeded)
-
-        logger.info("download all author's profile pictures")
-        self.download_authors_branding()
-
         logger.info("update general metadata")
         self.update_metadata()
 
-        # make zim file
-        os.makedirs(self.output_dir, exist_ok=True)
-        if not self.no_zim:
-            if not self.name:
-                raise Exception("name is mandatory")
-            if not self.title:
-                raise Exception("title is mandatory")
-            if not self.description:
-                raise Exception("description is mandatory")
-            if not self.creator:
-                raise Exception("creator is mandatory")
-            period = datetime.date.today().strftime("%Y-%m")
-            self.fname = (
-                self.fname.format(period=period)
-                if self.fname
-                else f"{self.name}_{period}.zim"
+        if not self.title:
+            raise Exception("title is mandatory")
+        if not self.description:
+            raise Exception("description is mandatory")
+        if not self.creator:
+            raise Exception("creator is mandatory")
+
+        # check that illustration is correct
+        illustration = "favicon.png"
+        illustration_path = self.build_dir / illustration
+        if not illustration_path.exists() or not illustration_path.is_file():
+            raise OSError(
+                f"Incorrect illustration: {illustration} ({illustration_path})"
             )
+        with open(illustration_path, "rb") as fh:
+            illustration_data = fh.read()
 
-            # check that build_dir is correct
-            if not self.build_dir.exists() or not self.build_dir.is_dir():
-                raise OSError(f"Incorrect build_dir: {self.build_dir}")
+        logger.info("building ZIM file")
+        self.zim_file = Creator(
+            filename=self.output_dir / self.fname,
+            main_path="index.html",
+            ignore_duplicates=True,
+            disable_metadata_checks=self.disable_metadata_checks,
+        )
+        self.zim_file.config_metadata(
+            Name=self.name,  # pyright: ignore[reportArgumentType]
+            Language=self.language,  # pyright: ignore[reportArgumentType]
+            Title=self.title,
+            Description=self.description,
+            LongDescription=self.long_description,
+            Creator=self.creator,
+            Publisher=self.publisher,
+            tags=";".join(self.tags) if self.tags else "",
+            scraper=SCRAPER,
+            Date=datetime.date.today(),
+            Illustration_48x48_at_1=illustration_data,
+        )
+        self.zim_file.start()
 
-            # check that illustration is correct
-            illustration = "favicon.png"
-            illustration_path = self.build_dir / illustration
-            if not illustration_path.exists() or not illustration_path.is_file():
-                raise OSError(
-                    f"Incorrect illustration: {illustration} ({illustration_path})"
+        try:
+            logger.debug(f"Preparing zimfile at {self.zim_file.filename}")
+
+            logger.info("add main channel branding to ZIM")
+            self.add_main_channel_branding_to_zim()
+
+            logger.debug(f"add zimui files from {self.zimui_dist}")
+            self.add_zimui()
+
+            # download videos (and recompress)
+            logger.info(
+                "downloading all videos, subtitles and thumbnails "
+                f"(concurrency={self.max_concurrency})"
+            )
+            logger.info(f"  format: {self.video_format}")
+            logger.info(f"  quality: {self.video_quality}")
+            logger.info(f"  generated-subtitles: {self.all_subtitles}")
+            if self.s3_storage:
+                logger.info(
+                    f"  using cache: {self.s3_storage.url.netloc} "
+                    f"with bucket: {self.s3_storage.bucket_name}"
                 )
-            with open(illustration_path, "rb") as fh:
-                illustration_data = fh.read()
-
-            logger.info("building ZIM file")
-            self.zim_file = Creator(
-                filename=self.output_dir / self.fname,
-                main_path="index.html",
-                ignore_duplicates=True,
-                disable_metadata_checks=self.disable_metadata_checks,
+            succeeded, failed = self.download_video_files(
+                max_concurrency=self.max_concurrency
             )
-            self.zim_file.config_metadata(
-                Name=self.name,  # pyright: ignore[reportArgumentType]
-                Language=self.language,  # pyright: ignore[reportArgumentType]
-                Title=self.title,
-                Description=self.description,
-                LongDescription=self.long_description,
-                Creator=self.creator,
-                Publisher=self.publisher,
-                tags=";".join(self.tags) if self.tags else "",
-                scraper=SCRAPER,
-                Date=datetime.date.today(),
-                Illustration_48x48_at_1=illustration_data,
-            )
-            self.zim_file.start()
+            if failed:
+                logger.error(f"{len(failed)} video(s) failed to download: {failed}")
+                if len(failed) >= len(succeeded):
+                    logger.critical("More than half of videos failed. exiting")
+                    raise OSError("Too much videos failed to download")
 
-            try:
-                logger.debug(f"Preparing zimfile at {self.zim_file.filename}")
-                logger.debug(f"Recursively adding files from {self.build_dir}")
-                self.add_zimui()
+            logger.info("retrieve channel-info for all videos (author details)")
+            get_videos_authors_info(succeeded)
 
-                logger.info("creating JSON files")
-                self.make_json_files(succeeded)
+            logger.info("download all author's profile pictures")
+            self.download_authors_branding()
 
-                logger.info("Adding files to ZIM")
-                self.add_files_to_zim(self.build_dir, self.zim_file)
-            except KeyboardInterrupt:
-                self.zim_file.can_finish = False
-                logger.error("KeyboardInterrupt, exiting.")
-            except Exception as exc:
-                # request Creator not to create a ZIM file on finish
-                self.zim_file.can_finish = False
-                logger.error(f"Interrupting process due to error: {exc}")
-                logger.exception(exc)
-            finally:
-                logger.info("Finishing ZIM file…")
-                self.zim_file.finish()
+            logger.info("creating JSON files")
+            self.make_json_files(succeeded)
+        except KeyboardInterrupt:
+            self.zim_file.can_finish = False
+            logger.error("KeyboardInterrupt, exiting.")
+        except Exception as exc:
+            # request Creator not to create a ZIM file on finish
+            self.zim_file.can_finish = False
+            logger.error(f"Interrupting process due to error: {exc}")
+            logger.exception(exc)
+        finally:
+            logger.info("Finishing ZIM file…")
+            self.zim_file.finish()
 
-            if not self.keep_build_dir:
-                logger.info("removing temp folder")
-                shutil.rmtree(self.build_dir, ignore_errors=True)
+        logger.info("removing temp folder")
+        shutil.rmtree(self.build_dir, ignore_errors=True)
 
         logger.info("all done!")
 
@@ -477,6 +481,7 @@ class Youtube2Zim:
 
         # cache folder to store youtube-api results
         self.cache_dir.mkdir(exist_ok=True)
+        self.subtitles_cache_dir.mkdir(exist_ok=True)
 
         # make videos placeholder
         self.videos_dir.mkdir(exist_ok=True)
@@ -705,6 +710,7 @@ class Youtube2Zim:
         options_copy = options.copy()
         video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
         video_path = video_location.joinpath(f"video.{self.video_format}")
+        zim_path = f"videos/{video_id}/video.{self.video_format}"
 
         s3_key = None
         if self.s3_storage:
@@ -713,6 +719,9 @@ class Youtube2Zim:
                 f"Attempting to download video file for {video_id} from cache..."
             )
             if self.download_from_cache(s3_key, video_path, preset.VERSION):
+                self.add_file_to_zim(
+                    zim_path, video_path, callback=(delete_callback, video_path)
+                )
                 return True
 
         try:
@@ -733,6 +742,9 @@ class Youtube2Zim:
                 preset,
                 self.video_format,
                 self.low_quality,
+            )
+            self.add_file_to_zim(
+                zim_path, video_path, callback=(delete_callback, video_path)
             )
         except (
             yt_dlp.utils.DownloadError,
@@ -755,6 +767,7 @@ class Youtube2Zim:
         options_copy = options.copy()
         video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
         thumbnail_path = video_location.joinpath("video.webp")
+        zim_path = f"videos/{video_id}/video.webp"
 
         s3_key = None
         if self.s3_storage:
@@ -763,6 +776,9 @@ class Youtube2Zim:
                 f"Attempting to download thumbnail for {video_id} from cache..."
             )
             if self.download_from_cache(s3_key, thumbnail_path, preset.VERSION):
+                self.add_file_to_zim(
+                    zim_path, thumbnail_path, callback=(delete_callback, thumbnail_path)
+                )
                 return True
 
         try:
@@ -778,6 +794,9 @@ class Youtube2Zim:
             with yt_dlp.YoutubeDL(options_copy) as ydl:
                 ydl.download([video_id])
             process_thumbnail(thumbnail_path, preset)
+            self.add_file_to_zim(
+                zim_path, thumbnail_path, callback=(delete_callback, thumbnail_path)
+            )
         except (
             yt_dlp.utils.DownloadError,
             FileNotFoundError,
@@ -792,6 +811,49 @@ class Youtube2Zim:
                 self.upload_to_cache(s3_key, thumbnail_path, preset.VERSION)
             return True
 
+    def fetch_video_subtitles_list(self, video_id: str) -> Subtitles:
+        """fetch list of subtitles for a video"""
+
+        video_dir = self.videos_dir.joinpath(video_id)
+        languages = [
+            x.stem.split(".")[1]
+            for x in video_dir.iterdir()
+            if x.is_file() and x.name.endswith(".vtt")
+        ]
+
+        def to_subtitle_object(lang) -> Subtitle:
+            try:
+                try:
+                    subtitle = get_language_details(YOUTUBE_LANG_MAP.get(lang, lang))
+                except NotFound:
+                    lang_simpl = re.sub(r"^([a-z]{2})-.+$", r"\1", lang)
+                    subtitle = get_language_details(
+                        YOUTUBE_LANG_MAP.get(lang_simpl, lang_simpl)
+                    )
+            except Exception:
+                logger.error(f"Failed to get language details for {lang}")
+                raise
+            return Subtitle(
+                code=lang,
+                name=f"{subtitle['english'].title()} - {subtitle['query']}",
+            )
+
+        # Youtube.com sorts subtitles by English name
+        return Subtitles(
+            subtitles=sorted(map(to_subtitle_object, languages), key=lambda x: x.name)
+        )
+
+    def add_video_subtitles_to_zim(self, video_id: str):
+        """add subtitles files to zim file"""
+
+        for file in self.videos_dir.joinpath(video_id).iterdir():
+            if file.suffix == ".vtt":
+                self.add_file_to_zim(
+                    f"videos/{video_id}/{file.name}",
+                    file,
+                    callback=(delete_callback, file),
+                )
+
     def download_subtitles(self, video_id, options):
         """download subtitles for a video"""
 
@@ -800,6 +862,14 @@ class Youtube2Zim:
         try:
             with yt_dlp.YoutubeDL(options_copy) as ydl:
                 ydl.download([video_id])
+            subtitles_list = self.fetch_video_subtitles_list(video_id)
+            # save subtitles to cache for generating JSON files later
+            save_json(
+                self.subtitles_cache_dir,
+                video_id,
+                subtitles_list.dict(by_alias=True),
+            )
+            self.add_video_subtitles_to_zim(video_id)
         except Exception:
             logger.error(f"Could not download subtitles for {video_id}")
 
@@ -827,6 +897,23 @@ class Youtube2Zim:
         )
         for channel_id in uniq_channel_ids:
             save_channel_branding(self.channels_dir, channel_id, save_banner=False)
+            channel_profile_path = self.channels_dir / channel_id / "profile.jpg"
+            self.add_file_to_zim(
+                f"channels/{channel_id}/profile.jpg",
+                channel_profile_path,
+                callback=(delete_callback, channel_profile_path),
+            )
+
+    def add_main_channel_branding_to_zim(self):
+        """add main channel branding to zim file"""
+        branding_items = [
+            ("profile.jpg", self.profile_path),
+            ("banner.jpg", self.banner_path),
+            ("favicon.png", self.build_dir / "favicon.png"),
+        ]
+        for filename, path in branding_items:
+            if path.exists():
+                self.add_file_to_zim(filename, path, callback=(delete_callback, path))
 
     def update_metadata(self):
         # we use title, description, profile and banner of channel/user
@@ -920,34 +1007,10 @@ class Youtube2Zim:
             return f"videos/{video_id}/video.webp"
 
         def get_subtitles(video_id) -> list[Subtitle]:
-            video_dir = self.videos_dir.joinpath(video_id)
-            languages = [
-                x.stem.split(".")[1]
-                for x in video_dir.iterdir()
-                if x.is_file() and x.name.endswith(".vtt")
-            ]
-
-            def to_subtitle_object(lang):
-                try:
-                    try:
-                        subtitle = get_language_details(
-                            YOUTUBE_LANG_MAP.get(lang, lang)
-                        )
-                    except NotFound:
-                        lang_simpl = re.sub(r"^([a-z]{2})-.+$", r"\1", lang)
-                        subtitle = get_language_details(
-                            YOUTUBE_LANG_MAP.get(lang_simpl, lang_simpl)
-                        )
-                except Exception:
-                    logger.error(f"Failed to get language details for {lang}")
-                    raise
-                return Subtitle(
-                    code=lang,
-                    name=f"{subtitle['english'].title()} - {subtitle['query']}",
-                )
-
-            # Youtube.com sorts subtitles by English name
-            return sorted(map(to_subtitle_object, languages), key=lambda x: x.name)
+            subtitles_list = load_json(self.subtitles_cache_dir, video_id)
+            if subtitles_list is None:
+                return []
+            return subtitles_list["subtitles"]
 
         def get_videos_list(playlist):
             videos = load_mandatory_json(
@@ -1122,9 +1185,20 @@ class Youtube2Zim:
         # clean videos left out in videos directory
         remove_unused_videos(videos)
 
-    def add_files_to_zim(self, dir_path: Path, zim_file: Creator):
-        """recursively add a path to a zim file"""
-        for file_path in filter(
-            lambda file_path: file_path.is_file(), dir_path.rglob("*")
-        ):
-            zim_file.add_item(FileItem(dir_path, file_path))
+    def add_file_to_zim(
+        self,
+        path: str,
+        fpath: Path,
+        callback: Callable | tuple[Callable, Any] | None = None,
+    ):
+        """add a file to a ZIM file"""
+
+        if not fpath.exists():
+            logger.error(f"File {fpath} does not exist")
+            return
+        logger.debug(f"Adding {path} to ZIM")
+        self.zim_file.add_item_for(
+            path,
+            fpath=fpath,
+            callback=callback,
+        )
