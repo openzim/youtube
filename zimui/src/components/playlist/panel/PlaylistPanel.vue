@@ -57,7 +57,7 @@ const emit = defineEmits(['shuffle', 'loop', 'hide-panel'])
 
 <template>
   <v-card class="border-thin rounded-lg" flat>
-    <v-card-item class="border-b-thin bg-grey-lighten-5 px-2">
+    <v-card-item class="border-b-thin px-2">
       <v-row class="px-2">
         <v-col :cols="showToggle ? 9 : 12">
           <v-card-title class="panel-title">{{ props.playlist.title }}</v-card-title>
