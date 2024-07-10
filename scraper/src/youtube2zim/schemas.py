@@ -100,3 +100,10 @@ class Channel(CamelModel):
     joined_date: str
     collection_type: str
     main_playlist: str | None = None
+
+
+class Config(CamelModel):
+    """Class to serialize configuration data for the ZIM."""
+
+    main_color: str | None = "#000000"
+    secondary_color: str | None = "#FFFFFF"
