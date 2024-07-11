@@ -103,7 +103,7 @@ class Channel(CamelModel):
 
 
 class Config(CamelModel):
-    """Class to serialize configuration data for the ZIM."""
+    """Class to serialize configuration data for the ZIM UI."""
 
-    main_color: str | None = "#000000"
-    secondary_color: str | None = "#FFFFFF"
+    main_color: str | None
+    secondary_color: str | None
