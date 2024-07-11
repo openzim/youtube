@@ -54,6 +54,7 @@ from youtube2zim.processing import post_process_video, process_thumbnail
 from youtube2zim.schemas import (
     Author,
     Channel,
+    Config,
     Playlist,
     PlaylistPreview,
     Playlists,
@@ -1177,6 +1178,17 @@ class Youtube2Zim:
                 collection_type=self.collection_type,
                 main_playlist=main_playlist_slug,
                 joined_date=channel_data["snippet"]["publishedAt"],
+            ).model_dump_json(by_alias=True, indent=2),
+            mimetype="application/json",
+            is_front=False,
+        )
+
+        # write config.json file
+        self.zim_file.add_item_for(
+            path="config.json",
+            title="Config",
+            content=Config(
+                main_color=self.main_color, secondary_color=self.secondary_color
             ).model_dump_json(by_alias=True, indent=2),
             mimetype="application/json",
             is_front=False,

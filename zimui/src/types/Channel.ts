@@ -11,6 +11,11 @@ export interface Channel {
   mainPlaylist?: string
 }
 
+export interface Config {
+  mainColor: string
+  secondaryColor: string
+}
+
 export interface Author {
   channelId: string
   channelTitle: string

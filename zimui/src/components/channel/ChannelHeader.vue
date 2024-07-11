@@ -6,7 +6,6 @@ import AboutDialogButton from '@/components/channel/AboutDialogButton.vue'
 import { useMainStore } from '@/stores/main'
 
 import profilePlaceholder from '@/assets/images/profile-placeholder.jpg'
-import bannerPlaceholder from '@/assets/images/banner-placeholder.jpg'
 
 const { mdAndDown } = useDisplay()
 
@@ -43,8 +42,7 @@ const tab = ref<number>(tabs[0].id)
       <v-parallax
         :scale="1"
         height="120"
-        class="rounded-lg rounded-t-0"
-        :lazy-src="bannerPlaceholder"
+        class="banner-bg rounded-lg rounded-t-0"
         :src="main.channel?.bannerPath"
       ></v-parallax>
 
@@ -96,5 +94,15 @@ const tab = ref<number>(tabs[0].id)
     border-top-left-radius: 0 !important;
     border-top-right-radius: 0 !important;
   }
+}
+
+.banner-bg {
+  background: rgb(var(--v-theme-primary));
+  background: linear-gradient(
+    120deg,
+    rgba(var(--v-theme-primary-darken-1)) 0%,
+    rgba(var(--v-theme-primary)) 50%,
+    rgba(var(--v-theme-primary-lighten-1)) 100%
+  );
 }
 </style>

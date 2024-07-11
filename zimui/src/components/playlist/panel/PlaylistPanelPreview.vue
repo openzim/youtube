@@ -11,7 +11,7 @@ const emit = defineEmits(['click'])
 
 <template>
   <v-card
-    class="mx-auto border-thin rounded-lg"
+    class="mx-auto border-thin rounded-lg bg-background-darken-1"
     prepend-icon="mdi-playlist-play"
     append-icon="mdi-chevron-down"
     link

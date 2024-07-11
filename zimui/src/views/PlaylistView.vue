@@ -64,7 +64,7 @@ const { mdAndDown } = useDisplay()
     <v-row>
       <v-spacer />
       <v-col cols="12" md="5" lg="4" xl="3" xxl="2">
-        <v-card flat class="header-card rounded-lg pa-5 bg-grey-lighten-4">
+        <v-card flat class="header-card rounded-lg border-thin pa-5">
           <v-img
             :lazy-src="thumbnailPlaceholder"
             :src="playlist.thumbnailPath"
@@ -93,7 +93,7 @@ const { mdAndDown } = useDisplay()
               Play All
             </v-btn>
             <v-btn
-              class="border-thin bg-grey-lighten-4 flex-fill"
+              class="border-thin flex-fill"
               rounded="lg"
               prepend-icon="mdi-shuffle"
               variant="flat"
