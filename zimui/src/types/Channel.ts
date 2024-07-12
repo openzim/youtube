@@ -9,6 +9,7 @@ export interface Channel {
   joinedDate: string
   collectionType: string
   mainPlaylist?: string
+  playlistCount: number
 }
 
 export interface Config {
