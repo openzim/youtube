@@ -100,6 +100,7 @@ class Channel(CamelModel):
     joined_date: str
     collection_type: str
     main_playlist: str | None = None
+    playlist_count: int
 
 
 class Config(CamelModel):
