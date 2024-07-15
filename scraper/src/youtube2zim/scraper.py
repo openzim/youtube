@@ -1177,6 +1177,7 @@ class Youtube2Zim:
                 banner_path="banner.jpg",
                 collection_type=self.collection_type,
                 main_playlist=main_playlist_slug,
+                playlist_count=len(self.playlists),
                 joined_date=channel_data["snippet"]["publishedAt"],
             ).model_dump_json(by_alias=True, indent=2),
             mimetype="application/json",
