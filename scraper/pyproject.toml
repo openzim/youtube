@@ -31,7 +31,7 @@ additional-keywords = ["youtube"]
 [project.optional-dependencies]
 scripts = ["invoke==2.2.0"]
 lint = ["black==24.4.2", "ruff==0.4.10"]
-check = ["pyright==1.1.368"]
+check = ["pyright==1.1.371"]
 test = ["pytest==8.2.2", "coverage==7.5.3"]
 dev = [
   "pre-commit==3.7.1",
