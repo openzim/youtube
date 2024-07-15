@@ -70,6 +70,14 @@ def test_zim_videos():
         assert zim_fh.get_item(video_json["videoPath"]).mimetype == "video/webm"
         assert zim_fh.get_item(video_json["thumbnailPath"]).mimetype == "image/webp"
 
+        for subtitle in video_json["subtitleList"]:
+            assert (
+                zim_fh.get_item(
+                    video_json["subtitlePath"] + f"/video.{subtitle["code"]}.vtt"
+                ).mimetype
+                == "text/vtt"
+            )
+
 
 def test_zim_playlists():
     """Ensure playlists json files are present in ZIM file"""
