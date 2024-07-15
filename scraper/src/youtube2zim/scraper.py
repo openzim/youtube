@@ -21,6 +21,7 @@ from typing import Any
 
 import yt_dlp
 from kiwixstorage import KiwixStorage
+from libzim.writer import IndexData  # type: ignore
 from pif import get_public_ip
 from zimscraperlib.download import stream_file
 from zimscraperlib.filesystem import delete_callback
@@ -31,7 +32,7 @@ from zimscraperlib.image.probing import get_colors, is_hex_color
 from zimscraperlib.image.transformation import resize_image
 from zimscraperlib.inputs import compute_descriptions
 from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
-from zimscraperlib.zim import Creator
+from zimscraperlib.zim import Creator, StaticItem
 from zimscraperlib.zim.filesystem import validate_zimfile_creatable
 from zimscraperlib.zim.metadata import (
     validate_description,
@@ -82,6 +83,29 @@ from youtube2zim.youtube import (
 )
 
 MAXIMUM_YOUTUBEID_LENGTH = 24
+
+
+class CustomIndexData(IndexData):
+    """Custom IndexData class to allow for custom title and content"""
+
+    def __init__(self, title: str, content: str):
+        self.title = title
+        self.content = content
+
+    def has_indexdata(self):
+        return True
+
+    def get_title(self):
+        return self.title
+
+    def get_content(self):
+        return self.content
+
+    def get_keywords(self):
+        return ""
+
+    def get_wordcount(self):
+        return len(self.content.split()) if self.content else 0
 
 
 class Youtube2Zim:
@@ -1066,11 +1090,22 @@ class Youtube2Zim:
         def generate_playlist_object(playlist) -> Playlist:
             channel_data = get_channel_json(playlist.creator_id)
             videos = get_videos_list(playlist)
+            playlist_videos = [generate_video_preview_object(video) for video in videos]
+
+            # add videos to ZIM index
+            for idx, video_obj in enumerate(playlist_videos):
+                self.add_custom_item_to_zim_index(
+                    video_obj.title,
+                    videos[idx]["snippet"]["description"],
+                    video_obj.slug,
+                    f"watch/{video_obj.slug}?list={get_playlist_slug(playlist)}",
+                )
+
             return Playlist(
                 id=playlist.playlist_id,
                 title=playlist.title,
                 description=playlist.description,
-                videos=[generate_video_preview_object(video) for video in videos],
+                videos=playlist_videos,
                 publication_date=playlist.published_at,
                 author=Author(
                     channel_id=playlist.creator_id,
@@ -1141,14 +1176,21 @@ class Youtube2Zim:
                     playlist_slug  # set uploads playlist as main playlist
                 )
 
+            playlist_obj = generate_playlist_object(playlist)
             self.zim_file.add_item_for(
                 path=playlist_path,
                 title=playlist.title,
-                content=generate_playlist_object(playlist).model_dump_json(
-                    by_alias=True, indent=2
-                ),
+                content=playlist_obj.model_dump_json(by_alias=True, indent=2),
                 mimetype="application/json",
                 is_front=False,
+            )
+
+            # add playlist to ZIM index
+            self.add_custom_item_to_zim_index(
+                playlist_obj.title,
+                playlist_obj.description,
+                playlist_slug,
+                f"playlist/{playlist_slug}",
             )
 
         # write playlists.json file
@@ -1215,3 +1257,26 @@ class Youtube2Zim:
             fpath=fpath,
             callback=callback,
         )
+
+    def add_custom_item_to_zim_index(
+        self, title: str, content: str, fname: str, zimui_redirect: str
+    ):
+        """add a custom item to the ZIM index"""
+
+        redirect_url = f"../index.html#/{zimui_redirect}"
+        html_content = (
+            f"<html><head><title>{title}</title>"
+            f'<meta http-equiv="refresh" content="0;URL=\'{redirect_url}\'" />'
+            f"</head><body></body></html>"
+        )
+
+        item = StaticItem(
+            title=title,
+            path="index/" + fname,
+            content=bytes(html_content, "utf-8"),
+            mimetype="text/html",
+        )
+        item.get_indexdata = lambda: CustomIndexData(title, content)
+
+        logger.debug(f"Adding {fname} to ZIM index")
+        self.zim_file.add_item(item)

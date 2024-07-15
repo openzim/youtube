@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Validate if ZIM cannot be created at given output location (#204)
 - Add videos, subtitles, thumbnails and channel branding to the ZIM "on the fly" (#209)
 - Remove `--no-zim`, `--keep` CLI arguments
+- Add support to index content from `zimui` JSON files in the ZIM using custom `IndexData` (#224)
 
 ## [2.3.0] - 2024-05-22
 
