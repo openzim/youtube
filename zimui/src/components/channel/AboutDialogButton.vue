@@ -15,6 +15,10 @@ const props = defineProps({
   joinedDate: {
     type: String,
     required: true
+  },
+  small: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -27,7 +31,7 @@ const formattedDate = computed(() => {
 </script>
 
 <template>
-  <v-btn class="border-thin" flat @click="dialog = true">
+  <v-btn class="border-thin" :size="small ? 'small' : 'default'" flat @click="dialog = true">
     <v-icon icon="mdi-information-outline" start></v-icon>
     About Channel
   </v-btn>
