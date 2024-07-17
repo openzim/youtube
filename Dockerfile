@@ -32,6 +32,7 @@ COPY scraper/src/youtube2zim/__about__.py /src/scraper/src/youtube2zim/__about__
 
 # Install Python dependencies
 RUN pip install --no-cache-dir /src/scraper
+RUN pip install --no-cache-dir coverage
 
 # Copy code + associated artifacts
 COPY scraper/src /src/scraper/src
@@ -39,7 +40,7 @@ COPY *.md LICENSE CHANGELOG /src/
 
 # Install + cleanup
 RUN pip install --no-cache-dir /src/scraper \
- && rm -rf /src/scraper
+     && rm -rf /src/scraper
 
 # Copy zimui build output
 COPY --from=zimui /src/dist /src/zimui
