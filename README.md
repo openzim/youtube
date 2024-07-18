@@ -11,10 +11,9 @@ Youtube2zim
 `youtube2zim` allows you to create a [ZIM file](https://openzim.org)
 from a Youtube Channel/Username or one-or-more Playlists.
 
-It downloads the video (`webm` or `mp4` extension – optionally
+It downloads the videos (`webm` or `mp4` extension – optionally
 recompress them in lower-quality, smaller size), the thumbnails, the
-subtitles and the authors' profile pictures ; then produces JSON files
-containing content for the channel, playlists, and videos, which are then utilized by a Vue.js UI.
+subtitles and the authors' profile pictures; It then produces JSON files containing content for the channel, playlists, and videos, which are used by the UI, which is a Vue.js application that needs to be compiled as a static website with Vite and is then embedded inside the ZIM.
 
 `youtube2zim` adheres to openZIM's [Contribution Guidelines](https://github.com/openzim/overview/wiki/Contributing).
 
@@ -23,7 +22,7 @@ containing content for the channel, playlists, and videos, which are then utiliz
 Requirements
 ------------
 
-* [`ffmpeg`](https://ffmpeg.org/) for video transcoding (only used with `--lower-quality`).
+* [`ffmpeg`](https://ffmpeg.org/) for video transcoding.
 * [`Yarn`](https://yarnpkg.com/getting-started/install) to install Javascript dependencies for the Vue.js UI.
 
 Installation
@@ -83,7 +82,7 @@ youtube2zim --api-key "<your-api-key>" --type user --id "Vsauce" --name "vsauce"
 
 ## Notes
 
-* If you encounter issues reading ZIM files created using this scraper, please take a look at the [Compatibility Matrix](https://github.com/openzim/youtube/wiki/Compatibility) before opening a ticket.
+* Your API_KEY is subject to usage quotas (10,000 requests/day by default). Be careful to not waste your quota, especially when scraping large channels.
 
 youtube2zim-playlists
 ---------------------
