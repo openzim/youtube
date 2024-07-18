@@ -11,20 +11,19 @@ Youtube2zim
 `youtube2zim` allows you to create a [ZIM file](https://openzim.org)
 from a Youtube Channel/Username or one-or-more Playlists.
 
-It downloads the video (`webm` or `mp4` extension – optionally
+It downloads the videos (`webm` or `mp4` extension – optionally
 recompress them in lower-quality, smaller size), the thumbnails, the
-subtitles and the authors' profile pictures ; then, it create a static
-HTML files folder of it before creating a ZIM off of it.
+subtitles and the authors' profile pictures; It then produces JSON files containing content for the channel, playlists, and videos, which are used by the UI, which is a Vue.js application that needs to be compiled as a static website with Vite and is then embedded inside the ZIM.
 
 `youtube2zim` adheres to openZIM's [Contribution Guidelines](https://github.com/openzim/overview/wiki/Contributing).
 
-`youtube2zim` has implemented openZIM's [Python bootstrap, conventions and policies](https://github.com/openzim/_python-bootstrap/docs/Policy.md) **v1.0.2**.
+`youtube2zim` has implemented openZIM's [Python bootstrap, conventions and policies](https://github.com/openzim/_python-bootstrap/blob/main/docs/Policy.md) **v1.0.2**.
 
 Requirements
 ------------
 
-* [`ffmpeg`](https://ffmpeg.org/) for video transcoding (only used with `--lower-quality`).
-* `curl` and `unzip` to install Javascript dependencies. See `get_js_deps.sh` if you want to do it manually.
+* [`ffmpeg`](https://ffmpeg.org/) for video transcoding.
+* [`Yarn`](https://yarnpkg.com/getting-started/install) to install Javascript dependencies for the Vue.js UI.
 
 Installation
 ------------
@@ -41,7 +40,7 @@ pyproject.toml).
 
 If you do not already have it on your system, install hatch to build the software and manage virtual
 environments (you might be interested by our detailed
-[Developer Setup](https://github.com/openzim/_python-bootstrap/wiki/Developer-Setup) as well,
+[Developer Setup](https://github.com/openzim/_python-bootstrap/blob/main/docs/Developer-Setup.md) as well,
 especially regarding how to configure hatch globally for proper detection of its virtual environments
 by Visual Studio Code).
 
@@ -83,8 +82,7 @@ youtube2zim --api-key "<your-api-key>" --type user --id "Vsauce" --name "vsauce"
 
 ## Notes
 
-* Your API_KEY is subject to usage quotas (10,000 requests/day) so use `--only_test_branding` when adjusting parameters and branding to not *waste your quota*.
-* If you encounter issues reading ZIM files created using this scraper, please take a look at the [Compatibility Matrix](https://github.com/openzim/youtube/wiki/Compatibility) before opening a ticket.
+* Your API_KEY is subject to usage quotas (10,000 requests/day by default). Be careful to not waste your quota, especially when scraping large channels.
 
 youtube2zim-playlists
 ---------------------
