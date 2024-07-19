@@ -25,9 +25,7 @@ const windowHeight = ref(
 
 // Calculate the height of the playlist panel container
 const panelContainerHeight = computed<string>(() => {
-  if (smAndDown.value) return '350px'
-
-  const panelHeight = Math.min(windowHeight.value - 150, 800)
+  const panelHeight = Math.min(windowHeight.value - 150, smAndDown.value ? 350 : 800)
   const totalItemsHeight = props.playlist.videos.length * 90
 
   return totalItemsHeight < panelHeight ? '100%' : `${panelHeight}px`
@@ -79,7 +77,7 @@ const emit = defineEmits(['shuffle', 'loop', 'hide-panel'])
         </v-col>
       </v-row>
       <v-row dense no-gutters>
-        <v-col>
+        <v-col class="d-flex">
           <v-btn
             class="pa-2"
             size="md"

@@ -80,9 +80,11 @@ const tab = ref<number>(tabs[0].id)
 
       <!-- Tabs Navigation -->
       <v-tabs v-if="!hideTabs" v-model="tab" align-tabs="center">
-        <v-tab v-for="item in tabs" :key="item.id" :to="item.to">
-          {{ item.title }}
-        </v-tab>
+        <router-link v-for="item in tabs" :key="item.id" :to="item.to" class="text-black">
+          <v-tab>
+            {{ item.title }}
+          </v-tab>
+        </router-link>
       </v-tabs>
     </v-card>
   </v-container>

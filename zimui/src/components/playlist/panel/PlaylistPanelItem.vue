@@ -48,7 +48,7 @@ const truncatedTitle = computed<string>(() => {
             <span v-else class="mx-2">{{ order }}</span>
           </div>
           <v-img
-            class="border-thin rounded-lg"
+            class="d-block border-thin rounded-lg"
             :lazy-src="thumbnailPlaceholder"
             :src="props.video.thumbnailPath"
             min-width="50"

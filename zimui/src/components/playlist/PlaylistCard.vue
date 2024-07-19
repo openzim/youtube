@@ -54,7 +54,7 @@ const videoCount = computed<string>(() => {
           </div>
           <div class="position-relative">
             <v-img
-              class="border-thin rounded-lg"
+              class="d-block border-thin rounded-lg"
               :lazy-src="thumbnailPlaceholder"
               :src="props.playlist.thumbnailPath"
               min-width="125"

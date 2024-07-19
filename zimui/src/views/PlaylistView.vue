@@ -71,7 +71,7 @@ const { mdAndDown } = useDisplay()
             min-width="125"
             max-width="400"
             aspect-ratio="16/9"
-            class="rounded-lg"
+            class="d-block rounded-lg"
           />
 
           <p class="playlist-title text-h5 font-weight-bold mt-4">{{ playlist.title }}</p>

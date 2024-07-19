@@ -1,5 +1,6 @@
 import 'vuetify/styles'
 import '@mdi/font/css/materialdesignicons.css'
+import axios from 'axios'
 import { createVuetify } from 'vuetify'
 import type { Config } from '@/types/Channel'
 
@@ -9,9 +10,9 @@ async function loadVuetify() {
 
   // Load primary and secondary colors from config.json
   try {
-    const response = await fetch('./config.json')
-    if (response.ok) {
-      const config: Config = await response.json()
+    const response = await axios.get('./config.json')
+    if (response.status === axios.HttpStatusCode.Ok) {
+      const config: Config = response.data
       primaryColor = config.mainColor || primaryColor
       secondaryColor = config.secondaryColor || secondaryColor
     } else {

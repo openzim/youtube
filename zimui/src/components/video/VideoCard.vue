@@ -47,7 +47,7 @@ const duration = computed<string>(() => {
         <v-col cols="5" md="12">
           <div class="position-relative">
             <v-img
-              class="rounded-lg border-thin"
+              class="d-block rounded-lg border-thin"
               :lazy-src="thumbnailPlaceholder"
               :src="props.video.thumbnailPath"
               min-width="125"
