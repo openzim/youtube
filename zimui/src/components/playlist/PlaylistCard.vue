@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useDisplay } from 'vuetify'
 
 import type { PlaylistPreview } from '@/types/Playlists'
 import { truncateText } from '@/utils/format-utils'
 
-import thumbnailPlaceholder from '@/assets/images/thumbnail-placeholder.webp'
+import thumbnailPlaceholder from '@/assets/images/thumbnail-placeholder.jpg'
+import { polyfillThumbnail } from '@/plugins/webp-hero'
 
 const { smAndDown } = useDisplay()
 
@@ -29,6 +30,14 @@ const truncatedTitle = computed<string>(() => {
 
 const videoCount = computed<string>(() => {
   return props.playlist.videosCount === 1 ? '1 video' : `${props.playlist.videosCount} videos`
+})
+
+const thumbnailSrc = ref(props.playlist.thumbnailPath)
+
+// Polyfill the thumbnail if the browser doesn't support WebP
+onMounted(async () => {
+  if (!thumbnailSrc.value) return
+  thumbnailSrc.value = await polyfillThumbnail(thumbnailSrc.value)
 })
 </script>
 
@@ -56,7 +65,7 @@ const videoCount = computed<string>(() => {
             <v-img
               class="d-block border-thin rounded-lg"
               :lazy-src="thumbnailPlaceholder"
-              :src="props.playlist.thumbnailPath"
+              :src="thumbnailSrc"
               min-width="125"
               max-width="400"
             ></v-img>

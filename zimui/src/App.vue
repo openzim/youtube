@@ -1,16 +1,10 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import { useMainStore } from '@/stores/main'
-import { triggerWebpPolyfill } from './plugins/webp-hero'
 
 import ErrorDisplay from '@/components/common/ErrorDisplay.vue'
 
 const main = useMainStore()
-
-onMounted(() => {
-  triggerWebpPolyfill()
-})
 </script>
 
 <template>
