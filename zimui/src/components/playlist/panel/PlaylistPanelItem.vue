@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import type { VideoPreview } from '@/types/Videos'
 import { formatTimestamp, truncateText } from '@/utils/format-utils'
 import { useDisplay } from 'vuetify'
-import thumbnailPlaceholder from '@/assets/images/thumbnail-placeholder.webp'
+import thumbnailPlaceholder from '@/assets/images/thumbnail-placeholder.jpg'
+import { polyfillThumbnail } from '@/plugins/webp-hero'
 
 const { smAndDown } = useDisplay()
 
@@ -27,6 +28,14 @@ const titleLength = computed<number>(() => {
 const truncatedTitle = computed<string>(() => {
   return truncateText(props.video.title, titleLength.value)
 })
+
+const thumbnailSrc = ref(props.video.thumbnailPath)
+
+// Polyfill the thumbnail if the browser doesn't support WebP
+onMounted(async () => {
+  if (!thumbnailSrc.value) return
+  thumbnailSrc.value = await polyfillThumbnail(thumbnailSrc.value)
+})
 </script>
 
 <template>
@@ -48,9 +57,9 @@ const truncatedTitle = computed<string>(() => {
             <span v-else class="mx-2">{{ order }}</span>
           </div>
           <v-img
-            class="border-thin rounded-lg"
+            class="d-block border-thin rounded-lg"
             :lazy-src="thumbnailPlaceholder"
-            :src="props.video.thumbnailPath"
+            :src="thumbnailSrc"
             min-width="50"
             max-width="300"
           ></v-img>

@@ -103,3 +103,20 @@ a {
     U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF,
     U+FFFD;
 }
+
+.v-btn {
+  display: flex !important;
+}
+
+.v-slide-group__content {
+  align-items: center;
+  justify-content: center;
+}
+
+.v-avatar img {
+  border-radius: 100%;
+}
+
+.v-btn__content > .v-icon--start {
+  margin-right: 0.5rem;
+}

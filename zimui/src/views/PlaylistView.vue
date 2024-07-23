@@ -8,7 +8,8 @@ import type { Playlist } from '@/types/Playlists'
 import { formatDate } from '@/utils/format-utils'
 
 import PlaylistPanelItem from '@/components/playlist/panel/PlaylistPanelItem.vue'
-import thumbnailPlaceholder from '@/assets/images/thumbnail-placeholder.webp'
+import thumbnailPlaceholder from '@/assets/images/thumbnail-placeholder.jpg'
+import { polyfillThumbnail } from '@/plugins/webp-hero'
 
 const main = useMainStore()
 const route = useRoute()
@@ -16,6 +17,7 @@ const router = useRouter()
 const slug: string = route.params.slug as string
 
 const playlist: Ref<Playlist> = ref<Playlist>() as Ref<Playlist>
+const thumbnailSrc = ref('')
 
 // Fetch playlist data
 const fetchPlaylistData = async function () {
@@ -54,6 +56,14 @@ const onShuffleClick = function () {
 // Fetch the data on component mount
 onMounted(() => {
   fetchPlaylistData()
+    .then(() => {
+      if (!playlist.value.thumbnailPath) return
+      thumbnailSrc.value = playlist.value.thumbnailPath
+    })
+    .then(async () => {
+      if (!thumbnailSrc.value) return
+      thumbnailSrc.value = await polyfillThumbnail(thumbnailSrc.value)
+    })
 })
 
 const { mdAndDown } = useDisplay()
@@ -67,11 +77,11 @@ const { mdAndDown } = useDisplay()
         <v-card flat class="header-card rounded-lg border-thin pa-5">
           <v-img
             :lazy-src="thumbnailPlaceholder"
-            :src="playlist.thumbnailPath"
+            :src="thumbnailSrc"
             min-width="125"
             max-width="400"
             aspect-ratio="16/9"
-            class="rounded-lg"
+            class="d-block rounded-lg"
           />
 
           <p class="playlist-title text-h5 font-weight-bold mt-4">{{ playlist.title }}</p>

@@ -7,6 +7,13 @@ import App from './App.vue'
 import router from './router'
 import loadVuetify from './plugins/vuetify'
 
+import ResizeObserver from 'resize-observer-polyfill'
+
+if (typeof window.ResizeObserver === 'undefined') {
+  console.debug('Polyfilling ResizeObserver')
+  window.ResizeObserver = ResizeObserver
+}
+
 loadVuetify()
   .then((vuetify) => {
     const app = createApp(App)

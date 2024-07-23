@@ -70,6 +70,28 @@ onBeforeUnmount(() => {
 
 <template>
   <div>
-    <video ref="videoPlayer" class="video-js vjs-youtube"></video>
+    <video
+      ref="videoPlayer"
+      class="video-js vjs-youtube"
+      :controls="props.options.controls"
+      :preload="props.options.preload"
+      :autoplay="props.options.autoplay"
+      :poster="props.options.poster"
+    >
+      <source
+        v-for="(source, idx) in props.options.sources"
+        :key="idx"
+        :src="source.src"
+        :type="source.type"
+      />
+      <track
+        v-for="(track, idx) in props.options.tracks"
+        :key="idx"
+        :kind="track.kind"
+        :src="track.src"
+        :srclang="track.code"
+        :label="track.label"
+      />
+    </video>
   </div>
 </template>
