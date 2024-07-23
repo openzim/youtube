@@ -44,7 +44,7 @@
     "eslint-plugin-vue": "^9.23.0",
     "jsdom": "^24.0.0",
     "npm-run-all2": "^6.1.2",
-    "ogv": "^1.9.0",
+    "ogv": "1.8.9",
     "prettier": "^3.2.5",
     "terser": "^5.31.3",
     "typescript": "~5.4.0",

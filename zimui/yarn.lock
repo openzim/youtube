@@ -3799,10 +3799,10 @@ object-inspect@^1.13.1:
   resolved "https://registry.yarnpkg.com/object-inspect/-/object-inspect-1.13.1.tgz#b96c6109324ccfef6b12216a956ca4dc2ff94bc2"
   integrity sha512-5qoj1RUiKOMsCCNLV1CBiPYE10sziTsnmNxkAI/rZhiD63CF7IqdFGC/XzjWjpSgLf0LxXX3bDFIh0E18f6UhQ==
 
-ogv@^1.9.0:
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/ogv/-/ogv-1.9.0.tgz#ac1ea8f3e572709b376e8bf708e673803af3e0aa"
-  integrity sha512-Spjbi8spzaY5PCn7JDQm6HAP8XDRuOCMG/oCQy59IPFe4A0oXR0dDNPRpc6oj8gIjPgs5pL7hpE9prf27qztFw==
+ogv@1.8.9:
+  version "1.8.9"
+  resolved "https://registry.yarnpkg.com/ogv/-/ogv-1.8.9.tgz#c589adc3aed86489f50899f63cef97c6c86b7eb4"
+  integrity sha512-tQA2E3E2PzdWqxIaI5X8q8Vxvj1Ap3JSZmD1MfnA+cTY3o0t+06zY4RKXckQ9pxeqGy/UH4l4QensssmbPLwAQ==
   dependencies:
     "@babel/runtime" "^7.16.7"
 
