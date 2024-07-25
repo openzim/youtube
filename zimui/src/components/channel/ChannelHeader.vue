@@ -6,6 +6,7 @@ import AboutDialogButton from '@/components/channel/AboutDialogButton.vue'
 import { useMainStore } from '@/stores/main'
 
 import profilePlaceholder from '@/assets/images/profile-placeholder.jpg'
+import bannerOverlay from '@/assets/images/banner-overlay.png'
 
 const { mdAndDown } = useDisplay()
 
@@ -46,6 +47,7 @@ const tab = ref<number>(tabs[0].id)
         :scale="1"
         height="120"
         class="banner-bg rounded-lg rounded-t-0"
+        :lazy-src="bannerOverlay"
         :src="main.channel?.bannerPath"
       ></v-parallax>
 
