@@ -106,8 +106,10 @@ const videoOptions = ref({
   controlBar: { pictureInPictureToggle: false },
   playbackRates: [0.25, 0.5, 1, 1.5, 2],
   techOrder: ['html5', 'ogvjs'],
+  html5: { preloadTextTracks: false },
   ogvjs: {
-    base: './assets/ogvjs'
+    base: './assets/ogvjs',
+    preloadTextTracks: false
   },
   poster: videoPoster,
   sources: [
