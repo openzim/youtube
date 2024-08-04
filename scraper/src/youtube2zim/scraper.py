@@ -882,21 +882,70 @@ class Youtube2Zim:
     def download_subtitles(self, video_id, options):
         """download subtitles for a video"""
 
+        def get_subtitle_s3_key(code: str) -> str:
+            return f"subtitles/{video_id}/subtitle.{code}.vtt"
+
+        def get_subtitle_path(code: str) -> str:
+            return options["y2z_videos_dir"].joinpath(f"{video_id}/video.{code}.vtt")
+
         options_copy = options.copy()
-        options_copy.update({"skip_download": True, "writethumbnail": False})
+        options_copy.update(
+            {"skip_download": True, "writethumbnail": False, "listsubs": True}
+        )
+
+        # Fetch the list of requested subtitles
         try:
             with yt_dlp.YoutubeDL(options_copy) as ydl:
-                ydl.download([video_id])
+                info = ydl.extract_info(video_id, download=False)
+                requested_subtitles = (
+                    info.get("requested_subtitles", {}) if info else None
+                )
+            if not requested_subtitles:
+                return True
+            requested_subtitle_keys = list(requested_subtitles.keys())
+        except Exception as e:
+            logger.error(f"Could not fetch subtitles for {video_id}: {e}")
+            return False
+
+        # Download subtitles from cache if available
+        if self.s3_storage:
+            for subtitle_key in requested_subtitles:
+                subtitle_path = get_subtitle_path(subtitle_key)
+                s3_key = get_subtitle_s3_key(subtitle_key)
+                logger.debug(
+                    f"Attempting to download subtitles for {video_id} from cache..."
+                )
+                if self.download_from_cache(s3_key, subtitle_path, ""):
+                    requested_subtitle_keys.remove(subtitle_key)
+
+        # Download subtitles using yt-dlp
+        try:
+            if len(requested_subtitle_keys) > 0:
+                options_copy.update(
+                    {"sublangs": requested_subtitle_keys, "listsubs": False}
+                )
+                with yt_dlp.YoutubeDL(options_copy) as ydl:
+                    ydl.download([video_id])
+        except Exception:
+            logger.error(f"Could not download subtitles for {video_id}")
+        else:
+            # upload to cache only if everything went well
+            if self.s3_storage:
+                for subtitle_key in requested_subtitle_keys:
+                    subtitle_path = get_subtitle_path(subtitle_key)
+                    s3_key = get_subtitle_s3_key(subtitle_key)
+                    logger.debug(f"Uploading subtitle for {video_id} to cache ...")
+                    self.upload_to_cache(s3_key, subtitle_path, "")
+
+            # save subtitle keys to local cache for generating JSON files later
             subtitles_list = self.fetch_video_subtitles_list(video_id)
-            # save subtitles to cache for generating JSON files later
             save_json(
                 self.subtitles_cache_dir,
                 video_id,
                 subtitles_list.dict(by_alias=True),
             )
             self.add_video_subtitles_to_zim(video_id)
-        except Exception:
-            logger.error(f"Could not download subtitles for {video_id}")
+            return True
 
     def download_video_files_batch(self, options, videos_ids):
         """download video file and thumbnail for all videos in batch
