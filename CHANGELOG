@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Disable preloading of subtitles in video.js in `zimui` (#38)
+- Update `download_subtitles` method to cache subtitles in S3 storage (#277)
 
 ## [3.0.0] - 2024-07-29
 
