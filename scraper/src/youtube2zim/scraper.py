@@ -24,7 +24,6 @@ from kiwixstorage import KiwixStorage
 from libzim.writer import IndexData  # type: ignore
 from pif import get_public_ip
 from zimscraperlib.download import stream_file
-from zimscraperlib.filesystem import delete_callback
 from zimscraperlib.i18n import NotFound, get_language_details
 from zimscraperlib.image.convertion import convert_image
 from zimscraperlib.image.presets import WebpHigh
@@ -66,6 +65,7 @@ from youtube2zim.schemas import (
 )
 from youtube2zim.utils import (
     clean_text,
+    delete_callback,
     get_slug,
     load_json,
     load_mandatory_json,
@@ -423,17 +423,19 @@ class Youtube2Zim:
         except KeyboardInterrupt:
             self.zim_file.can_finish = False
             logger.error("KeyboardInterrupt, exiting.")
+            return 1
         except Exception as exc:
             # request Creator not to create a ZIM file on finish
             self.zim_file.can_finish = False
             logger.error(f"Interrupting process due to error: {exc}")
             logger.exception(exc)
-        finally:
+            return 1
+        else:
             logger.info("Finishing ZIM file…")
             self.zim_file.finish()
-
-        logger.info("removing temp folder")
-        shutil.rmtree(self.build_dir, ignore_errors=True)
+        finally:
+            logger.info("removing temp folder")
+            shutil.rmtree(self.build_dir, ignore_errors=True)
 
         logger.info("all done!")
 
