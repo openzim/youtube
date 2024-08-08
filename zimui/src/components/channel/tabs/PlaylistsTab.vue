@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 
 import { useMainStore } from '@/stores/main'
 import type { PlaylistPreview } from '@/types/Playlists'
@@ -8,7 +8,8 @@ import PlaylistGrid from '@/components/playlist/PlaylistGrid.vue'
 import TabInfo from '@/components/common/ViewInfo.vue'
 
 const main = useMainStore()
-const playlists = ref<PlaylistPreview[]>()
+const playlists = ref<PlaylistPreview[]>([])
+const isLoading = computed(() => playlists.value.length === 0)
 
 // Watch for changes in the main playlist
 watch(
@@ -39,11 +40,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <tab-info
-    :title="'Playlists from ' + main.channel?.title || ''"
-    :count="playlists?.length || 0"
-    :count-text="playlists?.length === 1 ? 'playlist' : 'playlists'"
-    icon="mdi-playlist-play"
-  />
-  <playlist-grid v-if="playlists" :playlists="playlists" />
+  <div v-if="isLoading" class="container mt-8 d-flex justify-center">
+    <v-progress-circular class="d-inline" indeterminate></v-progress-circular>
+  </div>
+  <div v-else>
+    <tab-info
+      :title="'Playlists from ' + main.channel?.title || ''"
+      :count="playlists?.length || 0"
+      :count-text="playlists?.length === 1 ? 'playlist' : 'playlists'"
+      icon="mdi-playlist-play"
+    />
+    <playlist-grid v-if="playlists" :playlists="playlists" />
+  </div>
 </template>

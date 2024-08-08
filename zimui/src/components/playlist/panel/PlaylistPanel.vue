@@ -6,6 +6,7 @@ import type { Playlist } from '@/types/Playlists'
 import { LoopOptions } from '@/types/Playlists'
 
 import PlaylistPanelItem from './PlaylistPanelItem.vue'
+import type { VideoPreview } from '@/types/Videos'
 
 const { smAndDown } = useDisplay()
 
@@ -18,6 +19,8 @@ const props = defineProps<{
   loop: LoopOptions
   shuffle: boolean
 }>()
+
+const isLoading = computed(() => props.playlist.videos.length === 0)
 
 const windowHeight = ref(
   window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
@@ -51,10 +54,35 @@ const scrollToCurrentVideo = () => {
 }
 
 const emit = defineEmits(['shuffle', 'loop', 'hide-panel'])
+
+const items = computed(() => props.playlist.videos.slice(0, 48))
+
+const loadMoreItems = async () => {
+  return new Promise<VideoPreview[]>((resolve) => {
+    setTimeout(() => {
+      resolve(props.playlist.videos.slice(items.value.length, items.value.length + 12))
+    }, 100)
+  })
+}
+
+const load = async ({ done }: { done: (status: 'ok' | 'empty') => void }) => {
+  const res = await loadMoreItems()
+  items.value.push(...res)
+  if (
+    items.value[items.value.length - 1] == props.playlist.videos[props.playlist.videos.length - 1]
+  ) {
+    done('empty')
+    return
+  }
+  done('ok')
+}
 </script>
 
 <template>
-  <v-card class="border-thin rounded-lg" flat>
+  <div v-if="isLoading" class="container mt-8 d-flex justify-center">
+    <v-progress-circular class="d-inline" indeterminate></v-progress-circular>
+  </div>
+  <v-card v-else class="border-thin rounded-lg" flat>
     <v-card-item class="border-b-thin px-2">
       <v-row class="px-2">
         <v-col :cols="showToggle ? 9 : 12">
@@ -111,15 +139,17 @@ const emit = defineEmits(['shuffle', 'loop', 'hide-panel'])
 
     <v-card-item class="pa-0">
       <div id="panel-items-container" :style="{ height: panelContainerHeight }">
-        <playlist-panel-item
-          v-for="(item, index) in props.playlist.videos"
-          :id="`video-item-${index}`"
-          :key="item.slug"
-          :video="item"
-          :order="index + 1"
-          :selected="item.slug === props.videoSlug"
-          :playlist-slug="props.playlistSlug"
-        ></playlist-panel-item>
+        <v-infinite-scroll class="h-full overflow-hidden" :items="items" empty-text="" @load="load">
+          <playlist-panel-item
+            v-for="(item, index) in items"
+            :id="`video-item-${index}`"
+            :key="item.slug"
+            :video="item"
+            :order="index + 1"
+            :selected="item.slug === props.videoSlug"
+            :playlist-slug="props.playlistSlug"
+          ></playlist-panel-item>
+        </v-infinite-scroll>
       </div>
     </v-card-item>
   </v-card>

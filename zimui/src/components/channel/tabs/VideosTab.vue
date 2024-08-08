@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 
 import { useMainStore } from '@/stores/main'
 import type { VideoPreview } from '@/types/Videos'
@@ -11,6 +11,7 @@ import type { Playlist } from '@/types/Playlists'
 const main = useMainStore()
 const videos = ref<VideoPreview[]>([])
 const playlist = ref<Playlist>()
+const isLoading = computed(() => videos.value.length === 0)
 
 // Watch for changes in the main playlist
 watch(
@@ -42,11 +43,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <tab-info
-    :title="playlist?.title || 'Main Playlist'"
-    :count="playlist?.videosCount || 0"
-    :count-text="playlist?.videos.length === 1 ? 'video' : 'videos'"
-    icon="mdi-video-outline"
-  />
-  <video-grid v-if="videos" :videos="videos" :playlist-slug="main.channel?.mainPlaylist" />
+  <div v-if="isLoading" class="container mt-8 d-flex justify-center">
+    <v-progress-circular class="d-inline" indeterminate></v-progress-circular>
+  </div>
+  <div v-else>
+    <tab-info
+      :title="playlist?.title || 'Main Playlist'"
+      :count="playlist?.videosCount || 0"
+      :count-text="playlist?.videos.length === 1 ? 'video' : 'videos'"
+      icon="mdi-video-outline"
+    />
+    <video-grid v-if="videos" :videos="videos" :playlist-slug="main.channel?.mainPlaylist" />
+  </div>
 </template>
