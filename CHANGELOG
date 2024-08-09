@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Disable preloading of subtitles in video.js in `zimui` (#38)
+- Fix scraper to exit properly when `too many videos fail to download` exceptions are raised (#288)
 
 ## [3.0.0] - 2024-07-29
 
