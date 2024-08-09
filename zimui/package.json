@@ -20,7 +20,7 @@
     "dayjs": "^1.11.11",
     "pinia": "^2.1.7",
     "resize-observer-polyfill": "^1.5.1",
-    "video.js": "^8.12.0",
+    "video.js": "^8.17.3",
     "vite-plugin-vuetify": "^2.0.3",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0",
