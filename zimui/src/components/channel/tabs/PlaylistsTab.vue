@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 
 import { useMainStore } from '@/stores/main'
 import type { PlaylistPreview } from '@/types/Playlists'
@@ -9,7 +9,7 @@ import TabInfo from '@/components/common/ViewInfo.vue'
 
 const main = useMainStore()
 const playlists = ref<PlaylistPreview[]>([])
-const isLoading = computed(() => playlists.value.length === 0)
+const isLoading = ref(true)
 
 // Watch for changes in the main playlist
 watch(
@@ -26,6 +26,7 @@ const fetchData = async function () {
       const resp = await main.fetchPlaylists()
       if (resp) {
         playlists.value = resp.playlists
+        isLoading.value = false
       }
     } catch (error) {
       main.setErrorMessage('An unexpected error occured when fetching playlists.')

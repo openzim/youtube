@@ -20,7 +20,7 @@ const props = defineProps<{
   shuffle: boolean
 }>()
 
-const isLoading = computed(() => props.playlist.videos.length === 0)
+const isLoading = computed(() => props.playlist.videos === undefined)
 
 const windowHeight = ref(
   window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
@@ -66,11 +66,9 @@ const loadMoreItems = async () => {
 }
 
 const load = async ({ done }: { done: (status: 'ok' | 'empty') => void }) => {
-  const res = await loadMoreItems()
-  items.value.push(...res)
-  if (
-    items.value[items.value.length - 1] == props.playlist.videos[props.playlist.videos.length - 1]
-  ) {
+  const moreItems = await loadMoreItems()
+  items.value.push(...moreItems)
+  if (items.value.length === props.playlist.videos.length) {
     done('empty')
     return
   }

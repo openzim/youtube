@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 
 import { useMainStore } from '@/stores/main'
 import type { VideoPreview } from '@/types/Videos'
@@ -11,7 +11,7 @@ import type { Playlist } from '@/types/Playlists'
 const main = useMainStore()
 const videos = ref<VideoPreview[]>([])
 const playlist = ref<Playlist>()
-const isLoading = computed(() => videos.value.length === 0)
+const isLoading = ref(true)
 
 // Watch for changes in the main playlist
 watch(
@@ -29,6 +29,7 @@ const fetchData = async function () {
       if (resp) {
         playlist.value = resp
         videos.value = resp.videos
+        isLoading.value = false
       }
     } catch (error) {
       main.setErrorMessage('An unexpected error occured when fetching videos.')

@@ -21,9 +21,9 @@ const loadMoreItems = async () => {
 }
 
 const load = async ({ done }: { done: (status: 'ok' | 'empty') => void }) => {
-  const res = await loadMoreItems()
-  items.value.push(...res)
-  if (items.value[items.value.length - 1] == props.playlists[props.playlists.length - 1]) {
+  const moreItems = await loadMoreItems()
+  items.value.push(...moreItems)
+  if (items.value.length === props.playlists.length) {
     done('empty')
     return
   }
