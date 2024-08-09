@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useDisplay } from 'vuetify'
 import type { VideoPreview } from '@/types/Videos'
 import VideoCard from './VideoCard.vue'
@@ -9,23 +10,45 @@ const props = defineProps<{
   videos: VideoPreview[]
   playlistSlug?: string
 }>()
+
+const items = computed(() => props.videos.slice(0, 48))
+
+const loadMoreItems = async () => {
+  return new Promise<VideoPreview[]>((resolve) => {
+    setTimeout(() => {
+      resolve(props.videos.slice(items.value.length, items.value.length + 12))
+    }, 100)
+  })
+}
+
+const load = async ({ done }: { done: (status: 'ok' | 'empty') => void }) => {
+  const moreItems = await loadMoreItems()
+  items.value.push(...moreItems)
+  if (items.value.length === props.videos.length) {
+    done('empty')
+    return
+  }
+  done('ok')
+}
 </script>
 
 <template>
   <v-container class="px-1" :fluid="mdAndDown">
-    <v-row dense>
-      <v-col
-        v-for="video in props.videos"
-        :key="video.id"
-        cols="12"
-        md="4"
-        lg="3"
-        xl="2"
-        xxl="1"
-        class="mb-2 mb-md-6"
-      >
-        <video-card :video="video" :playlist-slug="playlistSlug" />
-      </v-col>
-    </v-row>
+    <v-infinite-scroll class="h-full overflow-hidden" :items="items" empty-text="" @load="load">
+      <v-row dense>
+        <v-col
+          v-for="video in items"
+          :key="video.id"
+          cols="12"
+          md="4"
+          lg="3"
+          xl="2"
+          xxl="1"
+          class="mb-2 mb-md-6"
+        >
+          <video-card :video="video" :playlist-slug="playlistSlug" />
+        </v-col>
+      </v-row>
+    </v-infinite-scroll>
   </v-container>
 </template>

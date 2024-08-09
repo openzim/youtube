@@ -18,6 +18,7 @@ const slug: string = route.params.slug as string
 
 const playlist: Ref<Playlist> = ref<Playlist>() as Ref<Playlist>
 const thumbnailSrc = ref('')
+const isLoading = ref(true)
 
 // Fetch playlist data
 const fetchPlaylistData = async function () {
@@ -26,6 +27,7 @@ const fetchPlaylistData = async function () {
       const resp = await main.fetchPlaylist(slug)
       if (resp) {
         playlist.value = resp
+        isLoading.value = false
       }
     } catch (error) {
       main.setErrorMessage('An unexpected error occured when fetching playlist data.')
@@ -70,7 +72,10 @@ const { mdAndDown } = useDisplay()
 </script>
 
 <template>
-  <v-container v-if="playlist" :fluid="mdAndDown">
+  <div v-if="isLoading" class="container h-screen d-flex justify-center align-center">
+    <v-progress-circular class="d-inline" indeterminate></v-progress-circular>
+  </div>
+  <v-container v-else :fluid="mdAndDown">
     <v-row>
       <v-spacer />
       <v-col cols="12" md="5" lg="4" xl="3" xxl="2">

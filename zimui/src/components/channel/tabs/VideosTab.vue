@@ -11,6 +11,7 @@ import type { Playlist } from '@/types/Playlists'
 const main = useMainStore()
 const videos = ref<VideoPreview[]>([])
 const playlist = ref<Playlist>()
+const isLoading = ref(true)
 
 // Watch for changes in the main playlist
 watch(
@@ -28,6 +29,7 @@ const fetchData = async function () {
       if (resp) {
         playlist.value = resp
         videos.value = resp.videos
+        isLoading.value = false
       }
     } catch (error) {
       main.setErrorMessage('An unexpected error occured when fetching videos.')
@@ -42,11 +44,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <tab-info
-    :title="playlist?.title || 'Main Playlist'"
-    :count="playlist?.videosCount || 0"
-    :count-text="playlist?.videos.length === 1 ? 'video' : 'videos'"
-    icon="mdi-video-outline"
-  />
-  <video-grid v-if="videos" :videos="videos" :playlist-slug="main.channel?.mainPlaylist" />
+  <div v-if="isLoading" class="container mt-8 d-flex justify-center">
+    <v-progress-circular class="d-inline" indeterminate></v-progress-circular>
+  </div>
+  <div v-else>
+    <tab-info
+      :title="playlist?.title || 'Main Playlist'"
+      :count="playlist?.videosCount || 0"
+      :count-text="playlist?.videos.length === 1 ? 'video' : 'videos'"
+      icon="mdi-video-outline"
+    />
+    <video-grid v-if="videos" :videos="videos" :playlist-slug="main.channel?.mainPlaylist" />
+  </div>
 </template>
