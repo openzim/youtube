@@ -24,7 +24,6 @@ from kiwixstorage import KiwixStorage
 from libzim.writer import IndexData  # type: ignore
 from pif import get_public_ip
 from zimscraperlib.download import stream_file
-from zimscraperlib.filesystem import delete_callback
 from zimscraperlib.i18n import NotFound, get_language_details
 from zimscraperlib.image.convertion import convert_image
 from zimscraperlib.image.presets import WebpHigh
@@ -66,6 +65,7 @@ from youtube2zim.schemas import (
 )
 from youtube2zim.utils import (
     clean_text,
+    delete_callback,
     get_slug,
     load_json,
     load_mandatory_json,
@@ -282,106 +282,110 @@ class Youtube2Zim:
     def run(self):
         """execute the scraper step by step"""
 
-        self.validate_id()
-
-        # validate dateafter input
-        self.validate_dateafter_input()
-
-        if not self.name:
-            raise Exception("name is mandatory")
-        period = datetime.date.today().strftime("%Y-%m")
-        self.fname = (
-            self.fname.format(period=period)
-            if self.fname
-            else f"{self.name}_{period}.zim"
-        )
-
-        # check that we can create a ZIM file in the output directory
-        validate_zimfile_creatable(self.output_dir, self.fname)
-
-        # check that build_dir is correct
-        if not self.build_dir.exists() or not self.build_dir.is_dir():
-            raise OSError(f"Incorrect build_dir: {self.build_dir}")
-
-        logger.info(
-            f"starting youtube scraper for {self.collection_type}#{self.youtube_id}"
-        )
-        logger.info(f"preparing build folder at {self.build_dir.resolve()}")
-        self.prepare_build_folder()
-
-        logger.info("testing Youtube credentials")
-        if not credentials_ok():
-            raise ValueError("Unable to connect to Youtube API v3. check `API_KEY`.")
-
-        if self.s3_url_with_credentials and not self.s3_credentials_ok():
-            raise ValueError("Unable to connect to Optimization Cache. Check its URL.")
-
-        # fail early if supplied branding files are missing
-        self.check_branding_values()
-
-        logger.info("compute playlists list to retrieve")
-        self.extract_playlists()
-
-        logger.info(
-            ".. {} playlists:\n   {}".format(
-                len(self.playlists),
-                "\n   ".join([p.playlist_id for p in self.playlists]),
-            )
-        )
-
-        logger.info("compute list of videos")
-        self.extract_videos_list()
-
-        nb_videos_msg = f".. {len(self.videos_ids)} videos"
-        if self.dateafter.start.year != 1:
-            nb_videos_msg += (
-                f" in date range: {self.dateafter.start} - {datetime.date.today()}"
-            )
-        logger.info(f"{nb_videos_msg}.")
-
-        logger.info("update general metadata")
-        self.update_metadata()
-
-        if not self.title:
-            raise Exception("title is mandatory")
-        if not self.description:
-            raise Exception("description is mandatory")
-        if not self.creator:
-            raise Exception("creator is mandatory")
-
-        # check that illustration is correct
-        illustration = "favicon.png"
-        illustration_path = self.build_dir / illustration
-        if not illustration_path.exists() or not illustration_path.is_file():
-            raise OSError(
-                f"Incorrect illustration: {illustration} ({illustration_path})"
-            )
-        with open(illustration_path, "rb") as fh:
-            illustration_data = fh.read()
-
-        logger.info("building ZIM file")
-        self.zim_file = Creator(
-            filename=self.output_dir / self.fname,
-            main_path="index.html",
-            ignore_duplicates=True,
-            disable_metadata_checks=self.disable_metadata_checks,
-        )
-        self.zim_file.config_metadata(
-            Name=self.name,  # pyright: ignore[reportArgumentType]
-            Language=self.language,  # pyright: ignore[reportArgumentType]
-            Title=self.title,
-            Description=self.description,
-            LongDescription=self.long_description,
-            Creator=self.creator,
-            Publisher=self.publisher,
-            tags=";".join(self.tags) if self.tags else "",
-            scraper=SCRAPER,
-            Date=datetime.date.today(),
-            Illustration_48x48_at_1=illustration_data,
-        )
-        self.zim_file.start()
-
         try:
+            self.validate_id()
+
+            # validate dateafter input
+            self.validate_dateafter_input()
+
+            if not self.name:
+                raise Exception("name is mandatory")
+            period = datetime.date.today().strftime("%Y-%m")
+            self.fname = (
+                self.fname.format(period=period)
+                if self.fname
+                else f"{self.name}_{period}.zim"
+            )
+
+            # check that we can create a ZIM file in the output directory
+            validate_zimfile_creatable(self.output_dir, self.fname)
+
+            # check that build_dir is correct
+            if not self.build_dir.exists() or not self.build_dir.is_dir():
+                raise OSError(f"Incorrect build_dir: {self.build_dir}")
+
+            logger.info(
+                f"starting youtube scraper for {self.collection_type}#{self.youtube_id}"
+            )
+            logger.info(f"preparing build folder at {self.build_dir.resolve()}")
+            self.prepare_build_folder()
+
+            logger.info("testing Youtube credentials")
+            if not credentials_ok():
+                raise ValueError(
+                    "Unable to connect to Youtube API v3. check `API_KEY`."
+                )
+
+            if self.s3_url_with_credentials and not self.s3_credentials_ok():
+                raise ValueError(
+                    "Unable to connect to Optimization Cache. Check its URL."
+                )
+
+            # fail early if supplied branding files are missing
+            self.check_branding_values()
+
+            logger.info("compute playlists list to retrieve")
+            self.extract_playlists()
+
+            logger.info(
+                ".. {} playlists:\n   {}".format(
+                    len(self.playlists),
+                    "\n   ".join([p.playlist_id for p in self.playlists]),
+                )
+            )
+
+            logger.info("compute list of videos")
+            self.extract_videos_list()
+
+            nb_videos_msg = f".. {len(self.videos_ids)} videos"
+            if self.dateafter.start.year != 1:
+                nb_videos_msg += (
+                    f" in date range: {self.dateafter.start} - {datetime.date.today()}"
+                )
+            logger.info(f"{nb_videos_msg}.")
+
+            logger.info("update general metadata")
+            self.update_metadata()
+
+            if not self.title:
+                raise Exception("title is mandatory")
+            if not self.description:
+                raise Exception("description is mandatory")
+            if not self.creator:
+                raise Exception("creator is mandatory")
+
+            # check that illustration is correct
+            illustration = "favicon.png"
+            illustration_path = self.build_dir / illustration
+            if not illustration_path.exists() or not illustration_path.is_file():
+                raise OSError(
+                    f"Incorrect illustration: {illustration} ({illustration_path})"
+                )
+            with open(illustration_path, "rb") as fh:
+                illustration_data = fh.read()
+
+            logger.info("building ZIM file")
+            self.zim_file = Creator(
+                filename=self.output_dir / self.fname,
+                main_path="index.html",
+                ignore_duplicates=True,
+                disable_metadata_checks=self.disable_metadata_checks,
+            )
+            self.zim_file.config_metadata(
+                Name=self.name,  # pyright: ignore[reportArgumentType]
+                Language=self.language,  # pyright: ignore[reportArgumentType]
+                Title=self.title,
+                Description=self.description,
+                LongDescription=self.long_description,
+                Creator=self.creator,
+                Publisher=self.publisher,
+                tags=";".join(self.tags) if self.tags else "",
+                scraper=SCRAPER,
+                Date=datetime.date.today(),
+                Illustration_48x48_at_1=illustration_data,
+            )
+            self.zim_file.start()
+
             logger.debug(f"Preparing zimfile at {self.zim_file.filename}")
 
             logger.info("add main channel branding to ZIM")
@@ -421,19 +425,18 @@ class Youtube2Zim:
             logger.info("creating JSON files")
             self.make_json_files(succeeded)
         except KeyboardInterrupt:
-            self.zim_file.can_finish = False
             logger.error("KeyboardInterrupt, exiting.")
+            return 1
         except Exception as exc:
-            # request Creator not to create a ZIM file on finish
-            self.zim_file.can_finish = False
             logger.error(f"Interrupting process due to error: {exc}")
             logger.exception(exc)
-        finally:
+            return 1
+        else:
             logger.info("Finishing ZIM file…")
             self.zim_file.finish()
-
-        logger.info("removing temp folder")
-        shutil.rmtree(self.build_dir, ignore_errors=True)
+        finally:
+            logger.info("removing temp folder")
+            shutil.rmtree(self.build_dir, ignore_errors=True)
 
         logger.info("all done!")
 

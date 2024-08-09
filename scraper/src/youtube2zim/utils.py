@@ -2,6 +2,7 @@
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 import json
+import os
 from pathlib import Path
 
 from slugify import slugify
@@ -44,3 +45,9 @@ def load_mandatory_json(cache_dir: Path, key):
 def has_argument(arg_name, all_args):
     """whether --arg_name is specified in all_args"""
     return list(filter(lambda x: x.startswith(f"--{arg_name}"), all_args))
+
+
+def delete_callback(fpath: str | Path):
+    """callback to delete file"""
+    if Path(fpath).exists():
+        os.unlink(fpath)
