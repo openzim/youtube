@@ -5,13 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) (as of version 2.1.15).
 
-## [Unreleased]
+## [3.0.1] - 2024-08-13
 
-### Changed
+### Fixed
+
 - Disable preloading of subtitles in video.js in `zimui` (#38)
 - Fix scraper to exit properly when `Too much videos failed to download` exceptions are raised (#285)
 - Clean up temporary files properly in case of exceptions during scraper run (#288)
 - Implement infinite scroll for video/playlist lists and add loading spinners in `zimui` (#284)
+- Update video.JS to 8.17.3, brings support for Chrome 58 and 59 (#275)
 
 ## [3.0.0] - 2024-07-29
 
