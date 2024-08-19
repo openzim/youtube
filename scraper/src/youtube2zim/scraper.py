@@ -10,6 +10,7 @@
 import concurrent.futures
 import datetime
 import functools
+import json
 import re
 import shutil
 import subprocess
@@ -23,6 +24,7 @@ import yt_dlp
 from kiwixstorage import KiwixStorage
 from libzim.writer import IndexData  # type: ignore
 from pif import get_public_ip
+from schedule import every, run_pending
 from zimscraperlib.download import stream_file
 from zimscraperlib.i18n import NotFound, get_language_details
 from zimscraperlib.image.convertion import convert_image
@@ -131,6 +133,7 @@ class Youtube2Zim:
         s3_url_with_credentials,
         publisher,
         disable_metadata_checks,
+        stats_filename,
         title=None,
         description=None,
         long_description=None,
@@ -192,6 +195,8 @@ class Youtube2Zim:
         self.playlists = []
         self.uploads_playlist_id = None
         self.videos_ids = []
+        self.video_ids_count = 0
+        self.videos_processed = 0
         self.main_channel_id = None  # use for branding
 
         # debug/devel options
@@ -208,6 +213,12 @@ class Youtube2Zim:
         self.use_any_optimized_version = use_any_optimized_version
         self.video_quality = "low" if self.low_quality else "high"
         self.s3_storage = None
+
+        # scraper progess
+        self.stats_path = None
+        if stats_filename:
+            self.stats_path = Path(stats_filename).expanduser()
+            self.stats_path.parent.mkdir(parents=True, exist_ok=True)
 
     @property
     def root_dir(self):
@@ -283,6 +294,9 @@ class Youtube2Zim:
         """execute the scraper step by step"""
 
         try:
+            # first report => creates a file with appropriate structure
+            self.report_progress()
+
             self.validate_id()
 
             # validate dateafter input
@@ -337,12 +351,16 @@ class Youtube2Zim:
             logger.info("compute list of videos")
             self.extract_videos_list()
 
-            nb_videos_msg = f".. {len(self.videos_ids)} videos"
+            self.video_ids_count = len(self.videos_ids)
+            nb_videos_msg = f".. {self.video_ids_count} videos"
             if self.dateafter.start.year != 1:
                 nb_videos_msg += (
                     f" in date range: {self.dateafter.start} - {datetime.date.today()}"
                 )
             logger.info(f"{nb_videos_msg}.")
+
+            # set a timer to report progress only every 10 seconds
+            every(10).seconds.do(self.report_progress)
 
             logger.info("update general metadata")
             self.update_metadata()
@@ -435,6 +453,7 @@ class Youtube2Zim:
             logger.info("Finishing ZIM file…")
             self.zim_file.finish()
         finally:
+            self.report_progress()
             logger.info("removing temp folder")
             shutil.rmtree(self.build_dir, ignore_errors=True)
 
@@ -638,7 +657,7 @@ class Youtube2Zim:
             options.update({"writeautomaticsub": True})
 
         # find number of actuall parallel workers
-        nb_videos = len(self.videos_ids)
+        nb_videos = self.video_ids_count
         concurrency = nb_videos if nb_videos < max_concurrency else max_concurrency
 
         # short-circuit concurency if we have only one thread (can help debug)
@@ -909,6 +928,7 @@ class Youtube2Zim:
         succeeded = []
         failed = []
         for video_id in videos_ids:
+            run_pending()
             if self.download_video(video_id, options) and self.download_thumbnail(
                 video_id, options
             ):
@@ -916,6 +936,7 @@ class Youtube2Zim:
                 succeeded.append(video_id)
             else:
                 failed.append(video_id)
+            self.videos_processed += 1
         return succeeded, failed
 
     def download_authors_branding(self):
@@ -1283,3 +1304,14 @@ class Youtube2Zim:
 
         logger.debug(f"Adding {fname} to ZIM index")
         self.zim_file.add_item(item)
+
+    def report_progress(self):
+        """report progress to stats file"""
+
+        if not self.stats_path:
+            return
+        progress = {
+            "done": self.videos_processed,
+            "total": self.video_ids_count,
+        }
+        self.stats_path.write_text(json.dumps(progress, indent=2))

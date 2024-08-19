@@ -196,6 +196,12 @@ def main():
         action="store_true",
     )
 
+    parser.add_argument(
+        "--stats-filename",
+        help="Path to store the progress JSON file to.",
+        dest="stats_filename",
+    )
+
     args = parser.parse_args()
     logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
 
