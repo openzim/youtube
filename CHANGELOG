@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Report scraper progress in a JSON file specified with `--stats-filename` (#228)
+
 ## [3.0.1] - 2024-08-13
 
 ### Fixed
