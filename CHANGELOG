@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - Report scraper progress in a JSON file specified with `--stats-filename` (#228)
+- Fix main playlist selection to respect the order of provided playlist IDs (#286)
 
 ## [3.0.1] - 2024-08-13
 
