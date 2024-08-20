@@ -345,7 +345,8 @@ def extract_playlists_details_from(collection_type, youtube_id):
         raise NotImplementedError("unsupported collection_type")
 
     return (
-        [Playlist.from_id(playlist_id) for playlist_id in list(set(playlist_ids))],
+        # dict.fromkeys maintains the order of playlist_ids while removing duplicates
+        [Playlist.from_id(playlist_id) for playlist_id in dict.fromkeys(playlist_ids)],
         main_channel_id,
         uploads_playlist_id,
     )
