@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, type Ref, onMounted } from 'vue'
+import { ref, type Ref, onMounted, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useMainStore } from '@/stores/main'
 import { useRoute, useRouter } from 'vue-router'
@@ -69,6 +69,14 @@ onMounted(() => {
 })
 
 const { mdAndDown } = useDisplay()
+
+// Update the document title with the playlist title
+watch(
+  () => playlist.value,
+  () => {
+    if (playlist.value) document.title = playlist.value.title
+  }
+)
 </script>
 
 <template>

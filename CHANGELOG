@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Report scraper progress in a JSON file specified with `--stats-filename` (#228)
 - Fix main playlist selection to respect the order of provided playlist IDs (#286)
+- Update `zimui` title dynamically with the selected playlist/video title (#298)
 
 ## [3.0.1] - 2024-08-13
 
