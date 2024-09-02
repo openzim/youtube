@@ -168,6 +168,14 @@ const cycleLoopOption = () => {
   const currentIndex = loopOptions.indexOf(main.loop)
   main.setLoop(loopOptions[(currentIndex + 1) % loopOptions.length])
 }
+
+// Update the document title with the video title
+watch(
+  () => video.value,
+  () => {
+    if (video.value) document.title = video.value.title
+  }
+)
 </script>
 
 <template>
