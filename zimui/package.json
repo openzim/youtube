@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@fontsource/roboto": "^5.0.13",
-    "axios": "^1.7.2",
+    "axios": "^1.7.4",
     "dayjs": "^1.11.11",
     "pinia": "^2.1.7",
     "resize-observer-polyfill": "^1.5.1",
