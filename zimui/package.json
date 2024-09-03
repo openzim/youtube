@@ -15,16 +15,16 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "@fontsource/roboto": "^5.0.13",
-    "axios": "^1.7.4",
-    "dayjs": "^1.11.11",
-    "pinia": "^2.1.7",
+    "@fontsource/roboto": "^5.0.14",
+    "axios": "^1.7.7",
+    "dayjs": "^1.11.13",
+    "pinia": "^2.2.2",
     "resize-observer-polyfill": "^1.5.1",
     "video.js": "^8.17.3",
-    "vite-plugin-vuetify": "^2.0.3",
-    "vue": "^3.4.21",
-    "vue-router": "^4.3.0",
-    "vuetify": "^3.6.7",
+    "vite-plugin-vuetify": "^2.0.4",
+    "vue": "^3.4.38",
+    "vue-router": "^4.4.3",
+    "vuetify": "^3.7.1",
     "webp-hero": "^0.0.2"
   },
   "devDependencies": {
