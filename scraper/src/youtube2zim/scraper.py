@@ -22,19 +22,19 @@ from typing import Any
 
 import yt_dlp
 from kiwixstorage import KiwixStorage
-from libzim.writer import IndexData  # type: ignore
 from pif import get_public_ip
 from schedule import every, run_pending
 from zimscraperlib.download import stream_file
-from zimscraperlib.i18n import NotFound, get_language_details
-from zimscraperlib.image.convertion import convert_image
+from zimscraperlib.i18n import NotFoundError, get_language_details
+from zimscraperlib.image.conversion import convert_image
 from zimscraperlib.image.presets import WebpHigh
 from zimscraperlib.image.probing import get_colors, is_hex_color
 from zimscraperlib.image.transformation import resize_image
 from zimscraperlib.inputs import compute_descriptions
 from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
-from zimscraperlib.zim import Creator, StaticItem
+from zimscraperlib.zim import Creator
 from zimscraperlib.zim.filesystem import validate_zimfile_creatable
+from zimscraperlib.zim.indexing import IndexData
 from zimscraperlib.zim.metadata import (
     validate_description,
     validate_longdescription,
@@ -85,29 +85,6 @@ from youtube2zim.youtube import (
 )
 
 MAXIMUM_YOUTUBEID_LENGTH = 24
-
-
-class CustomIndexData(IndexData):
-    """Custom IndexData class to allow for custom title and content"""
-
-    def __init__(self, title: str, content: str):
-        self.title = title
-        self.content = content
-
-    def has_indexdata(self):
-        return True
-
-    def get_title(self):
-        return self.title
-
-    def get_content(self):
-        return self.content
-
-    def get_keywords(self):
-        return ""
-
-    def get_wordcount(self):
-        return len(self.content.split()) if self.content else 0
 
 
 class Youtube2Zim:
@@ -390,8 +367,8 @@ class Youtube2Zim:
                 disable_metadata_checks=self.disable_metadata_checks,
             )
             self.zim_file.config_metadata(
-                Name=self.name,  # pyright: ignore[reportArgumentType]
-                Language=self.language,  # pyright: ignore[reportArgumentType]
+                Name=self.name,
+                Language=self.language,
                 Title=self.title,
                 Description=self.description,
                 LongDescription=self.long_description,
@@ -872,7 +849,7 @@ class Youtube2Zim:
             try:
                 try:
                     subtitle = get_language_details(YOUTUBE_LANG_MAP.get(lang, lang))
-                except NotFound:
+                except NotFoundError:
                     lang_simpl = re.sub(r"^([a-z]{2})-.+$", r"\1", lang)
                     subtitle = get_language_details(
                         YOUTUBE_LANG_MAP.get(lang_simpl, lang_simpl)
@@ -880,6 +857,9 @@ class Youtube2Zim:
             except Exception:
                 logger.error(f"Failed to get language details for {lang}")
                 raise
+            if not subtitle:
+                logger.error(f"Empty language details retrieved for {lang}")
+                raise Exception("Empty language details")
             return Subtitle(
                 code=lang,
                 name=f"{subtitle['english'].title()} - {subtitle['query']}",
@@ -1294,16 +1274,14 @@ class Youtube2Zim:
             f"</head><body></body></html>"
         )
 
-        item = StaticItem(
+        logger.debug(f"Adding {fname} to ZIM index")
+        self.zim_file.add_item_for(
             title=title,
             path="index/" + fname,
             content=bytes(html_content, "utf-8"),
             mimetype="text/html",
+            index_data=IndexData(title=title, content=content),
         )
-        item.get_indexdata = lambda: CustomIndexData(title, content)
-
-        logger.debug(f"Adding {fname} to ZIM index")
-        self.zim_file.add_item(item)
 
     def report_progress(self):
         """report progress to stats file"""
