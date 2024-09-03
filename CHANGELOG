@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix main playlist selection to respect the order of provided playlist IDs (#286)
 - Update `zimui` title dynamically with the selected playlist/video title (#298)
 - Fix `PLAYLISTS` tab not being highlighted when the page is reloaded (#299)
+- Update dependencies, including zimscraperlib 4 (#306)
 
 ## [3.0.1] - 2024-08-13
 
