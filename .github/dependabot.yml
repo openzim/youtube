@@ -18,6 +18,9 @@ updates:
         dependency-type: "production"
       development-dependencies:
         dependency-type: "development"
+    ignore:
+      - dependency-name: "eslint"
+        versions: [">=9.x"]
   - package-ecosystem: "github-actions"
     directory: "/.github"
     schedule:
