@@ -7,7 +7,6 @@
     Create credentials (Other non-UI, Public Data)
 """
 
-import concurrent.futures
 import datetime
 import functools
 import json
@@ -16,6 +15,7 @@ import shutil
 import subprocess
 import tempfile
 from collections.abc import Callable
+from concurrent.futures import Future
 from gettext import gettext as _
 from pathlib import Path
 from typing import Any
@@ -24,7 +24,7 @@ import yt_dlp
 from kiwixstorage import KiwixStorage
 from pif import get_public_ip
 from schedule import every, run_pending
-from zimscraperlib.download import stream_file
+from zimscraperlib.download import YoutubeDownloader, stream_file
 from zimscraperlib.i18n import NotFoundError, get_language_details
 from zimscraperlib.image.conversion import convert_image
 from zimscraperlib.image.presets import WebpHigh
@@ -635,61 +635,26 @@ class Youtube2Zim:
 
         # find number of actuall parallel workers
         nb_videos = self.video_ids_count
-        concurrency = nb_videos if nb_videos < max_concurrency else max_concurrency
+        concurrency = min(max_concurrency, nb_videos)
 
-        # short-circuit concurency if we have only one thread (can help debug)
-        if concurrency <= 1:
-            return self.download_video_files_batch(options, self.videos_ids)
+        self.yt_downloader = YoutubeDownloader(concurrency)
 
-        # prepare out videos_ids batches
-        def get_slot():
-            n = 0
-            while True:
-                yield n
-                n += 1
-                if n >= concurrency:
-                    n = 0
-
-        batches = [[] for _ in range(0, concurrency)]
-        slot = get_slot()
+        succeeded = []
+        failed = []
         for video_id in self.videos_ids:
-            batches[next(slot)].append(video_id)
+            run_pending()
+            if self.download_video(video_id, options) and self.download_thumbnail(
+                video_id, options
+            ):
+                self.download_subtitles(video_id, options)
+                succeeded.append(video_id)
+            else:
+                failed.append(video_id)
+            self.videos_processed += 1
 
-        overall_succeeded = []
-        overall_failed = []
-        # execute the batches concurrently
-        with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as executor:
-            fs = [
-                executor.submit(self.download_video_files_batch, options, videos_ids)
-                for videos_ids in batches
-            ]
-            done, not_done = concurrent.futures.wait(
-                fs, return_when=concurrent.futures.ALL_COMPLETED
-            )
+        self.yt_downloader.shutdown()
 
-            # we have some `not_done` batches, indicating errors within
-            if not_done:
-                logger.critical(
-                    "Not all video-processing batches completed. Cancelling…"
-                )
-                for future in not_done:
-                    exc = future.exception()
-                    if exc:
-                        logger.exception(exc)
-                        raise exc
-
-            # retrieve our list of successful/failed video_ids
-            for future in done:
-                succeeded, failed = future.result()
-                overall_succeeded += succeeded
-                overall_failed += failed
-
-        # remove left-over files for failed downloads
-        logger.debug(f"removing left-over files of {len(overall_failed)} failed videos")
-        for video_id in overall_failed:
-            shutil.rmtree(self.videos_dir.joinpath(video_id), ignore_errors=True)
-
-        return overall_succeeded, overall_failed
+        return succeeded, failed
 
     def download_from_cache(self, key, video_path, encoder_version):
         """whether it successfully downloaded from cache"""
@@ -748,41 +713,47 @@ class Youtube2Zim:
                 )
                 return True
 
-        try:
-            # skip downloading the thumbnails
-            options_copy.update(
-                {
-                    "writethumbnail": False,
-                    "writesubtitles": False,
-                    "allsubtitles": False,
-                    "writeautomaticsub": False,
-                }
-            )
-            with yt_dlp.YoutubeDL(options_copy) as ydl:
-                ydl.download([video_id])
-            post_process_video(
-                video_location,
-                video_id,
-                preset,
-                self.video_format,
-                self.low_quality,
-            )
-            self.add_file_to_zim(
-                zim_path, video_path, callback=(delete_callback, video_path)
-            )
-        except (
-            yt_dlp.utils.DownloadError,
-            FileNotFoundError,
-            subprocess.CalledProcessError,
-        ) as exc:
-            logger.error(f"Video file for {video_id} could not be downloaded")
-            logger.debug(exc)
-            return False
-        else:  # upload to cache only if everything went well
-            if self.s3_storage:
-                logger.debug(f"Uploading video file for {video_id} to cache ...")
-                self.upload_to_cache(s3_key, video_path, preset.VERSION)
-            return True
+        # skip downloading the thumbnails
+        options_copy.update(
+            {
+                "writethumbnail": False,
+                "writesubtitles": False,
+                "allsubtitles": False,
+                "writeautomaticsub": False,
+            }
+        )
+        future = self.yt_downloader.download(video_id, options_copy, wait=False)
+
+        def on_complete(future):
+            try:
+                future.result()
+                post_process_video(
+                    video_location,
+                    video_id,
+                    preset,
+                    self.video_format,
+                    self.low_quality,
+                )
+                self.add_file_to_zim(
+                    zim_path, video_path, callback=(delete_callback, video_path)
+                )
+            except (
+                yt_dlp.utils.DownloadError,
+                FileNotFoundError,
+                subprocess.CalledProcessError,
+            ) as exc:
+                logger.error(f"Video file for {video_id} could not be downloaded")
+                logger.debug(exc)
+                return False
+            else:  # upload to cache only if everything went well
+                if self.s3_storage:
+                    logger.debug(f"Uploading video file for {video_id} to cache ...")
+                    self.upload_to_cache(s3_key, video_path, preset.VERSION)
+                return True
+
+        if isinstance(future, Future):
+            future.add_done_callback(on_complete)
+        return future
 
     def download_thumbnail(self, video_id, options):
         """download the thumbnail from cache/youtube and return True if successful"""
@@ -805,35 +776,41 @@ class Youtube2Zim:
                 )
                 return True
 
-        try:
-            # skip downloading the video
-            options_copy.update(
-                {
-                    "skip_download": True,
-                    "writesubtitles": False,
-                    "allsubtitles": False,
-                    "writeautomaticsub": False,
-                }
-            )
-            with yt_dlp.YoutubeDL(options_copy) as ydl:
-                ydl.download([video_id])
-            process_thumbnail(thumbnail_path, preset)
-            self.add_file_to_zim(
-                zim_path, thumbnail_path, callback=(delete_callback, thumbnail_path)
-            )
-        except (
-            yt_dlp.utils.DownloadError,
-            FileNotFoundError,
-            subprocess.CalledProcessError,
-        ) as exc:
-            logger.error(f"Thumbnail for {video_id} could not be downloaded")
-            logger.debug(exc)
-            return False
-        else:  # upload to cache only if everything went well
-            if self.s3_storage:
-                logger.debug(f"Uploading thumbnail for {video_id} to cache ...")
-                self.upload_to_cache(s3_key, thumbnail_path, preset.VERSION)
-            return True
+        # skip downloading the video
+        options_copy.update(
+            {
+                "skip_download": True,
+                "writesubtitles": False,
+                "allsubtitles": False,
+                "writeautomaticsub": False,
+            }
+        )
+        future = self.yt_downloader.download(video_id, options_copy, wait=False)
+
+        def on_complete(future):
+            try:
+                future.result()
+                process_thumbnail(thumbnail_path, preset)
+                self.add_file_to_zim(
+                    zim_path, thumbnail_path, callback=(delete_callback, thumbnail_path)
+                )
+            except (
+                yt_dlp.utils.DownloadError,
+                FileNotFoundError,
+                subprocess.CalledProcessError,
+            ) as exc:
+                logger.error(f"Thumbnail for {video_id} could not be downloaded")
+                logger.debug(exc)
+                return False
+            else:  # upload to cache only if everything went well
+                if self.s3_storage:
+                    logger.debug(f"Uploading thumbnail for {video_id} to cache ...")
+                    self.upload_to_cache(s3_key, thumbnail_path, preset.VERSION)
+                return True
+
+        if isinstance(future, Future):
+            future.add_done_callback(on_complete)
+        return future
 
     def fetch_video_subtitles_list(self, video_id: str) -> Subtitles:
         """fetch list of subtitles for a video"""
@@ -886,38 +863,25 @@ class Youtube2Zim:
 
         options_copy = options.copy()
         options_copy.update({"skip_download": True, "writethumbnail": False})
-        try:
-            with yt_dlp.YoutubeDL(options_copy) as ydl:
-                ydl.download([video_id])
-            subtitles_list = self.fetch_video_subtitles_list(video_id)
-            # save subtitles to cache for generating JSON files later
-            save_json(
-                self.subtitles_cache_dir,
-                video_id,
-                subtitles_list.dict(by_alias=True),
-            )
-            self.add_video_subtitles_to_zim(video_id)
-        except Exception:
-            logger.error(f"Could not download subtitles for {video_id}")
+        future = self.yt_downloader.download(video_id, options_copy, wait=False)
 
-    def download_video_files_batch(self, options, videos_ids):
-        """download video file and thumbnail for all videos in batch
+        def on_complete(future):
+            try:
+                future.result()
+                subtitles_list = self.fetch_video_subtitles_list(video_id)
+                # save subtitles to cache for generating JSON files later
+                save_json(
+                    self.subtitles_cache_dir,
+                    video_id,
+                    subtitles_list.dict(by_alias=True),
+                )
+                self.add_video_subtitles_to_zim(video_id)
+            except Exception:
+                logger.error(f"Could not download subtitles for {video_id}")
 
-        returning succeeded and failed video ids"""
-
-        succeeded = []
-        failed = []
-        for video_id in videos_ids:
-            run_pending()
-            if self.download_video(video_id, options) and self.download_thumbnail(
-                video_id, options
-            ):
-                self.download_subtitles(video_id, options)
-                succeeded.append(video_id)
-            else:
-                failed.append(video_id)
-            self.videos_processed += 1
-        return succeeded, failed
+        if isinstance(future, Future):
+            future.add_done_callback(on_complete)
+        return future
 
     def download_authors_branding(self):
         videos_channels_json = load_mandatory_json(self.cache_dir, "videos_channels")

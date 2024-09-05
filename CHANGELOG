@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Use newer multithreaded YouTube downloader from zimscraperlib (#118)
+
 ## [3.1.0] - 2024-09-05
 
 ### Added
