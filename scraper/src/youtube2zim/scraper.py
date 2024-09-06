@@ -196,6 +196,7 @@ class Youtube2Zim:
         if stats_filename:
             self.stats_path = Path(stats_filename).expanduser()
             self.stats_path.parent.mkdir(parents=True, exist_ok=True)
+        self.succeeded, self.failed = set(), set()
 
     @property
     def root_dir(self):
@@ -402,15 +403,16 @@ class Youtube2Zim:
                     f"  using cache: {self.s3_storage.url.netloc} "
                     f"with bucket: {self.s3_storage.bucket_name}"
                 )
-            succeeded, failed = self.download_video_files(
-                max_concurrency=self.max_concurrency
-            )
-            if failed:
-                logger.error(f"{len(failed)} video(s) failed to download: {failed}")
-                if len(failed) >= len(succeeded):
+            self.download_video_files(max_concurrency=self.max_concurrency)
+            if self.failed:
+                logger.error(
+                    f"{len(self.failed)} video(s) failed to download: {self.failed}"
+                )
+                if len(self.failed) >= len(self.succeeded):
                     logger.critical("More than half of videos failed. exiting")
                     raise OSError("Too much videos failed to download")
 
+            succeeded = list(self.succeeded)
             logger.info("retrieve channel-info for all videos (author details)")
             get_videos_authors_info(succeeded)
 
@@ -639,22 +641,16 @@ class Youtube2Zim:
 
         self.yt_downloader = YoutubeDownloader(concurrency)
 
-        succeeded = []
-        failed = []
-        for video_id in self.videos_ids:
-            run_pending()
-            if self.download_video(video_id, options) and self.download_thumbnail(
-                video_id, options
-            ):
+        try:
+            for video_id in self.videos_ids:
+                self.download_video(video_id, options)
+                self.download_thumbnail(video_id, options)
                 self.download_subtitles(video_id, options)
-                succeeded.append(video_id)
-            else:
-                failed.append(video_id)
-            self.videos_processed += 1
-
-        self.yt_downloader.shutdown()
-
-        return succeeded, failed
+        except Exception as exc:
+            logger.error(f"Error while downloading videos: {exc}")
+            raise
+        finally:
+            self.yt_downloader.shutdown()
 
     def download_from_cache(self, key, video_path, encoder_version):
         """whether it successfully downloaded from cache"""
@@ -692,6 +688,13 @@ class Youtube2Zim:
         logger.info(f"uploaded {video_path} to cache at {key}")
         return True
 
+    def handle_download_status(self, video_id, status):
+        if status == "failed":
+            self.succeeded.discard(video_id)
+            self.failed.add(video_id)
+        elif status == "succeeded" and video_id not in self.failed:
+            self.succeeded.add(video_id)
+
     def download_video(self, video_id, options):
         """download the video from cache/youtube and return True if successful"""
 
@@ -711,6 +714,7 @@ class Youtube2Zim:
                 self.add_file_to_zim(
                     zim_path, video_path, callback=(delete_callback, video_path)
                 )
+                self.handle_download_status(video_id, "succeeded")
                 return True
 
         # skip downloading the thumbnails
@@ -726,6 +730,7 @@ class Youtube2Zim:
 
         def on_complete(future):
             try:
+                run_pending()
                 future.result()
                 post_process_video(
                     video_location,
@@ -744,15 +749,18 @@ class Youtube2Zim:
             ) as exc:
                 logger.error(f"Video file for {video_id} could not be downloaded")
                 logger.debug(exc)
-                return False
+                self.handle_download_status(video_id, "failed")
             else:  # upload to cache only if everything went well
                 if self.s3_storage:
                     logger.debug(f"Uploading video file for {video_id} to cache ...")
                     self.upload_to_cache(s3_key, video_path, preset.VERSION)
-                return True
+                self.handle_download_status(video_id, "succeeded")
+            finally:
+                self.videos_processed += 1
 
         if isinstance(future, Future):
             future.add_done_callback(on_complete)
+
         return future
 
     def download_thumbnail(self, video_id, options):
@@ -774,6 +782,7 @@ class Youtube2Zim:
                 self.add_file_to_zim(
                     zim_path, thumbnail_path, callback=(delete_callback, thumbnail_path)
                 )
+                self.handle_download_status(video_id, "succeeded")
                 return True
 
         # skip downloading the video
@@ -801,15 +810,16 @@ class Youtube2Zim:
             ) as exc:
                 logger.error(f"Thumbnail for {video_id} could not be downloaded")
                 logger.debug(exc)
-                return False
+                self.handle_download_status(video_id, "failed")
             else:  # upload to cache only if everything went well
                 if self.s3_storage:
                     logger.debug(f"Uploading thumbnail for {video_id} to cache ...")
                     self.upload_to_cache(s3_key, thumbnail_path, preset.VERSION)
-                return True
+                self.handle_download_status(video_id, "succeeded")
 
         if isinstance(future, Future):
             future.add_done_callback(on_complete)
+
         return future
 
     def fetch_video_subtitles_list(self, video_id: str) -> Subtitles:
@@ -881,6 +891,7 @@ class Youtube2Zim:
 
         if isinstance(future, Future):
             future.add_done_callback(on_complete)
+
         return future
 
     def download_authors_branding(self):
