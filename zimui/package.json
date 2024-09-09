@@ -46,7 +46,7 @@
     "npm-run-all2": "^6.2.2",
     "ogv": "1.9.0",
     "prettier": "^3.3.3",
-    "terser": "^5.31.6",
+    "terser": "^5.32.0",
     "typescript": "~5.5.4",
     "vite": "^5.4.3",
     "vite-plugin-static-copy": "^1.0.6",
