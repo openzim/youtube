@@ -16,7 +16,7 @@ dependencies = [
   "requests==2.32.3",
   "kiwixstorage==0.9.0",
   "pif==0.8.2",
-  "pydantic==2.9.0",
+  "pydantic==2.9.1",
   "pyhumps==3.8.0",
   "schedule==1.2.2",
 ]
@@ -32,8 +32,8 @@ additional-keywords = ["youtube"]
 [project.optional-dependencies]
 scripts = ["invoke==2.2.0"]
 lint = ["black==24.8.0", "ruff==0.6.4"]
-check = ["pyright==1.1.379"]
-test = ["pytest==8.3.2", "coverage==7.6.1"]
+check = ["pyright==1.1.380"]
+test = ["pytest==8.3.3", "coverage==7.6.1"]
 dev = [
   "pre-commit==3.8.0",
   "debugpy==1.8.5",
