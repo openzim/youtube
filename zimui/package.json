@@ -15,15 +15,15 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "@fontsource/roboto": "^5.0.14",
+    "@fontsource/roboto": "^5.1.0",
     "axios": "^1.7.7",
     "dayjs": "^1.11.13",
     "pinia": "^2.2.2",
     "resize-observer-polyfill": "^1.5.1",
-    "video.js": "^8.17.3",
+    "video.js": "^8.17.4",
     "vite-plugin-vuetify": "^2.0.4",
-    "vue": "^3.5.3",
-    "vue-router": "^4.4.3",
+    "vue": "^3.5.4",
+    "vue-router": "^4.4.4",
     "vuetify": "^3.7.1",
     "webp-hero": "^0.0.2"
   },
@@ -46,11 +46,11 @@
     "npm-run-all2": "^6.2.2",
     "ogv": "1.9.0",
     "prettier": "^3.3.3",
-    "terser": "^5.31.6",
-    "typescript": "~5.5.4",
-    "vite": "^5.4.3",
+    "terser": "^5.32.0",
+    "typescript": "~5.6.2",
+    "vite": "^5.4.4",
     "vite-plugin-static-copy": "^1.0.6",
-    "vitest": "^2.0.5",
+    "vitest": "^2.1.0",
     "vue-tsc": "^2.1.6"
   },
   "packageManager": "yarn@1.22.22"
