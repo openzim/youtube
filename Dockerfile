@@ -35,7 +35,7 @@ RUN pip install --no-cache-dir /src/scraper
 
 # Copy code + associated artifacts
 COPY scraper/src /src/scraper/src
-COPY *.md LICENSE CHANGELOG /src/
+COPY *.md LICENSE CHANGELOG.md /src/
 
 # Install + cleanup
 RUN pip install --no-cache-dir /src/scraper \
