@@ -7,9 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Deprecated
+
+- `--type user` is now deprecated (will be removed in next major)
+
 ### Fixed
 
 - Ignore empty playlists (#340)
+
+### Changed
+
+- Merge behaviors of user/channel types and add support for `forHandle` (#339, fix for #338)
 
 ## [3.1.0] - 2024-09-05
 
