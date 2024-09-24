@@ -123,6 +123,12 @@ class Youtube2Zim:
     ):
         # data-retrieval info
         self.collection_type = collection_type
+        if self.collection_type == USER:
+            logger.warning(
+                "Collection type 'user' is deprecated. Please use 'channel' type,"
+                " behaviors have been merged. 'user' type is going to be dropped in "
+                " next major release"
+            )
         self.youtube_id = youtube_id
         self.api_key = api_key
         self.dateafter = dateafter

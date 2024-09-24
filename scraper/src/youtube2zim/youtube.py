@@ -80,32 +80,32 @@ def credentials_ok():
         return False
 
 
-def get_channel_json(channel_id, *, for_username=False):
+def get_channel_json(channel_id):
     """fetch or retieve-save and return the Youtube ChannelResult JSON"""
     fname = f"channel_{channel_id}"
     channel_json = load_json(YOUTUBE.cache_dir, fname)
     if channel_json is None:
-        logger.debug(f"query youtube-api for Channel #{channel_id}")
-        req = requests.get(
-            CHANNELS_API,
-            params={
-                "forUsername" if for_username else "id": channel_id,
-                "part": "brandingSettings,snippet,contentDetails",
-                "key": YOUTUBE.api_key,
-            },
-            timeout=REQUEST_TIMEOUT,
-        )
-        if req.status_code >= HTTPStatus.BAD_REQUEST:
-            logger.error(f"HTTP {req.status_code} Error response: {req.text}")
-        req.raise_for_status()
-        try:
-            channel_json = req.json()["items"][0]
-        except (KeyError, IndexError):
-            if for_username:
-                logger.error(f"Invalid username `{channel_id}`: Not Found")
-            else:
-                logger.error(f"Invalid channelId `{channel_id}`: Not Found")
-            raise
+        for criteria in ["forHandle", "id", "forUsername"]:
+            logger.debug(f"query youtube-api for {channel_id} by {criteria}")
+            req = requests.get(
+                CHANNELS_API,
+                params={
+                    criteria: channel_id,
+                    "part": "brandingSettings,snippet,contentDetails",
+                    "key": YOUTUBE.api_key,
+                },
+                timeout=REQUEST_TIMEOUT,
+            )
+            if req.status_code >= HTTPStatus.BAD_REQUEST:
+                logger.error(f"HTTP {req.status_code} Error response: {req.text}")
+            req.raise_for_status()
+            req_json = req.json()
+            if "items" not in req_json:
+                logger.warning(f"Failed to find {channel_id} by {criteria}")
+                continue
+            channel_json = req_json["items"][0]
+        if channel_json is None:
+            raise Exception(f"Impossible to find {channel_id}, check for typos")
         save_json(YOUTUBE.cache_dir, fname, channel_json)
     return channel_json
 
@@ -324,13 +324,8 @@ def extract_playlists_details_from(collection_type, youtube_id):
     uploads_playlist_id = None
     main_channel_id = None
     if collection_type in (USER, CHANNEL):
-        if collection_type == USER:
-            # youtube_id is a Username, fetch actual channelId through channel
-            channel_json = get_channel_json(youtube_id, for_username=True)
-        else:
-            # youtube_id is a channelId
-            channel_json = get_channel_json(youtube_id)
-
+        # get_channel_json is capable to retrieve user and channel
+        channel_json = get_channel_json(youtube_id)
         main_channel_id = channel_json["id"]
 
         # retrieve list of playlists for that channel
