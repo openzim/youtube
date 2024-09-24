@@ -589,9 +589,15 @@ class Youtube2Zim:
         if all_videos is None:
             all_videos = {}
 
+            empty_playlists = []
             # we only return video_ids that we'll use later on. per-playlist JSON stored
             for playlist in self.playlists:
                 videos_json = get_videos_json(playlist.playlist_id)
+                if len(videos_json) == 0:
+                    logger.warning(
+                        f"Playlist '{playlist.playlist_id}' is empty, will be ignored"
+                    )
+                    empty_playlists.append(playlist)
                 # filter in videos within date range and filter away deleted videos
                 skip_outofrange = functools.partial(
                     skip_outofrange_videos, self.dateafter
@@ -602,6 +608,9 @@ class Youtube2Zim:
                     {v["contentDetails"]["videoId"]: v for v in filter_videos}
                 )
             save_json(self.cache_dir, "videos", all_videos)
+
+            for playlist in empty_playlists:
+                self.playlists.remove(playlist)
         self.videos_ids = [*all_videos.keys()]  # unpacking so it's subscriptable
 
     def download_video_files(self, max_concurrency):
