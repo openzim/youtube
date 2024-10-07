@@ -61,6 +61,7 @@ class Playlist(CamelModel):
     """Class to serialize data about a YouTube playlist."""
 
     id: str
+    slug: str
     author: Author
     title: str
     description: str
@@ -85,6 +86,12 @@ class Playlists(CamelModel):
     """Class to serialize data about a list of YouTube playlists."""
 
     playlists: list[PlaylistPreview]
+
+
+class HomePlaylists(CamelModel):
+    """Class to serialize data about a list of YouTube playlists."""
+
+    playlists: list[Playlist]
 
 
 class Channel(CamelModel):
