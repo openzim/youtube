@@ -641,8 +641,8 @@ class Youtube2Zim:
             # "external_downloader_args": ["--max-tries=20", "--retry-wait=30"],
             "outtmpl": str(self.videos_dir.joinpath("%(id)s", "video.%(ext)s")),
             "preferredcodec": self.video_format,
-            "format": f"best[ext={vidext}]/"
-            f"bestvideo[ext={vidext}]+bestaudio[ext={audext}]/best",
+            "format": f"bestvideo*[ext={vidext}]+bestaudio[ext={audext}]/"
+            "bestvideo*+bestaudio/best",
             "y2z_videos_dir": self.videos_dir,
         }
         if self.all_subtitles:
