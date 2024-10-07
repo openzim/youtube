@@ -830,8 +830,11 @@ class Youtube2Zim:
                     "writeautomaticsub": False,
                 }
             )
+            # drop 'format' setting to avoid format issues when downloading thumbnail
+            options_copy.pop("format")
             with yt_dlp.YoutubeDL(options_copy) as ydl:
                 ydl.download([video_id])
+            logger.debug(f"Thumbnail downloaded successfully for {video_id}")
             process_thumbnail(thumbnail_path, preset)
             self.add_file_to_zim(
                 zim_path, thumbnail_path, callback=(delete_callback, thumbnail_path)
@@ -902,8 +905,11 @@ class Youtube2Zim:
         options_copy = options.copy()
         options_copy.update({"skip_download": True, "writethumbnail": False})
         try:
+            # drop 'format' setting to avoid format issues when downloading subtitles
+            options_copy.pop("format")
             with yt_dlp.YoutubeDL(options_copy) as ydl:
                 ydl.download([video_id])
+            logger.debug(f"Subtitles downloaded successfully for {video_id}")
             subtitles_list = self.fetch_video_subtitles_list(video_id)
             # save subtitles to cache for generating JSON files later
             save_json(
