@@ -3,21 +3,25 @@ describe('video player page', () => {
     cy.intercept('GET', '/channel.json', { fixture: 'channel/channel.json' }).as('getChannel')
     cy.intercept('GET', '/playlists/uploads_from_openzim_testing-917Q.json', {
       fixture: 'channel/playlists/uploads_from_openzim_testing-917Q.json'
-    }).as('getUploads')
+    }).as('getPlaylist')
+    cy.intercept('GET', '/home_playlists.json', {
+      fixture: 'channel/home_playlists.json'
+    }).as('getHomePlaylists')
     cy.intercept('GET', '/videos/sample/video.webm', {
       fixture: 'channel/videos/sample/video.webm,null'
     }).as('getVideoFile')
     cy.visit('/')
     cy.wait('@getChannel')
-    cy.wait('@getUploads')
+    cy.wait('@getHomePlaylists')
   })
 
   it('loads the video and related information', () => {
     cy.intercept('GET', '/videos/timelapse-9Tgo.json', {
-      fixture: 'channel//videos/timelapse-9Tgo.json'
+      fixture: 'channel/videos/timelapse-9Tgo.json'
     }).as('getVideo')
     cy.contains('.v-card-title ', 'Timelapse').click()
     cy.wait('@getVideo')
+    cy.wait('@getPlaylist')
     cy.wait('@getVideoFile')
 
     cy.url().should('include', '/watch')

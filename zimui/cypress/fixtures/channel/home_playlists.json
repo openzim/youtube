@@ -1,0 +1,122 @@
+{
+  "playlists": [
+    {
+      "id": "UU8elThf5TGMpQfQc_VE917Q",
+      "slug": "uploads_from_openzim_testing-917Q",
+      "author": {
+        "channelId": "UC8elThf5TGMpQfQc_VE917Q",
+        "channelTitle": "openZIM_testing",
+        "channelDescription": "",
+        "channelJoinedDate": "2024-06-04T13:30:16.232286Z",
+        "profilePath": "channels/UC8elThf5TGMpQfQc_VE917Q/profile.jpg",
+        "bannerPath": "channels/UC8elThf5TGMpQfQc_VE917Q/banner.jpg"
+      },
+      "title": "Uploads from openZIM_testing",
+      "description": "",
+      "publicationDate": "2024-06-04T14:57:45Z",
+      "thumbnailPath": "videos/DYvYGQHYScc/video.webp",
+      "videos": [
+        {
+          "slug": "coffee_machine-DYvY",
+          "id": "DYvYGQHYScc",
+          "title": "Coffee Machine",
+          "thumbnailPath": "videos/DYvYGQHYScc/video.webp",
+          "duration": "PT9S"
+        },
+        {
+          "slug": "timelapse-9Tgo",
+          "id": "9TgosbGRsTk",
+          "title": "Timelapse",
+          "thumbnailPath": "videos/9TgosbGRsTk/video.webp",
+          "duration": "PT11S"
+        }
+      ],
+      "videosCount": 2
+    },
+    {
+      "id": "PLMK6hZr9PcshJpNSRVaKReGlwhVlh5Gph",
+      "slug": "trailers-5Gph",
+      "author": {
+        "channelId": "UC8elThf5TGMpQfQc_VE917Q",
+        "channelTitle": "openZIM_testing",
+        "channelDescription": "",
+        "channelJoinedDate": "2024-06-04T13:30:16.232286Z",
+        "profilePath": "channels/UC8elThf5TGMpQfQc_VE917Q/profile.jpg",
+        "bannerPath": "channels/UC8elThf5TGMpQfQc_VE917Q/banner.jpg"
+      },
+      "title": "Trailers",
+      "description": "",
+      "publicationDate": "2024-06-04T15:15:48Z",
+      "thumbnailPath": "videos/TcMBFSGVi1c/video.webp",
+      "videos": [
+        {
+          "slug": "marvel_studios_avengers_endgame_official_trailer-TcMB",
+          "id": "TcMBFSGVi1c",
+          "title": "Marvel Studios' Avengers: Endgame - Official Trailer",
+          "thumbnailPath": "videos/TcMBFSGVi1c/video.webp",
+          "duration": "PT2M27S"
+        }
+      ],
+      "videosCount": 1
+    },
+    {
+      "id": "PLMK6hZr9PcsjcF5mnaQk8Fi-xnb0AQgGI",
+      "slug": "timelapses-QgGI",
+      "author": {
+        "channelId": "UC8elThf5TGMpQfQc_VE917Q",
+        "channelTitle": "openZIM_testing",
+        "channelDescription": "",
+        "channelJoinedDate": "2024-06-04T13:30:16.232286Z",
+        "profilePath": "channels/UC8elThf5TGMpQfQc_VE917Q/profile.jpg",
+        "bannerPath": "channels/UC8elThf5TGMpQfQc_VE917Q/banner.jpg"
+      },
+      "title": "Timelapses",
+      "description": "",
+      "publicationDate": "2024-06-04T15:04:46Z",
+      "thumbnailPath": "videos/9TgosbGRsTk/video.webp",
+      "videos": [
+        {
+          "slug": "timelapse-9Tgo",
+          "id": "9TgosbGRsTk",
+          "title": "Timelapse",
+          "thumbnailPath": "videos/9TgosbGRsTk/video.webp",
+          "duration": "PT11S"
+        },
+        {
+          "slug": "cloudy_sky_time_lapse_4k_free_footage_video_gopro_11-k02q",
+          "id": "k02qXOcCrbo",
+          "title": "Cloudy Sky ☀️ Time Lapse 4K Free Footage Video | GoPro 11",
+          "thumbnailPath": "videos/k02qXOcCrbo/video.webp",
+          "duration": "PT36S"
+        }
+      ],
+      "videosCount": 2
+    },
+    {
+      "id": "PLMK6hZr9PcsjTJ5u2z-khzvDNXlqdO2wS",
+      "slug": "coffee-O2wS",
+      "author": {
+        "channelId": "UC8elThf5TGMpQfQc_VE917Q",
+        "channelTitle": "openZIM_testing",
+        "channelDescription": "",
+        "channelJoinedDate": "2024-06-04T13:30:16.232286Z",
+        "profilePath": "channels/UC8elThf5TGMpQfQc_VE917Q/profile.jpg",
+        "bannerPath": "channels/UC8elThf5TGMpQfQc_VE917Q/banner.jpg"
+      },
+      "title": "Coffee",
+      "description": "",
+      "publicationDate": "2024-06-04T15:04:25Z",
+      "thumbnailPath": "videos/DYvYGQHYScc/video.webp",
+      "videos": [
+        {
+          "slug": "coffee_machine-DYvY",
+          "id": "DYvYGQHYScc",
+          "title": "Coffee Machine",
+          "thumbnailPath": "videos/DYvYGQHYScc/video.webp",
+          "duration": "PT9S"
+        }
+      ],
+      "videosCount": 1
+    }
+  ]
+}
