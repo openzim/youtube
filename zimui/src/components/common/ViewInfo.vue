@@ -27,7 +27,9 @@ const props = defineProps({
   <v-container class="py-2 px-1" :fluid="mdAndDown">
     <v-row dense>
       <v-col cols="7">
-        <p class="d-flex align-center text-body-2 text-wrap mx-4">{{ props.title }}</p>
+        <p class="d-flex align-center text-body-2 text-wrap mx-4 font-weight-medium">
+          {{ props.title }}
+        </p>
       </v-col>
       <v-col cols="5">
         <p class="d-flex align-center text-body-2 text-wrap mx-4 justify-end">

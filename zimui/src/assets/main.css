@@ -8,6 +8,10 @@ html {
   font-family: 'Roboto', sans-serif;
 }
 
+body {
+  background: rgba(var(--v-theme-background)) !important;
+}
+
 a {
   text-decoration: none;
 }
@@ -123,4 +127,32 @@ a {
 
 .v-btn__content > .v-icon--start {
   margin-right: 0.5rem;
+}
+
+.carousel__icon {
+  fill: black !important;
+}
+
+.carousel__next,
+.carousel__prev {
+  background: rgba(var(--v-theme-background)) !important;
+  border-radius: 100% !important;
+  box-shadow:
+    0 4px 4px rgba(0, 0, 0, 0.3),
+    0 0 4px rgba(0, 0, 0, 0.2);
+  width: 40px !important;
+  height: 40px !important;
+}
+
+.carousel__track {
+  align-items: start !important;
+}
+
+.carousel__prev--disabled,
+.carousel__next--disabled {
+  display: none !important;
+}
+
+.video-list .v-infinite-scroll__side {
+  padding: 0 !important;
 }

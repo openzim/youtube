@@ -13,6 +13,7 @@ const { smAndDown } = useDisplay()
 const props = defineProps<{
   video: VideoPreview
   playlistSlug?: string
+  carouselMode?: boolean
 }>()
 
 // Set the maximum length of the title based on the screen size
@@ -53,7 +54,7 @@ onMounted(async () => {
   >
     <v-card flat class="mx-4">
       <v-row no-gutters>
-        <v-col cols="5" md="12">
+        <v-col :cols="carouselMode ? 12 : 5" md="12">
           <div class="position-relative">
             <v-img
               class="d-block rounded-lg border-thin"
@@ -71,12 +72,18 @@ onMounted(async () => {
           </div>
         </v-col>
         <v-col
-          cols="7"
+          :cols="carouselMode ? 12 : 7"
           md="12"
-          class="d-flex flex-column align-start align-md-center justify-center text-left text-md-center"
+          class="d-flex flex-column align-md-center justify-center text-md-center"
+          :class="{
+            'align-center': carouselMode,
+            'text-center': carouselMode,
+            'align-start': !carouselMode,
+            'text-left': !carouselMode
+          }"
         >
           <v-card-title
-            class="text-body-1 text-wrap px-4 px-md-0 pb-0"
+            class="text-body-2 text-wrap px-4 px-md-0 pb-0"
             :title="props.video.title"
             >{{ truncatedTitle }}</v-card-title
           >

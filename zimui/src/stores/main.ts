@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import axios, { AxiosError } from 'axios'
 import type { Channel } from '@/types/Channel'
-import type { LoopOptions, Playlist, Playlists } from '@/types/Playlists'
+import type { HomePlaylists, LoopOptions, Playlist, Playlists } from '@/types/Playlists'
 import type { Video } from '@/types/Videos'
 
 export type RootState = {
@@ -59,6 +59,25 @@ export const useMainStore = defineStore('main', {
         (error) => {
           this.isLoading = false
           this.errorMessage = 'Failed to load playlist data.'
+          if (error instanceof AxiosError) {
+            this.handleAxiosError(error)
+          }
+        }
+      )
+    },
+    async fetchHomePlaylists() {
+      this.isLoading = true
+      this.errorMessage = ''
+      this.errorDetails = ''
+
+      return axios.get('./home_playlists.json').then(
+        (response) => {
+          this.isLoading = false
+          return response.data as HomePlaylists
+        },
+        (error) => {
+          this.isLoading = false
+          this.errorMessage = 'Failed to load home playlists.'
           if (error instanceof AxiosError) {
             this.handleAxiosError(error)
           }
