@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Ignore empty playlists (#340)
+- Fix `format` setting passed to yt-dlp (#351)
 
 ### Changed
 
