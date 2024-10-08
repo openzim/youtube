@@ -1,18 +1,19 @@
 describe('home page for a channel', () => {
   beforeEach(() => {
     cy.intercept('GET', '/channel.json', { fixture: 'channel/channel.json' }).as('getChannel')
-    cy.intercept('GET', '/playlists/uploads_from_openzim_testing-917Q.json', {
-      fixture: 'channel/playlists/uploads_from_openzim_testing-917Q.json'
-    }).as('getUploads')
+    cy.intercept('GET', '/home_playlists.json', {
+      fixture: 'channel/home_playlists.json'
+    }).as('getHomePlaylists')
     cy.visit('/')
     cy.wait('@getChannel')
-    cy.wait('@getUploads')
+    cy.wait('@getHomePlaylists')
   })
 
   it('loads the videos tab', () => {
-    cy.contains('2 videos').should('be.visible')
-    cy.contains('Coffee Machine').should('be.visible')
-    cy.contains('Timelapse').should('be.visible')
+    cy.contains('Uploads from openZIM_testing').should('be.visible')
+    cy.contains('Trailers').should('be.visible')
+    cy.contains('Timelapses').should('be.visible')
+    cy.contains('Coffee').should('be.visible')
   })
 
   it('loads the playlist tab', () => {

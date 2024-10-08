@@ -57,6 +57,7 @@ from youtube2zim.schemas import (
     Author,
     Channel,
     Config,
+    HomePlaylists,
     Playlist,
     PlaylistPreview,
     Playlists,
@@ -1122,6 +1123,7 @@ class Youtube2Zim:
 
             return Playlist(
                 id=playlist.playlist_id,
+                slug=get_playlist_slug(playlist),
                 title=playlist.title,
                 description=playlist.description,
                 videos=playlist_videos,
@@ -1177,6 +1179,7 @@ class Youtube2Zim:
 
         # write playlists JSON files
         playlist_list = []
+        home_playlist_list = []
 
         main_playlist_slug = None
         if len(self.playlists) > 0:
@@ -1187,13 +1190,6 @@ class Youtube2Zim:
         for playlist in self.playlists:
             playlist_slug = get_playlist_slug(playlist)
             playlist_path = f"playlists/{playlist_slug}.json"
-
-            if playlist.playlist_id != self.uploads_playlist_id:
-                playlist_list.append(generate_playlist_preview_object(playlist))
-            else:
-                main_playlist_slug = (
-                    playlist_slug  # set uploads playlist as main playlist
-                )
 
             playlist_obj = generate_playlist_object(playlist)
             self.zim_file.add_item_for(
@@ -1212,11 +1208,36 @@ class Youtube2Zim:
                 f"playlist/{playlist_slug}",
             )
 
+            # modify playlist object for preview on homepage
+            playlist_obj.videos = playlist_obj.videos[:12]
+
+            if playlist.playlist_id == self.uploads_playlist_id:
+                main_playlist_slug = (
+                    playlist_slug  # set uploads playlist as main playlist
+                )
+                # insert uploads playlist at the beginning of the list
+                playlist_list.insert(0, generate_playlist_preview_object(playlist))
+                home_playlist_list.insert(0, playlist_obj)
+            else:
+                playlist_list.append(generate_playlist_preview_object(playlist))
+                home_playlist_list.append(playlist_obj)
+
         # write playlists.json file
         self.zim_file.add_item_for(
             path="playlists.json",
             title="Playlists",
             content=Playlists(playlists=playlist_list).model_dump_json(
+                by_alias=True, indent=2
+            ),
+            mimetype="application/json",
+            is_front=False,
+        )
+
+        # write home_playlists.json file
+        self.zim_file.add_item_for(
+            path="home_playlists.json",
+            title="Home Playlists",
+            content=HomePlaylists(playlists=home_playlist_list).model_dump_json(
                 by_alias=True, indent=2
             ),
             mimetype="application/json",

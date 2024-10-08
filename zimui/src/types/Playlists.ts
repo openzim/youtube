@@ -3,6 +3,7 @@ import type { VideoPreview } from './Videos'
 
 export interface Playlist {
   id: string
+  slug: string
   author: Author
   title: string
   description: string
@@ -22,6 +23,10 @@ export interface PlaylistPreview {
 
 export interface Playlists {
   playlists: PlaylistPreview[]
+}
+
+export interface HomePlaylists {
+  playlists: Playlist[]
 }
 
 export enum LoopOptions {

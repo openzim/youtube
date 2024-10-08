@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Merge behaviors of user/channel types and add support for `forHandle` (#339, fix for #338)
+- Update layout of `Videos` tab in `zimui` to display videos from all playlists in the ZIM (#337)
 
 ## [3.1.0] - 2024-09-05
 
