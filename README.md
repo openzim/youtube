@@ -17,14 +17,16 @@ subtitles and the authors' profile pictures; It then produces JSON files contain
 
 `youtube2zim` has implemented openZIM's [Python bootstrap, conventions and policies](https://github.com/openzim/_python-bootstrap/blob/main/docs/Policy.md) **v1.0.2**.
 
-Requirements
-------------
+# Documentation
+
+For more details / advanced usage than what is in this README, see the [Manual](https://github.com/openzim/youtube/wiki/Manual) and [FAQ/FEE](https://github.com/openzim/youtube/wiki/FAQ---FEE).
+
+# Requirements
 
 * [`ffmpeg`](https://ffmpeg.org/) for video transcoding.
 * [`Yarn`](https://yarnpkg.com/getting-started/install) to install Javascript dependencies for the Vue.js UI.
 
-Installation
-------------
+# Installation
 
 Here comes a few different ways to install `youtube2zim`.
 
@@ -63,91 +65,64 @@ youtube2zim --help       # Display youtube2zim help
 docker run -v my_dir:/output ghcr.io/openzim/youtube youtube2zim --help
 ```
 
-Usage
------
+# Usage
 
 `youtube2zim` uses Youtube API v3 to fetch data from Youtube. You thus need to provide an `API_KEY` to use the scraper.
 
-To get an API:
+To get an API Key:
 
 1. Connect to [Google Developers Console](https://console.developers.google.com/apis)
 2. Create a new _Project_ then Select it.
 3. When asked, choose _Create Credentials_ and select the **API Key** type. ([Credentials page](https://console.developers.google.com/apis/credentials))
 
+You can then create a ZIM from a singe channel / user / handle like `Vsauce`:
+
 ```bash
-youtube2zim --api-key "<your-api-key>" --type user --id "Vsauce" --name "vsauce"
+youtube2zim --api-key "<your-api-key>" --type channel --id "Vsauce" --name "tests_hi_avanti"
 ```
+
+When `--type channel` is used, you must pass one single value in `--id` and it can be the channel, user or playlist, or even the corresponding technical ID (see [FAQ/FEE](https://github.com/openzim/youtube/wiki/FAQ---FEE) for more details).
+
+Or you can create a ZIM from two playlists like `PL3rEvTTL-Jm8cBdskZoQaDTlDT4t7F6kp` and `PL3rEvTTL-Jm_OuyYpMfxtJW3Mcr9fFS2Z`:
+
+```bash
+youtube2zim --api-key "<your-api-key>" --type playlist --id "PL3rEvTTL-Jm8cBdskZoQaDTlDT4t7F6kp,PL3rEvTTL-Jm_OuyYpMfxtJW3Mcr9fFS2Z" --name "tests_hi_avanti"
+```
+
+When `--type playlist` is used, you can pass multiple playlist IDs separated by a comma in `--id`.
+
+For more details / advanced usage, see the [Manual](https://github.com/openzim/youtube/wiki/Manual).
 
 ## Notes
 
 * Your API_KEY is subject to usage quotas (10,000 requests/day by default). Be careful to not waste your quota, especially when scraping large channels.
 
-youtube2zim-playlists
----------------------
+# youtube2zim-playlists
 
-`youtube2zim` produces a single ZIM file for a youtube request (`channel`, `user`, `playlist`).
+`youtube2zim` produces a single ZIM file for a youtube request (`channel`, `user`, `handle`, `playlist`).
 
 `youtube2zim-playlists` allows you to **automatically create one ZIM file per playlist** of a given channel or user instead.
 
 This script is a wrapper around `youtube2zim` and is bundled with the main package.
 
-The difference between a channel and a user is due to Youtube legacy. Some old users have to be searched as a user, while more recent ones have to be searched as a channel. Try your best bet, and if it fails try the other type.
-
 ## Usage
-
-`youtube2zim-playlists --help`
 
 Sample usage:
 
 ```
-youtube2zim-playlists --indiv-playlists --api-key XXX --type user --id Vsauce --playlists-name="vsauce_en_playlist-{playlist_id}"
+youtube2zim-playlists --indiv-playlists --api-key XXX --type channel --id Vsauce --playlists-name="vsauce_en_playlist-{playlist_id}"
 ```
 
 Those are the required arguments for `youtube2zim-playlists` but **you can also pass any regular `youtube2zim` argument**. Those will be forwarded to `youtube2zim` (which will be run independently for each playlist).
 
-**Specificities**:
+For more details / advanced usage, see the [Manual](https://github.com/openzim/youtube/wiki/Manual).
 
-- `--title` and `--description` are mutually exclusive with `--playlists-title` and `--playlists-description`.
-- If using `--title` or `--description`, all your playlists ZIMs will have the same, static metadata. This is rarely wanted.
-- `--playlists-title` and `--playlists-description` allows you to dynamically customize them via some playlist-related variables:
-  - `{title}`: the playlist title
-  - `{description}`: the playlist description
-  - `{slug}`: slugified version of the playlist title
-  - `{playlist_id}`: playlist ID on youtube
-  - `{creator_id}`: playlist's owner channel/user ID.
-  - `{creator_name}`: playlist's owner channel/user name.
-- You can omit them and `youtube2zim` will auto-generate those.
-- you **must specify `--playlists-name`** (supports variables listed above).
-- `--playlists-name` is used to set the `Name` metadata of the ZIM (should be unique) and if not set separately, the output file name for the ZIM.
-- `--metadata-from` allows to specify a path or URL to a JSON file specifying custom static metadata for individual playlists. Format:
-
-``` json
-{
-    "<playlist-id>": {
-        "name": "",
-        "zim-file": "",
-        "title": "",
-        "description": "",
-        "tags": "",
-        "creator": "",
-        "profile": "",
-        "banner": ""
-    }
-}
-```
-
-All fields are optional and taken from command-line/default if not found. `<playlist-id>` represents the Youtube Playlist ID.
-
-If you feel the need for setting additional details in this file, chances are you should run `youtube2zim` independently for that playlist (still possible!)
-
-Development
------------
+# Development
 
 Before contributing be sure to check out the
 [CONTRIBUTING.md](CONTRIBUTING.md) guidelines.
 
-License
--------
+# License
 
 [GPLv3](https://www.gnu.org/licenses/gpl-3.0) or later, see
 [LICENSE](LICENSE) for more details.
