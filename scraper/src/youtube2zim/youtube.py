@@ -190,7 +190,7 @@ def get_videos_json(playlist_id):
             PLAYLIST_ITEMS_API,
             params={
                 "playlistId": playlist_id,
-                "part": "snippet,contentDetails",
+                "part": "snippet,contentDetails,status",
                 "key": YOUTUBE.api_key,
                 "maxResults": RESULTS_PER_PAGE,
                 "pageToken": page_token,
@@ -307,6 +307,11 @@ def skip_deleted_videos(item):
         item["snippet"]["title"] != "Deleted video"
         and item["snippet"]["description"] != "This video is unavailable."
     )
+
+
+def skip_non_public_videos(item):
+    """filter func to filter-out non-public videos"""
+    return item["status"]["privacyStatus"] == "public"
 
 
 def skip_outofrange_videos(date_range, item):

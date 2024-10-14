@@ -82,6 +82,7 @@ from youtube2zim.youtube import (
     get_videos_json,
     save_channel_branding,
     skip_deleted_videos,
+    skip_non_public_videos,
     skip_outofrange_videos,
 )
 
@@ -611,6 +612,7 @@ class Youtube2Zim:
                 )
                 filter_videos = filter(skip_outofrange, videos_json)
                 filter_videos = filter(skip_deleted_videos, filter_videos)
+                filter_videos = filter(skip_non_public_videos, filter_videos)
                 all_videos.update(
                     {v["contentDetails"]["videoId"]: v for v in filter_videos}
                 )
@@ -1038,10 +1040,9 @@ class Youtube2Zim:
     def make_json_files(self, actual_videos_ids):
         """Generate JSON files to be consumed by the frontend"""
 
-        def remove_unused_videos(videos):
-            video_ids = [video["contentDetails"]["videoId"] for video in videos]
+        def remove_unused_videos():
             for path in self.videos_dir.iterdir():
-                if path.is_dir() and path.name not in video_ids:
+                if path.is_dir() and path.name not in actual_videos_ids:
                     logger.debug(f"Removing unused video {path.name}")
                     shutil.rmtree(path, ignore_errors=True)
 
@@ -1282,7 +1283,7 @@ class Youtube2Zim:
         )
 
         # clean videos left out in videos directory
-        remove_unused_videos(videos)
+        remove_unused_videos()
 
     def add_file_to_zim(
         self,
