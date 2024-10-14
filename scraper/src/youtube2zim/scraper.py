@@ -618,6 +618,10 @@ class Youtube2Zim:
 
             for playlist in empty_playlists:
                 self.playlists.remove(playlist)
+
+            # Raise exception if no videos found in playlists
+            if not self.playlists:
+                raise Exception("No videos found in playlists")
         self.videos_ids = [*all_videos.keys()]  # unpacking so it's subscriptable
 
     def download_video_files(self, max_concurrency):

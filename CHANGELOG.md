@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Raise exception if there are no videos in the playlists (#347)
+
 ## [3.2.0] - 2024-10-11
 
 ### Deprecated
