@@ -24,12 +24,14 @@ def test_zim_metadata():
 
     zim_fh = Archive(ZIM_FILE_PATH)
 
-    assert "youtube2zim " in zim_fh.get_text_metadata("scraper")
-    assert "openZIM_testing" in zim_fh.get_text_metadata("Title")
-    assert "-" in zim_fh.get_text_metadata("Description")
-    assert "en" in zim_fh.get_text_metadata("Language")
-    assert "openZIM" in zim_fh.get_text_metadata("Publisher")
-    assert "openZIM_testing" in zim_fh.get_text_metadata("Creator")
+    assert "youtube2zim " in zim_fh.get_text_metadata("Scraper")
+    assert zim_fh.get_text_metadata("Tags") == "tEsTing;x-mark:yes;_videos:yes"
+    assert zim_fh.get_text_metadata("Title") == "openZIM_testing"
+    assert zim_fh.get_text_metadata("Description") == "-"
+    assert zim_fh.get_text_metadata("Language") == "eng"
+    assert zim_fh.get_text_metadata("Name") == "tests_en_openzim-testing"
+    assert zim_fh.get_text_metadata("Publisher") == "openZIM"
+    assert zim_fh.get_text_metadata("Creator") == "Youtube Channel “openZIM_testing”"
 
     assert zim_fh.get_item("profile.jpg").mimetype == "image/jpeg"
     assert zim_fh.get_item("favicon.png").mimetype == "image/png"

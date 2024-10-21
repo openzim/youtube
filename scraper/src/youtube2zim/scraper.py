@@ -382,8 +382,8 @@ class Youtube2Zim:
                 LongDescription=self.long_description,
                 Creator=self.creator,
                 Publisher=self.publisher,
-                tags=";".join(self.tags) if self.tags else "",
-                scraper=SCRAPER,
+                Tags=";".join(self.tags) if self.tags else "",
+                Scraper=SCRAPER,
                 Date=datetime.date.today(),
                 Illustration_48x48_at_1=illustration_data,
             )
