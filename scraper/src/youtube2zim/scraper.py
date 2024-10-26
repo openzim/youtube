@@ -84,6 +84,7 @@ from youtube2zim.youtube import (
     skip_deleted_videos,
     skip_non_public_videos,
     skip_outofrange_videos,
+    is_short,
 )
 
 MAXIMUM_YOUTUBEID_LENGTH = 24
@@ -179,6 +180,9 @@ class Youtube2Zim:
         # process-related
         self.playlists = []
         self.uploads_playlist_id = None
+        self.long_videos_playlist_id = None
+        self.shorts_playlist_id = None
+        self.lives_playlist_id = None
         self.videos_ids = []
         self.video_ids_count = 0
         self.videos_processed = 0
@@ -590,6 +594,9 @@ class Youtube2Zim:
             self.playlists,
             self.main_channel_id,
             self.uploads_playlist_id,
+            self.long_videos_playlist_id,
+            self.shorts_playlist_id,
+            self.lives_playlist_id,
         ) = extract_playlists_details_from(self.collection_type, self.youtube_id)
 
     def extract_videos_list(self):
@@ -1077,6 +1084,13 @@ class Youtube2Zim:
             author = videos_channels[video_id]
             subtitles_list = get_subtitles(video_id)
             channel_data = get_channel_json(author["channelId"])
+            
+            channel_id=author["channelId"]
+            duration=videos_channels[video_id]["duration"],
+            publication_date=video["contentDetails"]["videoPublishedAt"],
+            # Check if the video is short
+            is_short_video = is_short(video_id,channel_id,duration,publication_date)  # can be True or None
+            is_short_flag = True if is_short_video is True else False  # Set True if is_short is True, otherwise False
             return Video(
                 id=video_id,
                 title=video["snippet"]["title"],
@@ -1095,6 +1109,7 @@ class Youtube2Zim:
                 subtitle_path=f"videos/{video_id}" if len(subtitles_list) > 0 else None,
                 subtitle_list=subtitles_list,
                 duration=videos_channels[video_id]["duration"],
+                is_short=is_short_flag,
             )
 
         def generate_video_preview_object(video) -> VideoPreview:
@@ -1187,6 +1202,9 @@ class Youtube2Zim:
         home_playlist_list = []
 
         main_playlist_slug = None
+        long_videos_playlist_slug = None
+        shorts_playlist_slug = None
+        lives_playlist_slug = None
         if len(self.playlists) > 0:
             main_playlist_slug = get_playlist_slug(
                 self.playlists[0]
@@ -1215,6 +1233,16 @@ class Youtube2Zim:
 
             # modify playlist object for preview on homepage
             playlist_obj.videos = playlist_obj.videos[:12]
+
+            if playlist.playlist_id == self.long_videos_playlist_id:
+                long_videos_playlist_slug = (playlist_slug)
+                
+            if playlist.playlist_id == self.shorts_playlist_id:
+                shorts_playlist_slug = (playlist_slug)
+
+            if playlist.playlist_id == self.lives_playlist_id:
+                lives_playlist_slug= (playlist_slug)
+
 
             if playlist.playlist_id == self.uploads_playlist_id:
                 main_playlist_slug = (
@@ -1251,22 +1279,33 @@ class Youtube2Zim:
 
         # write channel.json file
         channel_data = get_channel_json(self.main_channel_id)
+        channel_data_dict = {
+            "id":str(self.main_channel_id),
+            "title":str(self.title),
+            "description":str(self.description),
+            "channel_name":channel_data["snippet"]["title"],
+            "channel_description":channel_data["snippet"]["description"],
+            "profile_path":"profile.jpg",
+            "banner_path":"banner.jpg",
+            "collection_type":self.collection_type,
+            "main_playlist":main_playlist_slug,
+            "playlist_count":len(self.playlists),
+            "joined_date":channel_data["snippet"]["publishedAt"],
+            }
+        
+        if long_videos_playlist_slug is not None : 
+            channel_data_dict["long_videos_playlist"] = long_videos_playlist_slug
+            
+        if shorts_playlist_slug is not None : 
+            channel_data_dict["shorts_playlist"] = shorts_playlist_slug
+            
+        if lives_playlist_slug is not None : 
+            channel_data_dict["lives_playlist"] = lives_playlist_slug
+        
         self.zim_file.add_item_for(
             path="channel.json",
             title=self.title,
-            content=Channel(
-                id=str(self.main_channel_id),
-                title=str(self.title),
-                description=str(self.description),
-                channel_name=channel_data["snippet"]["title"],
-                channel_description=channel_data["snippet"]["description"],
-                profile_path="profile.jpg",
-                banner_path="banner.jpg",
-                collection_type=self.collection_type,
-                main_playlist=main_playlist_slug,
-                playlist_count=len(self.playlists),
-                joined_date=channel_data["snippet"]["publishedAt"],
-            ).model_dump_json(by_alias=True, indent=2),
+            content = Channel(**channel_data_dict).model_dump_json(by_alias=True, indent=2, exclude_none=True),
             mimetype="application/json",
             is_front=False,
         )

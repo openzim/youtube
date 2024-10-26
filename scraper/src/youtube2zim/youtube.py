@@ -2,7 +2,9 @@
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 from http import HTTPStatus
+from datetime import datetime
 
+import isodate
 import requests
 from dateutil import parser as dt_parser
 from zimscraperlib.download import stream_file
@@ -80,6 +82,68 @@ def credentials_ok():
         return False
 
 
+def is_short(video_id,channel_id,duration,publication_date):
+    """check that a youtube video is short or not"""
+    # Ensure publication_date is a string
+    if isinstance(publication_date, tuple):
+            publication_date = publication_date[0]  # If it's a tuple, extract the first element
+            
+    short_duration_limit = 180 #3minutes
+    cutoff_date=datetime(2020,9,14)
+    published_date = datetime.strptime(publication_date, "%Y-%m-%dT%H:%M:%SZ")
+    short_playlist_id="UUSH" + channel_id[2:] # Generate the short playlist ID
+        
+    if published_date < cutoff_date:
+        return False
+    
+    duration_in_sec = isodate.parse_duration(duration[0]).total_seconds()
+    
+    if duration_in_sec >= short_duration_limit:
+        return False
+    
+    try :
+        req = requests.get(
+            PLAYLIST_ITEMS_API,
+            params={
+                "playlistId": short_playlist_id,
+                "videoId": video_id,
+                "part": "id",
+                "key": YOUTUBE.api_key,
+                "maxResults": 10,
+                },
+            timeout=REQUEST_TIMEOUT,
+            )
+    
+        # Check for HTTP error response
+        if req.status_code >= HTTPStatus.BAD_REQUEST:
+            logger.error(f"HTTP {req.status_code} Error response: {req.text}")
+            req.raise_for_status()  # Raises an HTTPError if the status code is 4xx or 5xx
+
+        
+        # Parse the response
+        response_json = req.json()
+        total_results = response_json.get("pageInfo", {}).get("totalResults", 0)
+        playlist_items = response_json.get("items", [])
+        
+        # Check if there are no items or totalResults is not 1 if yes then the video is not short 
+        if total_results != 1 or not playlist_items:
+            return False
+        
+        # If everything is successful, return the long videos playlist ID
+        return True
+
+    except IndexError:
+        logger.error(f"Index error : checking {video_id} is short or not")
+        return None
+
+    except requests.RequestException as e:
+        logger.error(f"Request failed in is_short: {e}")
+        return None
+    
+    except Exception as e:
+        logger.error(f"Error occurred in is_short : {e}")
+ 
+    
 def get_channel_json(channel_id):
     """fetch or retieve-save and return the Youtube ChannelResult JSON"""
     fname = f"channel_{channel_id}"
@@ -319,6 +383,129 @@ def skip_outofrange_videos(date_range, item):
     return dt_parser.parse(item["snippet"]["publishedAt"]).date() in date_range
 
 
+def get_shorts_playlist_id(channel_id):
+    '''Return the user's uploaded short playlist ID, or None if shorts are not available or if an error occurs'''
+    
+    short_playlist_id = "UUSH" + channel_id[2:] # Generate the short playlist ID
+    
+    '''Make the API request to get the playlist details to determine whether shorts are available on the channel'''
+    
+    try:
+        req = requests.get(
+            PLAYLIST_API,
+            params={"id": short_playlist_id, "part": "snippet", "key": YOUTUBE.api_key},
+            timeout=REQUEST_TIMEOUT,
+        )
+        
+        # Check for HTTP error response
+        if req.status_code >= HTTPStatus.BAD_REQUEST:
+            logger.error(f"HTTP {req.status_code} Error response: {req.text}")
+            req.raise_for_status()  # Raises an HTTPError if the status code is 4xx or 5xx
+        
+        # Parse the response
+        response_json = req.json()
+        total_results = response_json.get("pageInfo", {}).get("totalResults", 0)
+        playlist_items = response_json.get("items", [])
+        
+        # Check if there are no items or totalResults is 0 if yes then shorts not available
+        if total_results == 0 or not playlist_items:
+            logger.error(f"Short Playlist `{short_playlist_id}`: Not Found or No Shorts Available")
+            return None
+        
+        # If everything is successful, return the short playlist ID
+        return short_playlist_id
+
+    except IndexError:
+        logger.error(f"Short Playlist `{short_playlist_id}`: Not Found or No Shorts Available")
+        return None
+
+    except requests.RequestException as e:
+        logger.error(f"Request failed: {e}")
+        return None
+     
+def get_long_videos_playlist_id(channel_id):
+    '''Return the user's uploaded long videos playlist ID, or None if long videos are not available or if an error occurs'''
+    
+    long_videos_playlist_id = "UULF" + channel_id[2:] # Generate the long videos playlist ID
+    
+    '''Make the API request to get the playlist details to determine whether long videos are available on the channel'''
+    
+    try:
+        req = requests.get(
+            PLAYLIST_API,
+            params={"id": long_videos_playlist_id, "part": "snippet", "key": YOUTUBE.api_key},
+            timeout=REQUEST_TIMEOUT,
+        )
+        
+        # Check for HTTP error response
+        if req.status_code >= HTTPStatus.BAD_REQUEST:
+            logger.error(f"HTTP {req.status_code} Error response: {req.text}")
+            req.raise_for_status()  # Raises an HTTPError if the status code is 4xx or 5xx
+
+        
+        # Parse the response
+        response_json = req.json()
+        total_results = response_json.get("pageInfo", {}).get("totalResults", 0)
+        playlist_items = response_json.get("items", [])
+        
+        # Check if there are no items or totalResults is 0 if yes then long videos not available
+        if total_results == 0 or not playlist_items:
+            logger.error(f"Long videos Playlist `{long_videos_playlist_id}`: Not Found or No long videos Available")
+            return None
+        
+        # If everything is successful, return the long videos playlist ID
+        return long_videos_playlist_id
+
+    except IndexError:
+        logger.error(f"Long videos Playlist `{long_videos_playlist_id}`: Not Found or No long videos Available")
+        return None
+
+    except requests.RequestException as e:
+        logger.error(f"Request failed: {e}")
+        return None
+    
+def get_lives_playlist_id(channel_id):
+    '''Return the user's lives playlist ID, or None if lives are not available or if an error occurs'''
+    
+    lives_playlist_id = "UULV" + channel_id[2:] # Generate the lives playlist ID
+    
+    '''Make the API request to get the playlist details to determine whether Lives are available on the channel'''
+    
+    try:
+        req = requests.get(
+            PLAYLIST_API,
+            params={"id": lives_playlist_id, "part": "snippet", "key": YOUTUBE.api_key},
+            timeout=REQUEST_TIMEOUT,
+        )
+        
+        # Check for HTTP error response
+        if req.status_code >= HTTPStatus.BAD_REQUEST:
+            logger.error(f"HTTP {req.status_code} Error response: {req.text}")
+            req.raise_for_status()  # Raises an HTTPError if the status code is 4xx or 5xx
+        
+        # Parse the response
+        response_json = req.json()
+        total_results = response_json.get("pageInfo", {}).get("totalResults", 0)
+        playlist_items = response_json.get("items", [])
+        
+        # Check if there are no items or totalResults is 0 if yes then lives not available
+        if total_results == 0 or not playlist_items:
+            logger.error(f"Live Playlist `{lives_playlist_id}`: Not Found or No lives Available")
+            return None
+        
+        # If everything is successful, return the live playlist ID
+        return lives_playlist_id
+
+    except IndexError:
+        logger.error(f"Live Playlist `{lives_playlist_id}`: Not Found or No lives Available")
+        return None
+
+    except requests.RequestException as e:
+        logger.error(f"Request failed: {e}")
+        return None
+    
+   
+    
 def extract_playlists_details_from(collection_type, youtube_id):
     """prepare a list of Playlist from user request
 
@@ -335,6 +522,25 @@ def extract_playlists_details_from(collection_type, youtube_id):
 
         # retrieve list of playlists for that channel
         playlist_ids = [p["id"] for p in get_channel_playlists_json(main_channel_id)]
+        
+        # Retrieve the shorts,long videos and lives playlist ID
+        long_videos_playlist_id = get_long_videos_playlist_id(main_channel_id)
+        shorts_playlist_id = get_shorts_playlist_id(main_channel_id)
+        lives_playlist_id = get_lives_playlist_id(main_channel_id)
+        
+
+        if long_videos_playlist_id is not None:
+            # include uploads long videos playlist (contains every long videos)
+            playlist_ids += [long_videos_playlist_id] 
+            
+        if shorts_playlist_id is not None:
+            # include uploads short playlist (contains every shorts)
+            playlist_ids += [shorts_playlist_id] 
+            
+        if lives_playlist_id is not None:
+            # include lives playlist (contains every lives)
+            playlist_ids += [lives_playlist_id] 
+            
         # we always include uploads playlist (contains everything)
         playlist_ids += [channel_json["contentDetails"]["relatedPlaylists"]["uploads"]]
         uploads_playlist_id = playlist_ids[-1]
@@ -349,4 +555,7 @@ def extract_playlists_details_from(collection_type, youtube_id):
         [Playlist.from_id(playlist_id) for playlist_id in dict.fromkeys(playlist_ids)],
         main_channel_id,
         uploads_playlist_id,
+        long_videos_playlist_id,
+        shorts_playlist_id,
+        lives_playlist_id,
     )

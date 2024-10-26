@@ -45,6 +45,7 @@ class Video(CamelModel):
     subtitle_path: str | None = None
     subtitle_list: list[Subtitle]
     duration: str
+    is_short: bool
 
 
 class VideoPreview(CamelModel):
@@ -107,6 +108,9 @@ class Channel(CamelModel):
     joined_date: str
     collection_type: str
     main_playlist: str | None = None
+    long_videos_playlist: str | None=None
+    shorts_playlist: str | None=None
+    lives_playlist: str | None=None
     playlist_count: int
 
 

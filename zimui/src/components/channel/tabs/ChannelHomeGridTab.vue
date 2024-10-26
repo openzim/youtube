@@ -5,6 +5,7 @@ import { useMainStore } from '@/stores/main'
 import type { VideoPreview } from '@/types/Videos'
 
 import VideoGrid from '@/components/video/VideoGrid.vue'
+import TabInfo from '@/components/common/ViewInfo.vue'
 import type { Playlist } from '@/types/Playlists'
 
 const main = useMainStore()
@@ -22,9 +23,9 @@ watch(
 
 // Fetch the videos for the main playlist
 const fetchData = async function () {
-  if (main.channel?.longVideosPlaylist) {
+  if (main.channel?.mainPlaylist) {
     try {
-      const resp = await main.fetchPlaylist(main.channel?.longVideosPlaylist)
+      const resp = await main.fetchPlaylist(main.channel?.mainPlaylist)
       if (resp) {
         playlist.value = resp
         videos.value = resp.videos
@@ -47,6 +48,12 @@ onMounted(() => {
     <v-progress-circular class="d-inline" indeterminate></v-progress-circular>
   </div>
   <div v-else>
-    <video-grid v-if="videos" :videos="videos" :playlist-slug="main.channel?.longVideosPlaylist" />
+    <tab-info
+      :title="playlist?.title || 'Main Playlist'"
+      :count="playlist?.videosCount || 0"
+      :count-text="playlist?.videos.length === 1 ? 'video' : 'videos'"
+      icon="mdi-video-outline"
+    />
+    <video-grid v-if="videos" :videos="videos" :playlist-slug="main.channel?.mainPlaylist" />
   </div>
 </template>

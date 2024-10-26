@@ -20,23 +20,34 @@ onMounted(async () => {
   }
 })
 
-const tabs = [
-  {
-    id: 0,
-    title: 'Videos',
-    to: { name: 'videos' }
-  },
-  {
-    id: 1,
-    title: 'Playlists',
-    to: { name: 'playlists' }
+// Computed tabs array based on store data
+const tabs = computed(() => {
+  const baseTabs = [
+    { id: 0, title: 'Home', to: { name: 'home' } }
+  ];
+
+  if (main.channel?.longVideosPlaylist) {
+    baseTabs.push({ id: 1, title: 'Videos', to: { name: 'videos' } });
   }
-]
+
+  if (main.channel?.shortsPlaylist) {
+    baseTabs.push({ id: 2, title: 'Shorts', to: { name: 'shorts' } });
+  }
+
+  if (main.channel?.livesPlaylist) {
+    baseTabs.push({ id: 3, title: 'Lives', to: { name: 'lives' } });
+  }
+
+  baseTabs.push({ id: 4, title: 'Playlists', to: { name: 'playlists' } });
+
+  return baseTabs;
+});
+
 
 // Hide tabs if there is only one playlist
 const hideTabs = computed(() => main.channel?.playlistCount === 1)
 
-const tab = ref<number>(tabs[0].id)
+const tab = ref<number>(tabs.value[0]?.id || 0);
 </script>
 
 <template>

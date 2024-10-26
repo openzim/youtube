@@ -22,9 +22,9 @@ watch(
 
 // Fetch the videos for the main playlist
 const fetchData = async function () {
-  if (main.channel?.longVideosPlaylist) {
+  if (main.channel?.shortsPlaylist) {
     try {
-      const resp = await main.fetchPlaylist(main.channel?.longVideosPlaylist)
+      const resp = await main.fetchPlaylist(main.channel?.shortsPlaylist)
       if (resp) {
         playlist.value = resp
         videos.value = resp.videos
@@ -47,6 +47,6 @@ onMounted(() => {
     <v-progress-circular class="d-inline" indeterminate></v-progress-circular>
   </div>
   <div v-else>
-    <video-grid v-if="videos" :videos="videos" :playlist-slug="main.channel?.longVideosPlaylist" />
+    <video-grid v-if="videos" :videos="videos" :playlist-slug="main.channel?.shortsPlaylist" />
   </div>
 </template>
