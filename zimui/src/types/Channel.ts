@@ -7,7 +7,10 @@ export interface Channel {
   profilePath?: string
   bannerPath?: string
   joinedDate: string
-  mainPlaylist?: string
+  firstPlaylist?: string
+  userLongUploadsPlaylist?: string
+  userShortUploadsPlaylist?: string
+  userLivesPlaylist?: string
   playlistCount: number
 }
 
