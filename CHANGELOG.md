@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Diffrentiate shorts, lives, & normal videos (#367)
+- corrected the short video resolution in the UI (#366)
+
 ### Changed
 
 - Raise exception if there are no videos in the playlists (#347)
