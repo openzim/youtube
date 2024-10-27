@@ -2,15 +2,17 @@
 import { useMainStore } from '@/stores/main'
 import { computed } from 'vue'
 
-import VideosGridTab from './VideosGridTab.vue'
+import TabView from '@/views/TabView.vue'
 
 const main = useMainStore()
-const hideTabs = computed(() => main.channel?.longVideosPlaylist)
+const videosAvailable = computed(() => main.channel?.longVideosPlaylist)
 </script>
 
 <template>
-  <div v-if="hideTabs">
-    <videos-grid-tab />
+  <div v-if="videosAvailable">
+    <tab-view
+    :playlist-label="'longVideosPlaylist'"
+    :playlist-type="'Videos'" />
   </div>
   <div v-else>
    <p style="text-align:center">No Video available</p>

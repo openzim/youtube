@@ -2,17 +2,17 @@
 import { useMainStore } from '@/stores/main'
 import { computed } from 'vue'
 
-import LivesGridTab from './LivesGridTab.vue'
+import TabView from '@/views/TabView.vue'
 
 const main = useMainStore()
-const hideTabs = computed(() => main.channel?.livesPlaylist)
+const livesAvailable = computed(() => main.channel?.livesPlaylist)
 </script>
 
 <template>
-  <div v-if="hideTabs">
-    <lives-grid-tab />
+  <div v-if="livesAvailable">
+    <tab-view :playlist-label="'livesPlaylist'" :playlist-type="'Lives'" />
   </div>
   <div v-else>
-   <p style="text-align:center">No Live available</p>
+    <p style="text-align: center">No Live available</p>
   </div>
 </template>
