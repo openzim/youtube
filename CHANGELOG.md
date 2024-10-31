@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Raise exception if there are no videos in the playlists (#347)
 - Drop `--type` CLI argument and guess `--id` type (#361)
+- Always reencode using our presets (even for high quality) and choose best format when downloading from Youtube (#356)
 
 ### Fixed
 

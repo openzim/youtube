@@ -28,11 +28,11 @@ def process_thumbnail(thumbnail_path, preset):
     return True
 
 
-def post_process_video(video_dir, video_id, preset, video_format, low_quality):
+def post_process_video(video_dir, video_id, preset, video_format):
     """apply custom post-processing to downloaded video
 
     - resize thumbnail
-    - recompress video if incorrect video_format or low_quality requested"""
+    - recompress video"""
 
     # find downloaded video from video_dir
     files = [
@@ -51,10 +51,6 @@ def post_process_video(video_dir, video_id, preset, video_format, low_quality):
             f"Picking {files[0]} out of {files}"
         )
     src_path = files[0]
-
-    # don't reencode if not requesting low-quality and received wanted format
-    if not low_quality and src_path.suffix[1:] == video_format:
-        return
 
     dst_path = src_path.with_name(f"video.{video_format}")
     logger.info(f"Reencode video to {dst_path}")

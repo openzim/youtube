@@ -31,7 +31,12 @@ from zimscraperlib.image.presets import WebpHigh
 from zimscraperlib.image.probing import get_colors, is_hex_color
 from zimscraperlib.image.transformation import resize_image
 from zimscraperlib.inputs import compute_descriptions
-from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
+from zimscraperlib.video.presets import (
+    VideoMp4High,
+    VideoMp4Low,
+    VideoWebmHigh,
+    VideoWebmLow,
+)
 from zimscraperlib.zim import Creator
 from zimscraperlib.zim.filesystem import validate_zimfile_creatable
 from zimscraperlib.zim.indexing import IndexData
@@ -586,10 +591,6 @@ class Youtube2Zim:
         self.videos_ids = [*all_videos.keys()]  # unpacking so it's subscriptable
 
     def download_video_files(self, max_concurrency):
-        audext, vidext = {"webm": ("webm", "webm"), "mp4": ("m4a", "mp4")}[
-            self.video_format
-        ]
-
         # prepare options which are shared with every downloader
         options = {
             "cachedir": self.videos_dir,
@@ -607,8 +608,7 @@ class Youtube2Zim:
             # "external_downloader_args": ["--max-tries=20", "--retry-wait=30"],
             "outtmpl": str(self.videos_dir.joinpath("%(id)s", "video.%(ext)s")),
             "preferredcodec": self.video_format,
-            "format": f"bestvideo*[ext={vidext}]+bestaudio[ext={audext}]/"
-            "bestvideo*+bestaudio/best",
+            "format": "bestvideo*+bestaudio/best",
             "y2z_videos_dir": self.videos_dir,
         }
         if self.all_subtitles:
@@ -711,7 +711,16 @@ class Youtube2Zim:
     def download_video(self, video_id, options):
         """download the video from cache/youtube and return True if successful"""
 
-        preset = {"mp4": VideoMp4Low}.get(self.video_format, VideoWebmLow)()
+        preset = {
+            "mp4": VideoMp4Low if self.low_quality else VideoMp4High,
+            "webm": VideoWebmLow if self.low_quality else VideoWebmHigh,
+        }.get(self.video_format)
+        if not preset:
+            raise Exception(
+                f"Impossible to find preset for {self.video_format} video format "
+                f"(low quality: {self.low_quality})"
+            )
+        preset = preset()
         options_copy = options.copy()
         video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
         video_path = video_location.joinpath(f"video.{self.video_format}")
@@ -746,7 +755,6 @@ class Youtube2Zim:
                 video_id,
                 preset,
                 self.video_format,
-                self.low_quality,
             )
             self.add_file_to_zim(
                 zim_path, video_path, callback=(delete_callback, video_path)
