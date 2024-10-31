@@ -26,15 +26,15 @@ const tabs = computed(() => {
     { id: 0, title: 'Home', to: { name: 'home' } }
   ];
 
-  if (main.channel?.longVideosPlaylist) {
+  if (main.channel?.userLongUploadsPlaylist) {
     baseTabs.push({ id: 1, title: 'Videos', to: { name: 'videos' } });
   }
 
-  if (main.channel?.shortsPlaylist) {
+  if (main.channel?.userShortUploadsPlaylist) {
     baseTabs.push({ id: 2, title: 'Shorts', to: { name: 'shorts' } });
   }
 
-  if (main.channel?.livesPlaylist) {
+  if (main.channel?.userLivesPlaylist) {
     baseTabs.push({ id: 3, title: 'Lives', to: { name: 'lives' } });
   }
 

@@ -321,17 +321,17 @@ def skip_outofrange_videos(date_range, item):
     return dt_parser.parse(item["snippet"]["publishedAt"]).date() in date_range
 
 
-def get_shorts_playlist_id(channel_id):
+def get_user_short_uploads_playlist_id(channel_id):
     '''Return the user's uploaded short playlist ID, or None if shorts are not available or if an error occurs'''
     
-    short_playlist_id = "UUSH" + channel_id[2:] # Generate the short playlist ID
+    user_short_uploads_playlist_id = "UUSH" + channel_id[2:] # Generate the short playlist ID
     
     '''Make the API request to get the playlist details to determine whether shorts are available on the channel'''
     
     try:
         req = requests.get(
             PLAYLIST_API,
-            params={"id": short_playlist_id, "part": "snippet", "key": YOUTUBE.api_key},
+            params={"id": user_short_uploads_playlist_id, "part": "snippet", "key": YOUTUBE.api_key},
             timeout=REQUEST_TIMEOUT,
         )
         
@@ -347,31 +347,31 @@ def get_shorts_playlist_id(channel_id):
         
         # Check if there are no items or totalResults is 0 if yes then shorts not available
         if total_results == 0 or not playlist_items:
-            logger.error(f"Short Playlist `{short_playlist_id}`: Not Found or No Shorts Available")
+            logger.error(f"Short Playlist `{user_short_uploads_playlist_id}`: Not Found or No Shorts Available")
             return None
         
         # If everything is successful, return the short playlist ID
-        return short_playlist_id
+        return user_short_uploads_playlist_id
 
     except IndexError:
-        logger.error(f"Short Playlist `{short_playlist_id}`: Not Found or No Shorts Available")
+        logger.error(f"User short uploads Playlist `{user_short_uploads_playlist_id}`: Not Found or No uploaded Shorts Available")
         return None
 
     except requests.RequestException as e:
         logger.error(f"Request failed: {e}")
         return None
      
-def get_long_videos_playlist_id(channel_id):
+def get_user_long_uploads_playlist_id(channel_id):
     '''Return the user's uploaded long videos playlist ID, or None if long videos are not available or if an error occurs'''
     
-    long_videos_playlist_id = "UULF" + channel_id[2:] # Generate the long videos playlist ID
+    user_long_uploads_playlist_id = "UULF" + channel_id[2:] # Generate the long videos playlist ID
     
     '''Make the API request to get the playlist details to determine whether long videos are available on the channel'''
     
     try:
         req = requests.get(
             PLAYLIST_API,
-            params={"id": long_videos_playlist_id, "part": "snippet", "key": YOUTUBE.api_key},
+            params={"id": user_long_uploads_playlist_id, "part": "snippet", "key": YOUTUBE.api_key},
             timeout=REQUEST_TIMEOUT,
         )
         
@@ -388,31 +388,31 @@ def get_long_videos_playlist_id(channel_id):
         
         # Check if there are no items or totalResults is 0 if yes then long videos not available
         if total_results == 0 or not playlist_items:
-            logger.error(f"Long videos Playlist `{long_videos_playlist_id}`: Not Found or No long videos Available")
+            logger.error(f"User Long uploads Playlist `{user_long_uploads_playlist_id}`: Not Found or No uploaded long videos Available")
             return None
         
         # If everything is successful, return the long videos playlist ID
-        return long_videos_playlist_id
+        return user_long_uploads_playlist_id
 
     except IndexError:
-        logger.error(f"Long videos Playlist `{long_videos_playlist_id}`: Not Found or No long videos Available")
+        logger.error(f"Long videos Playlist `{user_long_uploads_playlist_id}`: Not Found or No long videos Available")
         return None
 
     except requests.RequestException as e:
         logger.error(f"Request failed: {e}")
         return None
     
-def get_lives_playlist_id(channel_id):
+def get_user_lives_playlist_id(channel_id):
     '''Return the user's lives playlist ID, or None if lives are not available or if an error occurs'''
     
-    lives_playlist_id = "UULV" + channel_id[2:] # Generate the lives playlist ID
+    user_lives_playlist_id = "UULV" + channel_id[2:] # Generate the lives playlist ID
     
     '''Make the API request to get the playlist details to determine whether Lives are available on the channel'''
     
     try:
         req = requests.get(
             PLAYLIST_API,
-            params={"id": lives_playlist_id, "part": "snippet", "key": YOUTUBE.api_key},
+            params={"id": user_lives_playlist_id, "part": "snippet", "key": YOUTUBE.api_key},
             timeout=REQUEST_TIMEOUT,
         )
         
@@ -428,21 +428,20 @@ def get_lives_playlist_id(channel_id):
         
         # Check if there are no items or totalResults is 0 if yes then lives not available
         if total_results == 0 or not playlist_items:
-            logger.error(f"Live Playlist `{lives_playlist_id}`: Not Found or No lives Available")
+            logger.error(f"User lives Playlist `{user_lives_playlist_id}`: Not Found or No lives Available")
             return None
         
         # If everything is successful, return the live playlist ID
-        return lives_playlist_id
+        return user_lives_playlist_id
 
     except IndexError:
-        logger.error(f"Live Playlist `{lives_playlist_id}`: Not Found or No lives Available")
+        logger.error(f"Live Playlist `{user_lives_playlist_id}`: Not Found or No lives Available")
         return None
 
     except requests.RequestException as e:
         logger.error(f"Request failed: {e}")
         return None
     
-   
     
 def extract_playlists_details_from(collection_type, youtube_id):
     """prepare a list of Playlist from user request
@@ -462,22 +461,22 @@ def extract_playlists_details_from(collection_type, youtube_id):
         playlist_ids = [p["id"] for p in get_channel_playlists_json(main_channel_id)]
         
         # Retrieve the shorts,long videos and lives playlist ID
-        long_videos_playlist_id = get_long_videos_playlist_id(main_channel_id)
-        shorts_playlist_id = get_shorts_playlist_id(main_channel_id)
-        lives_playlist_id = get_lives_playlist_id(main_channel_id)
+        user_long_uploads_playlist_id = get_user_long_uploads_playlist_id(main_channel_id)
+        user_short_uploads_playlist_id = get_user_short_uploads_playlist_id(main_channel_id)
+        user_lives_playlist_id = get_user_lives_playlist_id(main_channel_id)
         
 
-        if long_videos_playlist_id is not None:
+        if user_long_uploads_playlist_id is not None:
             # include uploads long videos playlist (contains every long videos)
-            playlist_ids += [long_videos_playlist_id] 
+            playlist_ids += [user_long_uploads_playlist_id] 
             
-        if shorts_playlist_id is not None:
+        if user_short_uploads_playlist_id is not None:
             # include uploads short playlist (contains every shorts)
-            playlist_ids += [shorts_playlist_id] 
+            playlist_ids += [user_short_uploads_playlist_id] 
             
-        if lives_playlist_id is not None:
+        if user_lives_playlist_id is not None:
             # include lives playlist (contains every lives)
-            playlist_ids += [lives_playlist_id] 
+            playlist_ids += [user_lives_playlist_id] 
             
         # we always include uploads playlist (contains everything)
         playlist_ids += [channel_json["contentDetails"]["relatedPlaylists"]["uploads"]]
@@ -493,7 +492,7 @@ def extract_playlists_details_from(collection_type, youtube_id):
         [Playlist.from_id(playlist_id) for playlist_id in dict.fromkeys(playlist_ids)],
         main_channel_id,
         uploads_playlist_id,
-        long_videos_playlist_id,
-        shorts_playlist_id,
-        lives_playlist_id,
+        user_long_uploads_playlist_id,
+        user_short_uploads_playlist_id,
+        user_lives_playlist_id,
     )

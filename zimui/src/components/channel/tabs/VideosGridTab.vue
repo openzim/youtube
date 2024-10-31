@@ -8,25 +8,16 @@ import VideoGrid from '@/components/video/VideoGrid.vue'
 import TabInfo from '@/components/common/ViewInfo.vue'
 import type { Playlist } from '@/types/Playlists'
 
+
 const main = useMainStore()
 const videos = ref<VideoPreview[]>([])
 const playlist = ref<Playlist>()
 const isLoading = ref(true)
 
-const props = defineProps({
-  playlistLabel: {
-    type: String,
-    required: true
-  },
-  playlistType: {
-    type: String,
-    required: true
-  }
-})
 
 // Watch for changes in the playlist
 watch(
-  () => main.channel?.[props.playlistLabel],
+  () => main.channel?.userLongUploadsPlaylist,
   () => {
     fetchData()
   }
@@ -34,9 +25,9 @@ watch(
 
 // Fetch the videos for the playlist
 const fetchData = async function () {
-  if (main.channel?.[props.playlistLabel]) {
+  if (main.channel?.userLongUploadsPlaylist) {
     try {
-      const resp = await main.fetchPlaylist(main.channel?.[props.playlistLabel])
+      const resp = await main.fetchPlaylist(main.channel?.userLongUploadsPlaylist)
       if (resp) {
         playlist.value = resp
         videos.value = resp.videos
@@ -60,11 +51,11 @@ onMounted(() => {
   </div>
   <div v-else>
      <tab-info
-      :title="[props.playlistType]+' from '+main.channel?.title"
+      :title="'Videos from '+main.channel?.title"
       :count="playlist?.videosCount || 0"
       :count-text="playlist?.videos.length === 1 ? 'video' : 'videos'"
       icon="mdi-video-outline"
     />
-    <video-grid v-if="videos" :videos="videos" :playlist-slug="main.channel?.[props.playlistLabel]" />
+    <video-grid v-if="videos" :videos="videos" :playlist-slug="main.channel?.userLongUploadsPlaylist" />
   </div>
 </template>

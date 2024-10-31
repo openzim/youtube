@@ -179,9 +179,9 @@ class Youtube2Zim:
         # process-related
         self.playlists = []
         self.uploads_playlist_id = None
-        self.long_videos_playlist_id = None
-        self.shorts_playlist_id = None
-        self.lives_playlist_id = None
+        self.user_long_uploads_playlist_id = None
+        self.user_short_uploads_playlist_id = None
+        self.user_lives_playlist_id = None
         self.videos_ids = []
         self.video_ids_count = 0
         self.videos_processed = 0
@@ -593,9 +593,9 @@ class Youtube2Zim:
             self.playlists,
             self.main_channel_id,
             self.uploads_playlist_id,
-            self.long_videos_playlist_id,
-            self.shorts_playlist_id,
-            self.lives_playlist_id,
+            self.user_long_uploads_playlist_id,
+            self.user_short_uploads_playlist_id,
+            self.user_lives_playlist_id,
         ) = extract_playlists_details_from(self.collection_type, self.youtube_id)
 
     def extract_videos_list(self):
@@ -1194,9 +1194,9 @@ class Youtube2Zim:
         home_playlist_list = []
 
         main_playlist_slug = None
-        long_videos_playlist_slug = None
-        shorts_playlist_slug = None
-        lives_playlist_slug = None
+        user_long_uploads_playlist_slug = None
+        user_short_uploads_playlist_slug = None
+        user_lives_playlist_slug = None
         if len(self.playlists) > 0:
             main_playlist_slug = get_playlist_slug(
                 self.playlists[0]
@@ -1226,14 +1226,14 @@ class Youtube2Zim:
             # modify playlist object for preview on homepage
             playlist_obj.videos = playlist_obj.videos[:12]
 
-            if playlist.playlist_id == self.long_videos_playlist_id:
-                long_videos_playlist_slug = (playlist_slug)
+            if playlist.playlist_id == self.user_long_uploads_playlist_id:
+                user_long_uploads_playlist_slug = (playlist_slug)
                 
-            if playlist.playlist_id == self.shorts_playlist_id:
-                shorts_playlist_slug = (playlist_slug)
+            if playlist.playlist_id == self.user_short_uploads_playlist_id:
+                user_short_uploads_playlist_slug = (playlist_slug)
 
-            if playlist.playlist_id == self.lives_playlist_id:
-                lives_playlist_slug= (playlist_slug)
+            if playlist.playlist_id == self.user_lives_playlist_id:
+                user_lives_playlist_slug= (playlist_slug)
 
 
             if playlist.playlist_id == self.uploads_playlist_id:
@@ -1285,14 +1285,14 @@ class Youtube2Zim:
             "joined_date":channel_data["snippet"]["publishedAt"],
             }
         
-        if long_videos_playlist_slug is not None : 
-            channel_data_dict["long_videos_playlist"] = long_videos_playlist_slug
+        if user_long_uploads_playlist_slug is not None : 
+            channel_data_dict["user_long_uploads_playlist"] = user_long_uploads_playlist_slug
             
-        if shorts_playlist_slug is not None : 
-            channel_data_dict["shorts_playlist"] = shorts_playlist_slug
+        if user_short_uploads_playlist_slug is not None : 
+            channel_data_dict["user_short_uploads_playlist"] = user_short_uploads_playlist_slug
             
-        if lives_playlist_slug is not None : 
-            channel_data_dict["lives_playlist"] = lives_playlist_slug
+        if user_lives_playlist_slug is not None : 
+            channel_data_dict["user_lives_playlist"] = user_lives_playlist_slug
         
         self.zim_file.add_item_for(
             path="channel.json",

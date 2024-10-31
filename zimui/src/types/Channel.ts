@@ -9,9 +9,9 @@ export interface Channel {
   joinedDate: string
   collectionType: string
   mainPlaylist?: string
-  longVideosPlaylist?:string
-  shortsPlaylist?:string
-  livesPlaylist?:string
+  userLongUploadsPlaylist?:string
+  userShortUploadsPlaylist?:string
+  userLivesPlaylist?:string
   playlistCount: number
 }
 
