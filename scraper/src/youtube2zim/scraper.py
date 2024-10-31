@@ -84,7 +84,6 @@ from youtube2zim.youtube import (
     skip_deleted_videos,
     skip_non_public_videos,
     skip_outofrange_videos,
-    is_short,
 )
 
 MAXIMUM_YOUTUBEID_LENGTH = 24
@@ -1085,12 +1084,6 @@ class Youtube2Zim:
             subtitles_list = get_subtitles(video_id)
             channel_data = get_channel_json(author["channelId"])
             
-            channel_id=author["channelId"]
-            duration=videos_channels[video_id]["duration"],
-            publication_date=video["contentDetails"]["videoPublishedAt"],
-            # Check if the video is short
-            is_short_video = is_short(video_id,channel_id,duration,publication_date)  # can be True or None
-            is_short_flag = True if is_short_video is True else False  # Set True if is_short is True, otherwise False
             return Video(
                 id=video_id,
                 title=video["snippet"]["title"],
@@ -1109,7 +1102,6 @@ class Youtube2Zim:
                 subtitle_path=f"videos/{video_id}" if len(subtitles_list) > 0 else None,
                 subtitle_list=subtitles_list,
                 duration=videos_channels[video_id]["duration"],
-                is_short=is_short_flag,
             )
 
         def generate_video_preview_object(video) -> VideoPreview:

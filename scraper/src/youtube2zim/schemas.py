@@ -45,7 +45,6 @@ class Video(CamelModel):
     subtitle_path: str | None = None
     subtitle_list: list[Subtitle]
     duration: str
-    is_short: bool
 
 
 class VideoPreview(CamelModel):

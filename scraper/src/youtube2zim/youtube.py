@@ -4,7 +4,6 @@
 from http import HTTPStatus
 from datetime import datetime
 
-import isodate
 import requests
 from dateutil import parser as dt_parser
 from zimscraperlib.download import stream_file
@@ -82,67 +81,6 @@ def credentials_ok():
         return False
 
 
-def is_short(video_id,channel_id,duration,publication_date):
-    """check that a youtube video is short or not"""
-    # Ensure publication_date is a string
-    if isinstance(publication_date, tuple):
-            publication_date = publication_date[0]  # If it's a tuple, extract the first element
-            
-    short_duration_limit = 180 #3minutes
-    cutoff_date=datetime(2020,9,14)
-    published_date = datetime.strptime(publication_date, "%Y-%m-%dT%H:%M:%SZ")
-    short_playlist_id="UUSH" + channel_id[2:] # Generate the short playlist ID
-        
-    if published_date < cutoff_date:
-        return False
-    
-    duration_in_sec = isodate.parse_duration(duration[0]).total_seconds()
-    
-    if duration_in_sec >= short_duration_limit:
-        return False
-    
-    try :
-        req = requests.get(
-            PLAYLIST_ITEMS_API,
-            params={
-                "playlistId": short_playlist_id,
-                "videoId": video_id,
-                "part": "id",
-                "key": YOUTUBE.api_key,
-                "maxResults": 10,
-                },
-            timeout=REQUEST_TIMEOUT,
-            )
-    
-        # Check for HTTP error response
-        if req.status_code >= HTTPStatus.BAD_REQUEST:
-            logger.error(f"HTTP {req.status_code} Error response: {req.text}")
-            req.raise_for_status()  # Raises an HTTPError if the status code is 4xx or 5xx
-
-        
-        # Parse the response
-        response_json = req.json()
-        total_results = response_json.get("pageInfo", {}).get("totalResults", 0)
-        playlist_items = response_json.get("items", [])
-        
-        # Check if there are no items or totalResults is not 1 if yes then the video is not short 
-        if total_results != 1 or not playlist_items:
-            return False
-        
-        # If everything is successful, return the long videos playlist ID
-        return True
-
-    except IndexError:
-        logger.error(f"Index error : checking {video_id} is short or not")
-        return None
-
-    except requests.RequestException as e:
-        logger.error(f"Request failed in is_short: {e}")
-        return None
-    
-    except Exception as e:
-        logger.error(f"Error occurred in is_short : {e}")
- 
     
 def get_channel_json(channel_id):
     """fetch or retieve-save and return the Youtube ChannelResult JSON"""
