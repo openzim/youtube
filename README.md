@@ -78,18 +78,18 @@ To get an API Key:
 You can then create a ZIM from a singe channel / user / handle like `Vsauce`:
 
 ```bash
-youtube2zim --api-key "<your-api-key>" --type channel --id "Vsauce" --name "tests_hi_avanti"
+youtube2zim --api-key "<your-api-key>" --id "Vsauce" --name "tests_hi_avanti"
 ```
 
-When `--type channel` is used, you must pass one single value in `--id` and it can be the channel, user or playlist, or even the corresponding technical ID (see [FAQ/FEE](https://github.com/openzim/youtube/wiki/FAQ---FEE) for more details).
+When scraping a channel, you must pass one single value in `--id` and it can be the handle, user, or even the corresponding technical ID (see [FAQ/FEE](https://github.com/openzim/youtube/wiki/FAQ---FEE) for more details).
 
 Or you can create a ZIM from two playlists like `PL3rEvTTL-Jm8cBdskZoQaDTlDT4t7F6kp` and `PL3rEvTTL-Jm_OuyYpMfxtJW3Mcr9fFS2Z`:
 
 ```bash
-youtube2zim --api-key "<your-api-key>" --type playlist --id "PL3rEvTTL-Jm8cBdskZoQaDTlDT4t7F6kp,PL3rEvTTL-Jm_OuyYpMfxtJW3Mcr9fFS2Z" --name "tests_hi_avanti"
+youtube2zim --api-key "<your-api-key>" --id "PL3rEvTTL-Jm8cBdskZoQaDTlDT4t7F6kp,PL3rEvTTL-Jm_OuyYpMfxtJW3Mcr9fFS2Z" --name "tests_hi_avanti"
 ```
 
-When `--type playlist` is used, you can pass multiple playlist IDs separated by a comma in `--id`.
+When scraping playlists, you can pass multiple playlist IDs separated by a comma in `--id`.
 
 For more details / advanced usage, see the [Manual](https://github.com/openzim/youtube/wiki/Manual).
 
@@ -110,7 +110,7 @@ This script is a wrapper around `youtube2zim` and is bundled with the main packa
 Sample usage:
 
 ```
-youtube2zim-playlists --indiv-playlists --api-key XXX --type channel --id Vsauce --playlists-name="vsauce_en_playlist-{playlist_id}"
+youtube2zim-playlists --indiv-playlists --api-key XXX --id Vsauce --playlists-name="vsauce_en_playlist-{playlist_id}"
 ```
 
 Those are the required arguments for `youtube2zim-playlists` but **you can also pass any regular `youtube2zim` argument**. Those will be forwarded to `youtube2zim` (which will be run independently for each playlist).

@@ -66,7 +66,7 @@ docker build -t local-youtube2zim .
 Scrape a channel (here we use the [openZIM_testing](https://www.youtube.com/channel/UC8elThf5TGMpQfQc_VE917Q) channel, but you could use any other one of interest for your UI developments).
 
 ```
-docker run --rm -it -v "$PWD/output":/output local-youtube2zim youtube2zim --api-key <YOUR-API-KEY> --type channel --id "UC8elThf5TGMpQfQc_VE917Q" --name "openZIM_testing" --zim-file "openZIM_testing"
+docker run --rm -it -v "$PWD/output":/output local-youtube2zim youtube2zim --api-key <YOUR-API-KEY> --id "UC8elThf5TGMpQfQc_VE917Q" --name "openZIM_testing" --zim-file "openZIM_testing"
 ```
 
 Extract interesting ZIM content and move it to `public` folder.
