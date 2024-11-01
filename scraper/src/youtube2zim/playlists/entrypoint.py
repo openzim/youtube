@@ -5,7 +5,7 @@ import argparse
 import logging
 import sys
 
-from youtube2zim.constants import CHANNEL, NAME, PLAYLIST, SCRAPER, USER, logger
+from youtube2zim.constants import NAME, SCRAPER, logger
 from youtube2zim.utils import has_argument
 
 
@@ -19,13 +19,13 @@ def main():
         "{creator_id}, {creator_name}.",
     )
 
+    # Not used anymore, kept for backward compability till next major release
     parser.add_argument(
         "--type",
         help="Type of collection",
-        choices=[CHANNEL, PLAYLIST, USER],
-        required=True,
-        dest="collection_type",
+        dest="not_used_anymore",
     )
+
     parser.add_argument(
         "--id", help="Youtube ID of the collection", required=True, dest="youtube_id"
     )

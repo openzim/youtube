@@ -6,7 +6,7 @@ import logging
 import os
 import sys
 
-from youtube2zim.constants import CHANNEL, NAME, PLAYLIST, SCRAPER, USER, logger
+from youtube2zim.constants import NAME, SCRAPER, logger
 from youtube2zim.scraper import Youtube2Zim
 
 
@@ -16,12 +16,12 @@ def main():
         description="Scraper to create a ZIM file from a Youtube Channel or Playlists",
     )
 
+    # Not used anymore, kept for backward compability till next major release
+    # Also remove trick lines 211-217 to not handle this anymore
     parser.add_argument(
         "--type",
         help="Type of collection",
-        choices=[CHANNEL, PLAYLIST, USER],
-        required=True,
-        dest="collection_type",
+        dest="not_used_anymore",
     )
     parser.add_argument(
         "--id", help="Youtube ID of the collection", required=True, dest="youtube_id"
@@ -208,7 +208,13 @@ def main():
     try:
         if args.max_concurrency < 1:
             raise ValueError(f"Invalid concurrency value: {args.max_concurrency}")
-        scraper = Youtube2Zim(**dict(args._get_kwargs()))
+        scraper = Youtube2Zim(
+            **{
+                key: value
+                for key, value in dict(args._get_kwargs()).items()
+                if key != "not_used_anymore"
+            }
+        )
         return scraper.run()
     except Exception as exc:
         logger.error(f"FAILED. An error occurred: {exc}")

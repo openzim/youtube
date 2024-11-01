@@ -47,7 +47,6 @@ def test_zim_channel_json():
 
     assert channel_json["id"] == "UC8elThf5TGMpQfQc_VE917Q"
     assert channel_json["channelName"] == "openZIM_testing"
-    assert channel_json["collectionType"] == "channel"
     assert channel_json["mainPlaylist"] == "uploads_from_openzim_testing-917Q"
 
 

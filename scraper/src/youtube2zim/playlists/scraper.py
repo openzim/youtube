@@ -21,7 +21,7 @@ import tempfile
 import requests
 from zimscraperlib.logging import nicer_args_join
 
-from youtube2zim.constants import NAME, PLAYLIST, YOUTUBE, logger
+from youtube2zim.constants import NAME, YOUTUBE, logger
 from youtube2zim.youtube import (
     REQUEST_TIMEOUT,
     credentials_ok,
@@ -40,7 +40,6 @@ class YoutubeHandler:
         self.debug = options["debug"]
         self.disable_metadata_checks = options["disable_metadata_checks"]
         self.playlists_mode = options["playlists_mode"]
-        self.collection_type = options["collection_type"]
         self.youtube_id = options["youtube_id"]
 
         self.extra_args = extra_args
@@ -76,10 +75,7 @@ class YoutubeHandler:
             shutil.rmtree(self.build_dir, ignore_errors=True)  # not needed
             return self.handle_single_zim()
 
-        logger.info(
-            f"starting all-playlits {NAME} scraper "
-            f"for {self.collection_type}#{self.youtube_id}"
-        )
+        logger.info(f"starting all-playlists {NAME} scraper for {self.youtube_id}")
 
         # create required sub folders
         for sub_folder in ("cache", "videos", "channels"):
@@ -96,7 +92,8 @@ class YoutubeHandler:
             playlists,
             main_channel_id,
             uploads_playlist_id,
-        ) = extract_playlists_details_from(self.collection_type, self.youtube_id)
+            is_playlist,
+        ) = extract_playlists_details_from(self.youtube_id)
 
         logger.info(
             ".. {} playlists:\n   {}".format(
@@ -128,8 +125,6 @@ class YoutubeHandler:
         playlist_id = playlist.playlist_id
         args = [
             *self.youtube2zim_exe,
-            "--type",
-            PLAYLIST,
             "--id",
             playlist_id,
             "--api-key",
@@ -180,8 +175,6 @@ class YoutubeHandler:
 
         args = [
             *self.youtube2zim_exe,
-            "--type",
-            self.collection_type,
             "--id",
             self.youtube_id,
             "--api-key",

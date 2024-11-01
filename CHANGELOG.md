@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Deprecated
+
+- `--type` CLI argument is now deprecated (will be removed in next major)
+
 ### Changed
 
 - Raise exception if there are no videos in the playlists (#347)
+- Drop `--type` CLI argument and guess `--id` type (#361)
 
 ### Fixed
 

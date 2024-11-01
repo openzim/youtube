@@ -100,7 +100,7 @@ jobs:
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           OPTIMIZATION_CACHE_URL: ${{ secrets.OPTIMIZATION_CACHE_URL }}
-        run: docker run -v $PWD/output:/output youtube2zim youtube2zim --api-key "$YOUTUBE_API_KEY" --optimization-cache "$OPTIMIZATION_CACHE_URL" --type channel --id "UC8elThf5TGMpQfQc_VE917Q" --name "tests_en_openzim-testing" --zim-file "openZIM_testing.zim" --tags "tEsTing,x-mark:yes"
+        run: docker run -v $PWD/output:/output youtube2zim youtube2zim --api-key "$YOUTUBE_API_KEY" --optimization-cache "$OPTIMIZATION_CACHE_URL" --id "UC8elThf5TGMpQfQc_VE917Q" --name "tests_en_openzim-testing" --zim-file "openZIM_testing.zim" --tags "tEsTing,x-mark:yes"
 
       - name: Run integration test suite
         run: docker run -v $PWD/scraper/tests-integration/integration.py:/src/scraper/tests-integration/integration.py -v $PWD/output:/output youtube2zim bash -c "pip install pytest; pytest -v /src/scraper/tests-integration/integration.py"
