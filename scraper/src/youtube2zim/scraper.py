@@ -565,11 +565,6 @@ class Youtube2Zim:
             # we only return video_ids that we'll use later on. per-playlist JSON stored
             for playlist in self.playlists:
                 videos_json = get_videos_json(playlist.playlist_id)
-                if len(videos_json) == 0:
-                    logger.warning(
-                        f"Playlist '{playlist.playlist_id}' is empty, will be ignored"
-                    )
-                    empty_playlists.append(playlist)
                 # filter in videos within date range and filter away deleted videos
                 skip_outofrange = functools.partial(
                     skip_outofrange_videos, self.dateafter
@@ -577,6 +572,12 @@ class Youtube2Zim:
                 filter_videos = filter(skip_outofrange, videos_json)
                 filter_videos = filter(skip_deleted_videos, filter_videos)
                 filter_videos = filter(skip_non_public_videos, filter_videos)
+                filter_videos = list(filter_videos)
+                if len(filter_videos) == 0:
+                    logger.warning(
+                        f"Playlist '{playlist.playlist_id}' is empty, will be ignored"
+                    )
+                    empty_playlists.append(playlist)
                 all_videos.update(
                     {v["contentDetails"]["videoId"]: v for v in filter_videos}
                 )
@@ -1154,10 +1155,21 @@ class Youtube2Zim:
         home_playlist_list = []
 
         main_playlist_slug = None
-        if len(self.playlists) > 0:
-            main_playlist_slug = get_playlist_slug(
-                self.playlists[0]
-            )  # set first playlist as main playlist
+        empty_playlists = list(
+            filter(lambda playlist: len(get_videos_list(playlist)) == 0, self.playlists)
+        )
+        for empty_playlist in empty_playlists:
+            logger.warning(
+                f"Removing finally empty playlist {empty_playlist.playlist_id}"
+            )
+            self.playlists.remove(empty_playlist)
+
+        if len(self.playlists) == 0:
+            raise Exception("No playlist succeeded to download")
+
+        main_playlist_slug = get_playlist_slug(
+            self.playlists[0]
+        )  # set first playlist as main playlist
 
         for playlist in self.playlists:
             playlist_slug = get_playlist_slug(playlist)

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Check for empty playlists after filtering, and after downloading videos (#375)
+
 ## [3.2.1] - 2024-11-01
 
 ### Deprecated
