@@ -77,6 +77,7 @@ onBeforeUnmount(() => {
       :preload="props.options.preload"
       :autoplay="props.options.autoplay"
       :poster="props.options.poster"
+      playsinline
     >
       <source
         v-for="(source, idx) in props.options.sources"
