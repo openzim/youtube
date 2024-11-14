@@ -1083,7 +1083,7 @@ class Youtube2Zim:
             author = videos_channels[video_id]
             subtitles_list = get_subtitles(video_id)
             channel_data = get_channel_json(author["channelId"])
-            
+
             return Video(
                 id=video_id,
                 title=video["snippet"]["title"],
@@ -1227,14 +1227,13 @@ class Youtube2Zim:
             playlist_obj.videos = playlist_obj.videos[:12]
 
             if playlist.playlist_id == self.user_long_uploads_playlist_id:
-                user_long_uploads_playlist_slug = (playlist_slug)
-                
+                user_long_uploads_playlist_slug = playlist_slug
+
             if playlist.playlist_id == self.user_short_uploads_playlist_id:
-                user_short_uploads_playlist_slug = (playlist_slug)
+                user_short_uploads_playlist_slug = playlist_slug
 
             if playlist.playlist_id == self.user_lives_playlist_id:
-                user_lives_playlist_slug= (playlist_slug)
-
+                user_lives_playlist_slug = playlist_slug
 
             if playlist.playlist_id == self.uploads_playlist_id:
                 main_playlist_slug = (
@@ -1271,33 +1270,25 @@ class Youtube2Zim:
 
         # write channel.json file
         channel_data = get_channel_json(self.main_channel_id)
-        channel_data_dict = {
-            "id":str(self.main_channel_id),
-            "title":str(self.title),
-            "description":str(self.description),
-            "channel_name":channel_data["snippet"]["title"],
-            "channel_description":channel_data["snippet"]["description"],
-            "profile_path":"profile.jpg",
-            "banner_path":"banner.jpg",
-            "collection_type":self.collection_type,
-            "main_playlist":main_playlist_slug,
-            "playlist_count":len(self.playlists),
-            "joined_date":channel_data["snippet"]["publishedAt"],
-            }
-        
-        if user_long_uploads_playlist_slug is not None : 
-            channel_data_dict["user_long_uploads_playlist"] = user_long_uploads_playlist_slug
-            
-        if user_short_uploads_playlist_slug is not None : 
-            channel_data_dict["user_short_uploads_playlist"] = user_short_uploads_playlist_slug
-            
-        if user_lives_playlist_slug is not None : 
-            channel_data_dict["user_lives_playlist"] = user_lives_playlist_slug
-        
         self.zim_file.add_item_for(
             path="channel.json",
             title=self.title,
-            content = Channel(**channel_data_dict).model_dump_json(by_alias=True, indent=2, exclude_none=True),
+            content=Channel(
+                id=str(self.main_channel_id),
+                title=str(self.title),
+                description=str(self.description),
+                channel_name=channel_data["snippet"]["title"],
+                channel_description=channel_data["snippet"]["description"],
+                profile_path="profile.jpg",
+                banner_path="banner.jpg",
+                collection_type=self.collection_type,
+                main_playlist=main_playlist_slug,
+                user_long_uploads_playlist=user_long_uploads_playlist_slug,
+                user_short_uploads_playlist=user_short_uploads_playlist_slug,
+                user_lives_playlist=user_lives_playlist_slug,
+                playlist_count=len(self.playlists),
+                joined_date=channel_data["snippet"]["publishedAt"],
+            ).model_dump_json(by_alias=True, indent=2),
             mimetype="application/json",
             is_front=False,
         )

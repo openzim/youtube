@@ -1,18 +1,7 @@
 <script setup lang="ts">
-import { useMainStore } from '@/stores/main'
-import { computed } from 'vue'
-
-import VideosGridTab from './VideosGridTab.vue'
-
-const main = useMainStore()
-const videosAvailable = computed(() => main.channel?.userLongUploadsPlaylist)
+import TabView from '@/views/TabView.vue'
 </script>
 
 <template>
-  <div v-if="videosAvailable">
-    <videos-grid-tab/>
-  </div>
-  <div v-else>
-   <p style="text-align:center">No Video available</p>
-  </div>
+  <tab-view :playlist-slug="'userLongUploadsPlaylist'" title-prefix="Videos" />
 </template>

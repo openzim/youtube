@@ -107,9 +107,9 @@ class Channel(CamelModel):
     joined_date: str
     collection_type: str
     main_playlist: str | None = None
-    user_long_uploads_playlist: str | None=None
-    user_short_uploads_playlist: str | None=None
-    user_lives_playlist: str | None=None
+    user_long_uploads_playlist: str | None = None
+    user_short_uploads_playlist: str | None = None
+    user_lives_playlist: str | None = None
     playlist_count: int
 
 

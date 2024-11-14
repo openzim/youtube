@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-
 import { useMainStore } from '@/stores/main'
 import type { VideoPreview } from '@/types/Videos'
 
@@ -8,36 +7,48 @@ import VideoGrid from '@/components/video/VideoGrid.vue'
 import TabInfo from '@/components/common/ViewInfo.vue'
 import type { Playlist } from '@/types/Playlists'
 
+const props = defineProps({
+  playlistSlug: {
+    type: String,
+    required: true,
+  },
+  titlePrefix: {
+    type: String,
+    required: true,
+  },
+});
 
 const main = useMainStore()
 const videos = ref<VideoPreview[]>([])
 const playlist = ref<Playlist>()
 const isLoading = ref(true)
 
-
-// Watch for changes in the playlist
-watch(
-  () => main.channel?.userLongUploadsPlaylist,
-  () => {
-    fetchData()
-  }
-)
-
 // Fetch the videos for the playlist
 const fetchData = async function () {
-  if (main.channel?.userLongUploadsPlaylist) {
+  const currentPlaylist = main.channel?.[props.playlistSlug as keyof typeof main.channel]
+  if (typeof currentPlaylist !== 'string') {
+    main.setErrorMessage('An unexpected error occurred when fetching videos.')
+  }
+  if (currentPlaylist) {
     try {
-      const resp = await main.fetchPlaylist(main.channel?.userLongUploadsPlaylist)
+      const resp = await main.fetchPlaylist(currentPlaylist)
       if (resp) {
         playlist.value = resp
         videos.value = resp.videos
         isLoading.value = false
       }
     } catch (error) {
-      main.setErrorMessage('An unexpected error occured when fetching videos.')
+      main.setErrorMessage('An unexpected error occurred when fetching videos.')
     }
   }
 }
+// Watch for changes in the playlist slug prop
+watch(
+  () => main.channel?.[props.playlistSlug as keyof typeof main.channel],
+  () => {
+    fetchData()
+  }
+)
 
 // Fetch the data on component mount
 onMounted(() => {
@@ -50,12 +61,16 @@ onMounted(() => {
     <v-progress-circular class="d-inline" indeterminate></v-progress-circular>
   </div>
   <div v-else>
-     <tab-info
-      :title="'Videos from '+main.channel?.title"
+    <tab-info
+      :title="titlePrefix + ' from ' + main.channel?.title"
       :count="playlist?.videosCount || 0"
       :count-text="playlist?.videos.length === 1 ? 'video' : 'videos'"
       icon="mdi-video-outline"
     />
-    <video-grid v-if="videos" :videos="videos" :playlist-slug="main.channel?.userLongUploadsPlaylist" />
+    <video-grid
+      v-if="videos"
+      :videos="videos"
+      :playlist-slug="'main.channel?.' + [props.playlistSlug]"
+    />
   </div>
 </template>
