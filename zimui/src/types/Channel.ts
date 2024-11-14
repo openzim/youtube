@@ -7,7 +7,6 @@ export interface Channel {
   profilePath?: string
   bannerPath?: string
   joinedDate: string
-  collectionType: string
   mainPlaylist?: string
   userLongUploadsPlaylist?:string
   userShortUploadsPlaylist?:string
@@ -27,10 +26,4 @@ export interface Author {
   channelJoinedDate: string
   profilePath?: string
   bannerPath?: string
-}
-
-export enum CollectionType {
-  Playlist = 'playlist',
-  Video = 'video',
-  Channel = 'channel'
 }

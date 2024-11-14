@@ -13,10 +13,6 @@ NAME = ROOT_DIR.name
 
 SCRAPER = f"{NAME} {__version__}"
 
-CHANNEL = "channel"
-PLAYLIST = "playlist"
-USER = "user"
-
 # Youtube uses some non-standard language codes
 YOUTUBE_LANG_MAP = {
     "iw": "he",  # Hebrew

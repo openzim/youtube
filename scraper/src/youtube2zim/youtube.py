@@ -9,7 +9,7 @@ from dateutil import parser as dt_parser
 from zimscraperlib.download import stream_file
 from zimscraperlib.image.transformation import resize_image
 
-from youtube2zim.constants import CHANNEL, PLAYLIST, USER, YOUTUBE, logger
+from youtube2zim.constants import YOUTUBE, logger
 from youtube2zim.utils import get_slug, load_json, save_json
 
 YOUTUBE_API = "https://www.googleapis.com/youtube/v3"
@@ -22,6 +22,18 @@ VIDEOS_API = f"{YOUTUBE_API}/videos"
 MAX_VIDEOS_PER_REQUEST = 50  # for VIDEOS_API
 RESULTS_PER_PAGE = 50  # max: 50
 REQUEST_TIMEOUT = 60
+
+
+class ChannelNotFoundError(Exception):
+    """Exception raise when requested channel is not found"""
+
+    pass
+
+
+class PlaylistNotFoundError(Exception):
+    """Exception raise when requested playlist is not found"""
+
+    pass
 
 
 class Playlist:
@@ -46,7 +58,9 @@ class Playlist:
     def from_id(cls, playlist_id):
         playlist_json = get_playlist_json(playlist_id)
         if playlist_json is None:
-            raise ValueError(f"Playlist with ID `{playlist_id}` was not found.")
+            raise PlaylistNotFoundError(
+                f"Invalid playlistId `{playlist_id}`: Not Found"
+            ) from None
         return Playlist(
             playlist_id=playlist_id,
             title=playlist_json["snippet"]["title"],
@@ -107,8 +121,9 @@ def get_channel_json(channel_id):
                 logger.warning(f"Failed to find {channel_id} by {criteria}")
                 continue
             channel_json = req_json["items"][0]
+            break
         if channel_json is None:
-            raise Exception(f"Impossible to find {channel_id}, check for typos")
+            raise ChannelNotFoundError(f"Invalid channel ID `{channel_id}`: Not Found")
         save_json(YOUTUBE.cache_dir, fname, channel_json)
     return channel_json
 
@@ -326,55 +341,63 @@ def skip_outofrange_videos(date_range, item):
     return dt_parser.parse(item["snippet"]["publishedAt"]).date() in date_range
 
 
-def extract_playlists_details_from(collection_type, youtube_id):
-    """prepare a list of Playlist from user request
-
-    USER: we fetch the hidden channel associate to it
-    CHANNEL (and USER): we grab all playlists + `uploads` playlist
-    PLAYLIST: we retrieve from the playlist Id(s)"""
+def extract_playlists_details_from(youtube_id: str):
+    """prepare a list of Playlist from user request"""
 
     uploads_playlist_id = None
     main_channel_id = None
-    if collection_type in (USER, CHANNEL):
-        # get_channel_json is capable to retrieve user and channel
-        channel_json = get_channel_json(youtube_id)
-        main_channel_id = channel_json["id"]
+    if "," not in youtube_id:
+        try:
+            # first try to consider passed ID is a channel ID (or username or handle)
+            channel_json = get_channel_json(youtube_id)
+            main_channel_id = channel_json["id"]
+            # retrieve list of playlists for that channel
+            playlist_ids = [
+                p["id"] for p in get_channel_playlists_json(main_channel_id)
+            ]
+            
+            # Get special playlists JSON objects
+            user_long_uploads_json = get_playlist_json("UULF" + main_channel_id[2:])
+            user_short_uploads_json = get_playlist_json("UUSH" + main_channel_id[2:])
+            user_lives_json = get_playlist_json("UULV" + main_channel_id[2:])
 
-        # retrieve list of playlists for that channel
-        playlist_ids = [p["id"] for p in get_channel_playlists_json(main_channel_id)]
+            # Extract special playlists IDs if the JSON objects are not None
+            user_long_uploads_playlist_id = (
+                user_long_uploads_json["id"] if user_long_uploads_json else None
+            )
+            user_short_uploads_playlist_id = (
+                user_short_uploads_json["id"] if user_short_uploads_json else None
+            )
+            user_lives_playlist_id = user_lives_json["id"] if user_lives_json else None
 
-        # Get playlist JSON objects
-        user_long_uploads_json = get_playlist_json("UULF" + main_channel_id[2:])
-        user_short_uploads_json = get_playlist_json("UUSH" + main_channel_id[2:])
-        user_lives_json = get_playlist_json("UULV" + main_channel_id[2:])
+            # Add special playlists if they exists
+            playlist_ids += filter(
+                None,
+                [
+                    user_long_uploads_playlist_id,
+                    user_short_uploads_playlist_id,
+                    user_lives_playlist_id,
+                ],
+            )
 
-        # Extract playlist IDs if the JSON objects are not None
-        user_long_uploads_playlist_id = (
-            user_long_uploads_json["id"] if user_long_uploads_json else None
-        )
-        user_short_uploads_playlist_id = (
-            user_short_uploads_json["id"] if user_short_uploads_json else None
-        )
-        user_lives_playlist_id = user_lives_json["id"] if user_lives_json else None
-
-        # Add special playlists if they exists
-        playlist_ids += filter(
-            None,
-            [
-                user_long_uploads_playlist_id,
-                user_short_uploads_playlist_id,
-                user_lives_playlist_id,
-            ],
-        )
-
-        # we always include uploads playlist (contains everything)
-        playlist_ids += [channel_json["contentDetails"]["relatedPlaylists"]["uploads"]]
-        uploads_playlist_id = playlist_ids[-1]
-    elif collection_type == PLAYLIST:
+            # we always include uploads playlist (contains everything)
+            playlist_ids += [
+                channel_json["contentDetails"]["relatedPlaylists"]["uploads"]
+            ]
+            uploads_playlist_id = playlist_ids[-1]
+            is_playlist = False
+        except ChannelNotFoundError:
+            # channel not found, then ID should be a playlist
+            playlist_ids = [youtube_id]
+            main_channel_id = Playlist.from_id(youtube_id).creator_id
+            is_playlist = True
+    else:
+        # only playlists are supported in CSV ; let's grab all playlists info
+        # (intentionally, to check they are all ok) and use channel of first playlist as
+        # main channel ID
         playlist_ids = youtube_id.split(",")
         main_channel_id = Playlist.from_id(playlist_ids[0]).creator_id
-    else:
-        raise NotImplementedError("unsupported collection_type")
+        is_playlist = True
 
     return (
         # dict.fromkeys maintains the order of playlist_ids while removing duplicates
@@ -384,4 +407,5 @@ def extract_playlists_details_from(collection_type, youtube_id):
         user_long_uploads_playlist_id,
         user_short_uploads_playlist_id,
         user_lives_playlist_id,
+        is_playlist,
     )

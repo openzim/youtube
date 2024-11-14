@@ -31,7 +31,12 @@ from zimscraperlib.image.presets import WebpHigh
 from zimscraperlib.image.probing import get_colors, is_hex_color
 from zimscraperlib.image.transformation import resize_image
 from zimscraperlib.inputs import compute_descriptions
-from zimscraperlib.video.presets import VideoMp4Low, VideoWebmLow
+from zimscraperlib.video.presets import (
+    VideoMp4High,
+    VideoMp4Low,
+    VideoWebmHigh,
+    VideoWebmLow,
+)
 from zimscraperlib.zim import Creator
 from zimscraperlib.zim.filesystem import validate_zimfile_creatable
 from zimscraperlib.zim.indexing import IndexData
@@ -43,11 +48,8 @@ from zimscraperlib.zim.metadata import (
 )
 
 from youtube2zim.constants import (
-    CHANNEL,
-    PLAYLIST,
     ROOT_DIR,
     SCRAPER,
-    USER,
     YOUTUBE,
     YOUTUBE_LANG_MAP,
     logger,
@@ -86,13 +88,10 @@ from youtube2zim.youtube import (
     skip_outofrange_videos,
 )
 
-MAXIMUM_YOUTUBEID_LENGTH = 24
-
 
 class Youtube2Zim:
     def __init__(
         self,
-        collection_type,
         youtube_id,
         api_key,
         video_format,
@@ -124,13 +123,6 @@ class Youtube2Zim:
         secondary_color=None,
     ):
         # data-retrieval info
-        self.collection_type = collection_type
-        if self.collection_type == USER:
-            logger.warning(
-                "Collection type 'user' is deprecated. Please use 'channel' type,"
-                " behaviors have been merged. 'user' type is going to be dropped in "
-                " next major release"
-            )
         self.youtube_id = youtube_id
         self.api_key = api_key
         self.dateafter = dateafter
@@ -237,22 +229,8 @@ class Youtube2Zim:
         return self.build_dir.joinpath("banner.jpg")
 
     @property
-    def is_user(self):
-        return self.collection_type == USER
-
-    @property
-    def is_channel(self):
-        return self.collection_type == CHANNEL
-
-    @property
-    def is_playlist(self):
-        return self.collection_type == PLAYLIST
-
-    @property
     def is_single_channel(self):
-        if self.is_channel or self.is_user:
-            return True
-        return len(list({pl.creator_id for pl in self.playlists})) == 1
+        return len({pl.creator_id for pl in self.playlists}) == 1
 
     @property
     def sorted_playlists(self):
@@ -285,8 +263,6 @@ class Youtube2Zim:
             # first report => creates a file with appropriate structure
             self.report_progress()
 
-            self.validate_id()
-
             # validate dateafter input
             self.validate_dateafter_input()
 
@@ -306,9 +282,7 @@ class Youtube2Zim:
             if not self.build_dir.exists() or not self.build_dir.is_dir():
                 raise OSError(f"Incorrect build_dir: {self.build_dir}")
 
-            logger.info(
-                f"starting youtube scraper for {self.collection_type}#{self.youtube_id}"
-            )
+            logger.info(f"starting youtube scraper for {self.youtube_id}")
             logger.info(f"preparing build folder at {self.build_dir.resolve()}")
             self.prepare_build_folder()
 
@@ -500,17 +474,6 @@ class Youtube2Zim:
             )
             raise ValueError(f"Invalid dateafter input: {exc}") from exc
 
-    def validate_id(self):
-        # space not allowed in youtube-ID
-        self.youtube_id = self.youtube_id.replace(" ", "")
-        if (
-            self.collection_type == "channel"
-            and len(self.youtube_id) > MAXIMUM_YOUTUBEID_LENGTH
-        ):
-            raise ValueError("Invalid ChannelId")
-        if "," in self.youtube_id and self.collection_type != "playlist":
-            raise ValueError("Invalid YoutubeId")
-
     def prepare_build_folder(self):
         """prepare build folder before we start downloading data"""
 
@@ -596,7 +559,8 @@ class Youtube2Zim:
             self.user_long_uploads_playlist_id,
             self.user_short_uploads_playlist_id,
             self.user_lives_playlist_id,
-        ) = extract_playlists_details_from(self.collection_type, self.youtube_id)
+            self.is_playlist,
+        ) = extract_playlists_details_from(self.youtube_id)
 
     def extract_videos_list(self):
         all_videos = load_json(self.cache_dir, "videos")
@@ -607,11 +571,6 @@ class Youtube2Zim:
             # we only return video_ids that we'll use later on. per-playlist JSON stored
             for playlist in self.playlists:
                 videos_json = get_videos_json(playlist.playlist_id)
-                if len(videos_json) == 0:
-                    logger.warning(
-                        f"Playlist '{playlist.playlist_id}' is empty, will be ignored"
-                    )
-                    empty_playlists.append(playlist)
                 # filter in videos within date range and filter away deleted videos
                 skip_outofrange = functools.partial(
                     skip_outofrange_videos, self.dateafter
@@ -619,6 +578,12 @@ class Youtube2Zim:
                 filter_videos = filter(skip_outofrange, videos_json)
                 filter_videos = filter(skip_deleted_videos, filter_videos)
                 filter_videos = filter(skip_non_public_videos, filter_videos)
+                filter_videos = list(filter_videos)
+                if len(filter_videos) == 0:
+                    logger.warning(
+                        f"Playlist '{playlist.playlist_id}' is empty, will be ignored"
+                    )
+                    empty_playlists.append(playlist)
                 all_videos.update(
                     {v["contentDetails"]["videoId"]: v for v in filter_videos}
                 )
@@ -633,10 +598,6 @@ class Youtube2Zim:
         self.videos_ids = [*all_videos.keys()]  # unpacking so it's subscriptable
 
     def download_video_files(self, max_concurrency):
-        audext, vidext = {"webm": ("webm", "webm"), "mp4": ("m4a", "mp4")}[
-            self.video_format
-        ]
-
         # prepare options which are shared with every downloader
         options = {
             "cachedir": self.videos_dir,
@@ -654,8 +615,7 @@ class Youtube2Zim:
             # "external_downloader_args": ["--max-tries=20", "--retry-wait=30"],
             "outtmpl": str(self.videos_dir.joinpath("%(id)s", "video.%(ext)s")),
             "preferredcodec": self.video_format,
-            "format": f"bestvideo*[ext={vidext}]+bestaudio[ext={audext}]/"
-            "bestvideo*+bestaudio/best",
+            "format": "bestvideo*+bestaudio/best",
             "y2z_videos_dir": self.videos_dir,
         }
         if self.all_subtitles:
@@ -758,7 +718,16 @@ class Youtube2Zim:
     def download_video(self, video_id, options):
         """download the video from cache/youtube and return True if successful"""
 
-        preset = {"mp4": VideoMp4Low}.get(self.video_format, VideoWebmLow)()
+        preset = {
+            "mp4": VideoMp4Low if self.low_quality else VideoMp4High,
+            "webm": VideoWebmLow if self.low_quality else VideoWebmHigh,
+        }.get(self.video_format)
+        if not preset:
+            raise Exception(
+                f"Impossible to find preset for {self.video_format} video format "
+                f"(low quality: {self.low_quality})"
+            )
+        preset = preset()
         options_copy = options.copy()
         video_location = options_copy["y2z_videos_dir"].joinpath(video_id)
         video_path = video_location.joinpath(f"video.{self.video_format}")
@@ -793,7 +762,6 @@ class Youtube2Zim:
                 video_id,
                 preset,
                 self.video_format,
-                self.low_quality,
             )
             self.add_file_to_zim(
                 zim_path, video_path, callback=(delete_callback, video_path)
@@ -1197,10 +1165,22 @@ class Youtube2Zim:
         user_long_uploads_playlist_slug = None
         user_short_uploads_playlist_slug = None
         user_lives_playlist_slug = None
-        if len(self.playlists) > 0:
-            main_playlist_slug = get_playlist_slug(
-                self.playlists[0]
-            )  # set first playlist as main playlist
+      
+        empty_playlists = list(
+            filter(lambda playlist: len(get_videos_list(playlist)) == 0, self.playlists)
+        )
+        for empty_playlist in empty_playlists:
+            logger.warning(
+                f"Removing finally empty playlist {empty_playlist.playlist_id}"
+            )
+            self.playlists.remove(empty_playlist)
+
+        if len(self.playlists) == 0:
+            raise Exception("No playlist succeeded to download")
+
+        main_playlist_slug = get_playlist_slug(
+            self.playlists[0]
+        )  # set first playlist as main playlist
 
         for playlist in self.playlists:
             playlist_slug = get_playlist_slug(playlist)
@@ -1281,7 +1261,6 @@ class Youtube2Zim:
                 channel_description=channel_data["snippet"]["description"],
                 profile_path="profile.jpg",
                 banner_path="banner.jpg",
-                collection_type=self.collection_type,
                 main_playlist=main_playlist_slug,
                 user_long_uploads_playlist=user_long_uploads_playlist_slug,
                 user_short_uploads_playlist=user_short_uploads_playlist_slug,

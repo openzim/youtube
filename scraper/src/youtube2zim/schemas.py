@@ -105,7 +105,6 @@ class Channel(CamelModel):
     profile_path: str | None = None
     banner_path: str | None = None
     joined_date: str
-    collection_type: str
     main_playlist: str | None = None
     user_long_uploads_playlist: str | None = None
     user_short_uploads_playlist: str | None = None

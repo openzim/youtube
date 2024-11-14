@@ -7,19 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
 ### Fixed
 
 - Diffrentiate user uploaded shorts, lives, & long videos (#367)
 - corrected the short video resolution in the UI (#366)
 
+### Fixed
+
+- Check for empty playlists after filtering, and after downloading videos (#375)
+
+## [3.2.1] - 2024-11-01
+
+### Deprecated
+
+- `--type` CLI argument is now deprecated (will be removed in next major)
+
 ### Changed
 
 - Raise exception if there are no videos in the playlists (#347)
+- Drop `--type` CLI argument and guess `--id` type (#361)
+- Always reencode using our presets (even for high quality) and choose best format when downloading from Youtube (#356)
 
 ### Fixed
 
 - Filter-out non-public videos and properly cleanup unsuccessful videos (#362)
 - Use proper ZIM metadata key for `Scraper` and `Tags` (#369)
+- Add missing `playsinline` attribute for Video.JS on iOS (#368)
 
 ## [3.2.0] - 2024-10-11
 
