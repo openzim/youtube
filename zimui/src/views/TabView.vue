@@ -26,11 +26,9 @@ const isLoading = ref(true)
 // Fetch the videos for the playlist
 const fetchData = async function () {
   const currentPlaylist = main.channel?.[props.playlistSlug as keyof typeof main.channel]
-  if (typeof currentPlaylist !== 'string') {
-    main.setErrorMessage('An unexpected error occurred when fetching videos.')
-  }
   if (currentPlaylist) {
     try {
+      if (typeof currentPlaylist !== 'string') throw new Error()
       const resp = await main.fetchPlaylist(currentPlaylist)
       if (resp) {
         playlist.value = resp
