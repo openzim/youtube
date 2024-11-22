@@ -1182,6 +1182,14 @@ class Youtube2Zim:
             self.playlists[0]
         )  # set first playlist as main playlist
 
+        # Initialize placeholders for special playlists
+        special_playlists: dict[str, dict[str, PlaylistPreview | Playlist]] = {
+            "user_long_uploads_playlist": {},
+            "user_short_uploads_playlist": {},
+            "user_lives_playlist": {},
+        }
+        main_playlist = None
+
         for playlist in self.playlists:
             playlist_slug = get_playlist_slug(playlist)
             playlist_path = f"playlists/{playlist_slug}.json"
@@ -1208,23 +1216,57 @@ class Youtube2Zim:
 
             if playlist.playlist_id == self.user_long_uploads_playlist_id:
                 user_long_uploads_playlist_slug = playlist_slug
+                special_playlists["user_long_uploads_playlist"] = {
+                    "preview": generate_playlist_preview_object(playlist),
+                    "full": playlist_obj,
+                }
 
-            if playlist.playlist_id == self.user_short_uploads_playlist_id:
+            elif playlist.playlist_id == self.user_short_uploads_playlist_id:
                 user_short_uploads_playlist_slug = playlist_slug
+                special_playlists["user_short_uploads_playlist"] = {
+                    "preview": generate_playlist_preview_object(playlist),
+                    "full": playlist_obj,
+                }
 
-            if playlist.playlist_id == self.user_lives_playlist_id:
+            elif playlist.playlist_id == self.user_lives_playlist_id:
                 user_lives_playlist_slug = playlist_slug
+                special_playlists["user_lives_playlist"] = {
+                    "preview": generate_playlist_preview_object(playlist),
+                    "full": playlist_obj,
+                }
 
-            if playlist.playlist_id == self.uploads_playlist_id:
+            elif playlist.playlist_id == self.uploads_playlist_id:
+                main_playlist = playlist
                 main_playlist_slug = (
                     playlist_slug  # set uploads playlist as main playlist
                 )
                 # insert uploads playlist at the beginning of the list
-                playlist_list.insert(0, generate_playlist_preview_object(playlist))
                 home_playlist_list.insert(0, playlist_obj)
             else:
                 playlist_list.append(generate_playlist_preview_object(playlist))
                 home_playlist_list.append(playlist_obj)
+
+        # Check if only one special playlist exists
+        special_playlist_count = sum(
+            1 for k in special_playlists if special_playlists[k]
+        )
+
+        if special_playlist_count == 1:
+            if main_playlist is not None:
+                self.playlists.remove(main_playlist)
+            for key in special_playlists:
+                if special_playlists[key]:
+                    main_playlist_slug = special_playlists[key]["preview"].slug
+                    home_playlist_list[0] = special_playlists[key]["full"]
+        else:
+            # Insert special playlists in the desired order
+            for key in [
+                "user_lives_playlist",
+                "user_short_uploads_playlist",
+                "user_long_uploads_playlist",
+            ]:
+                if special_playlists[key]:
+                    home_playlist_list.insert(1, special_playlists[key]["full"])
 
         # write playlists.json file
         self.zim_file.add_item_for(
