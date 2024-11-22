@@ -92,6 +92,9 @@ class YoutubeHandler:
             playlists,
             main_channel_id,
             uploads_playlist_id,
+            user_long_uploads_playlist_id,
+            user_short_uploads_playlist_id,
+            user_lives_playlist_id,
             is_playlist,
         ) = extract_playlists_details_from(self.youtube_id)
 

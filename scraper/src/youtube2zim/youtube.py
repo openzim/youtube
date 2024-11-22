@@ -2,7 +2,6 @@
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 from http import HTTPStatus
-from datetime import datetime
 
 import requests
 from dateutil import parser as dt_parser
@@ -60,7 +59,7 @@ class Playlist:
         if playlist_json is None:
             raise PlaylistNotFoundError(
                 f"Invalid playlistId `{playlist_id}`: Not Found"
-            ) from None
+            )
         return Playlist(
             playlist_id=playlist_id,
             title=playlist_json["snippet"]["title"],
@@ -355,7 +354,7 @@ def extract_playlists_details_from(youtube_id: str):
             playlist_ids = [
                 p["id"] for p in get_channel_playlists_json(main_channel_id)
             ]
-            
+
             # Get special playlists JSON objects
             user_long_uploads_json = get_playlist_json("UULF" + main_channel_id[2:])
             user_short_uploads_json = get_playlist_json("UUSH" + main_channel_id[2:])

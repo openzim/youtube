@@ -1165,7 +1165,7 @@ class Youtube2Zim:
         user_long_uploads_playlist_slug = None
         user_short_uploads_playlist_slug = None
         user_lives_playlist_slug = None
-      
+
         empty_playlists = list(
             filter(lambda playlist: len(get_videos_list(playlist)) == 0, self.playlists)
         )

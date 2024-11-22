@@ -10,13 +10,13 @@ import type { Playlist } from '@/types/Playlists'
 const props = defineProps({
   playlistSlug: {
     type: String,
-    required: true,
+    required: true
   },
   titlePrefix: {
     type: String,
-    required: true,
-  },
-});
+    required: true
+  }
+})
 
 const main = useMainStore()
 const videos = ref<VideoPreview[]>([])
@@ -28,7 +28,8 @@ const fetchData = async function () {
   const currentPlaylist = main.channel?.[props.playlistSlug as keyof typeof main.channel]
   if (currentPlaylist) {
     try {
-      if (typeof currentPlaylist !== 'string') throw new Error()
+      if (typeof currentPlaylist !== 'string')
+        throw new Error('Invalid playlistSlug: expected a string value.')
       const resp = await main.fetchPlaylist(currentPlaylist)
       if (resp) {
         playlist.value = resp
@@ -36,6 +37,7 @@ const fetchData = async function () {
         isLoading.value = false
       }
     } catch (error) {
+      console.error('Error fetching videos:', error)
       main.setErrorMessage('An unexpected error occurred when fetching videos.')
     }
   }
@@ -68,7 +70,7 @@ onMounted(() => {
     <video-grid
       v-if="videos"
       :videos="videos"
-      :playlist-slug="'main.channel?.' + [props.playlistSlug]"
+      :playlist-slug="'main.channel?.'+[props.playlistSlug]"
     />
   </div>
 </template>
