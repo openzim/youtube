@@ -67,10 +67,6 @@ onMounted(() => {
       :count-text="playlist?.videos.length === 1 ? 'video' : 'videos'"
       icon="mdi-video-outline"
     />
-    <video-grid
-      v-if="videos"
-      :videos="videos"
-      :playlist-slug="`main.channel?.${props.playlistSlug}`"
-    />
+    <video-grid v-if="videos" :videos="videos" :playlist-slug="playlist?.slug" />
   </div>
 </template>

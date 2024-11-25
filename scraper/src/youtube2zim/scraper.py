@@ -170,7 +170,6 @@ class Youtube2Zim:
 
         # process-related
         self.playlists = []
-        self.uploads_playlist_id = None
         self.user_long_uploads_playlist_id = None
         self.user_short_uploads_playlist_id = None
         self.user_lives_playlist_id = None
@@ -231,30 +230,6 @@ class Youtube2Zim:
     @property
     def is_single_channel(self):
         return len({pl.creator_id for pl in self.playlists}) == 1
-
-    @property
-    def sorted_playlists(self):
-        """sorted list of playlists (by title) but with Uploads one at first if any"""
-        if len(self.playlists) <= 1:
-            return self.playlists
-
-        sorted_playlists = sorted(self.playlists, key=lambda x: x.title)
-        index = 0
-        # make sure our Uploads, special playlist is first
-        if self.uploads_playlist_id:
-            try:
-                index = [
-                    index
-                    for index, p in enumerate(sorted_playlists)
-                    if p.playlist_id == self.uploads_playlist_id
-                ][-1]
-            except Exception:
-                index = 0
-        return (
-            [sorted_playlists[index]]
-            + sorted_playlists[0:index]
-            + sorted_playlists[index + 1 :]
-        )
 
     def run(self):
         """execute the scraper step by step"""
@@ -555,7 +530,6 @@ class Youtube2Zim:
         (
             self.playlists,
             self.main_channel_id,
-            self.uploads_playlist_id,
             self.user_long_uploads_playlist_id,
             self.user_short_uploads_playlist_id,
             self.user_lives_playlist_id,
@@ -1158,10 +1132,9 @@ class Youtube2Zim:
             )
 
         # write playlists JSON files
-        playlist_list = []
-        home_playlist_list = []
+        playlist_list: list[PlaylistPreview] = []
+        home_playlist_list: list[Playlist] = []
 
-        main_playlist_slug = None
         user_long_uploads_playlist_slug = None
         user_short_uploads_playlist_slug = None
         user_lives_playlist_slug = None
@@ -1177,18 +1150,6 @@ class Youtube2Zim:
 
         if len(self.playlists) == 0:
             raise Exception("No playlist succeeded to download")
-
-        main_playlist_slug = get_playlist_slug(
-            self.playlists[0]
-        )  # set first playlist as main playlist
-
-        # Initialize placeholders for special playlists
-        special_playlists: dict[str, dict[str, PlaylistPreview | Playlist]] = {
-            "user_long_uploads_playlist": {},
-            "user_short_uploads_playlist": {},
-            "user_lives_playlist": {},
-        }
-        main_playlist = None
 
         for playlist in self.playlists:
             playlist_slug = get_playlist_slug(playlist)
@@ -1214,59 +1175,15 @@ class Youtube2Zim:
             # modify playlist object for preview on homepage
             playlist_obj.videos = playlist_obj.videos[:12]
 
+            home_playlist_list.append(playlist_obj)
             if playlist.playlist_id == self.user_long_uploads_playlist_id:
                 user_long_uploads_playlist_slug = playlist_slug
-                special_playlists["user_long_uploads_playlist"] = {
-                    "preview": generate_playlist_preview_object(playlist),
-                    "full": playlist_obj,
-                }
-
             elif playlist.playlist_id == self.user_short_uploads_playlist_id:
                 user_short_uploads_playlist_slug = playlist_slug
-                special_playlists["user_short_uploads_playlist"] = {
-                    "preview": generate_playlist_preview_object(playlist),
-                    "full": playlist_obj,
-                }
-
             elif playlist.playlist_id == self.user_lives_playlist_id:
                 user_lives_playlist_slug = playlist_slug
-                special_playlists["user_lives_playlist"] = {
-                    "preview": generate_playlist_preview_object(playlist),
-                    "full": playlist_obj,
-                }
-
-            elif playlist.playlist_id == self.uploads_playlist_id:
-                main_playlist = playlist
-                main_playlist_slug = (
-                    playlist_slug  # set uploads playlist as main playlist
-                )
-                # insert uploads playlist at the beginning of the list
-                home_playlist_list.insert(0, playlist_obj)
             else:
                 playlist_list.append(generate_playlist_preview_object(playlist))
-                home_playlist_list.append(playlist_obj)
-
-        # Check if only one special playlist exists
-        special_playlist_count = sum(
-            1 for k in special_playlists if special_playlists[k]
-        )
-
-        if special_playlist_count == 1:
-            if main_playlist is not None:
-                self.playlists.remove(main_playlist)
-            for key in special_playlists:
-                if special_playlists[key]:
-                    main_playlist_slug = special_playlists[key]["preview"].slug
-                    home_playlist_list[0] = special_playlists[key]["full"]
-        else:
-            # Insert special playlists in the desired order
-            for key in [
-                "user_lives_playlist",
-                "user_short_uploads_playlist",
-                "user_long_uploads_playlist",
-            ]:
-                if special_playlists[key]:
-                    home_playlist_list.insert(1, special_playlists[key]["full"])
 
         # write playlists.json file
         self.zim_file.add_item_for(
@@ -1303,7 +1220,7 @@ class Youtube2Zim:
                 channel_description=channel_data["snippet"]["description"],
                 profile_path="profile.jpg",
                 banner_path="banner.jpg",
-                main_playlist=main_playlist_slug,
+                first_playlist=playlist_list[0].id,
                 user_long_uploads_playlist=user_long_uploads_playlist_slug,
                 user_short_uploads_playlist=user_short_uploads_playlist_slug,
                 user_lives_playlist=user_lives_playlist_slug,

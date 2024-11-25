@@ -10,11 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Differentiate user uploaded shorts, lives, & long videos (#367)
+- Differentiate user uploaded shorts, lives & long videos (#367)
 
 ### Fixed
 
-- corrected the short video resolution in the UI (#366)
+- Corrected the short video resolution in the UI (#366)
 
 ### Fixed
 

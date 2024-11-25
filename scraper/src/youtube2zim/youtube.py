@@ -343,8 +343,9 @@ def skip_outofrange_videos(date_range, item):
 def extract_playlists_details_from(youtube_id: str):
     """prepare a list of Playlist from user request"""
 
-    uploads_playlist_id = None
-    main_channel_id = None
+    main_channel_id = user_long_uploads_playlist_id = user_short_uploads_playlist_id = (
+        user_lives_playlist_id
+    ) = None
     if "," not in youtube_id:
         try:
             # first try to consider passed ID is a channel ID (or username or handle)
@@ -369,21 +370,21 @@ def extract_playlists_details_from(youtube_id: str):
             )
             user_lives_playlist_id = user_lives_json["id"] if user_lives_json else None
 
-            # Add special playlists if they exists
-            playlist_ids += filter(
-                None,
-                [
-                    user_long_uploads_playlist_id,
-                    user_short_uploads_playlist_id,
-                    user_lives_playlist_id,
-                ],
+            # Add special playlists if they exists, in proper order
+            playlist_ids = (
+                list(
+                    filter(
+                        None,
+                        [
+                            user_long_uploads_playlist_id,
+                            user_short_uploads_playlist_id,
+                            user_lives_playlist_id,
+                        ],
+                    )
+                )
+                + playlist_ids
             )
 
-            # we always include uploads playlist (contains everything)
-            playlist_ids += [
-                channel_json["contentDetails"]["relatedPlaylists"]["uploads"]
-            ]
-            uploads_playlist_id = playlist_ids[-1]
             is_playlist = False
         except ChannelNotFoundError:
             # channel not found, then ID should be a playlist
@@ -402,7 +403,6 @@ def extract_playlists_details_from(youtube_id: str):
         # dict.fromkeys maintains the order of playlist_ids while removing duplicates
         [Playlist.from_id(playlist_id) for playlist_id in dict.fromkeys(playlist_ids)],
         main_channel_id,
-        uploads_playlist_id,
         user_long_uploads_playlist_id,
         user_short_uploads_playlist_id,
         user_lives_playlist_id,
