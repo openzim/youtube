@@ -70,7 +70,7 @@ onMounted(() => {
     <video-grid
       v-if="videos"
       :videos="videos"
-      :playlist-slug="'main.channel?.'+[props.playlistSlug]"
+      :playlist-slug="`main.channel?.${props.playlistSlug}`"
     />
   </div>
 </template>
