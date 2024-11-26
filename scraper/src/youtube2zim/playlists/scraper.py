@@ -91,7 +91,9 @@ class YoutubeHandler:
         (
             playlists,
             main_channel_id,
-            uploads_playlist_id,
+            user_long_uploads_playlist_id,
+            user_short_uploads_playlist_id,
+            user_lives_playlist_id,
             is_playlist,
         ) = extract_playlists_details_from(self.youtube_id)
 
@@ -106,10 +108,6 @@ class YoutubeHandler:
         shutil.rmtree(self.build_dir, ignore_errors=True)
 
         for playlist in playlists:
-            if playlist.playlist_id == uploads_playlist_id:
-                logger.info(f"Skipping playlist {playlist.playlist_id} (uploads one)")
-                continue
-
             logger.info(f"Executing youtube2zim for playlist {playlist.playlist_id}")
             success, process = self.run_playlist_zim(playlist)
             if success:

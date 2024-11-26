@@ -13,7 +13,7 @@ const isLoading = ref(true)
 
 // Watch for changes in the main playlist
 watch(
-  () => main.channel?.mainPlaylist,
+  () => main.channel?.id,
   () => {
     fetchData()
   }
@@ -21,7 +21,7 @@ watch(
 
 // Fetch the playlists for the playlist tab
 const fetchData = async function () {
-  if (main.channel?.mainPlaylist) {
+  if (main.channel?.id) {
     try {
       const resp = await main.fetchPlaylists()
       if (resp) {

@@ -6,6 +6,7 @@
 html {
   overflow: auto !important;
   font-family: 'Roboto', sans-serif;
+  overflow-y: scroll !important;
 }
 
 body {

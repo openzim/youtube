@@ -15,7 +15,7 @@ const isLoading = ref(true)
 
 // Watch for changes in the main playlist
 watch(
-  () => main.channel?.mainPlaylist,
+  () => main.channel?.firstPlaylist,
   () => {
     fetchData()
   }
@@ -23,9 +23,9 @@ watch(
 
 // Fetch the videos for the main playlist
 const fetchData = async function () {
-  if (main.channel?.mainPlaylist) {
+  if (main.channel?.firstPlaylist) {
     try {
-      const resp = await main.fetchPlaylist(main.channel?.mainPlaylist)
+      const resp = await main.fetchPlaylist(main.channel?.firstPlaylist)
       if (resp) {
         playlist.value = resp
         videos.value = resp.videos
@@ -54,6 +54,6 @@ onMounted(() => {
       :count-text="playlist?.videos.length === 1 ? 'video' : 'videos'"
       icon="mdi-video-outline"
     />
-    <video-grid v-if="videos" :videos="videos" :playlist-slug="main.channel?.mainPlaylist" />
+    <video-grid v-if="videos" :videos="videos" :playlist-slug="main.channel?.firstPlaylist" />
   </div>
 </template>

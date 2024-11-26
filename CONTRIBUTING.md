@@ -101,3 +101,11 @@ yarn test:e2e
 ```
 
 On Linux, you might need to install additional dependencies, see [Linux Prerequisites](https://docs.cypress.io/guides/getting-started/installing-cypress#Linux-Prerequisites) in the Cypress documentation.
+
+## running integration tests checking ZIM content
+
+We have a bunch of integration tests checking ZIM content. Once you have a the test ZIM from openZIM channel (see instructions above for Vue.JS ZIM UI), you can run the tests locally as well:
+
+```
+ZIM_FILE_PATH="output/openZIM_testing.zim" pytest scraper/tests-integration/integration.py
+```

@@ -3,7 +3,7 @@ import os
 
 from zimscraperlib.zim import Archive
 
-ZIM_FILE_PATH = "/output/openZIM_testing.zim"
+ZIM_FILE_PATH = os.getenv("ZIM_FILE_PATH") or "/output/openZIM_testing.zim"
 
 
 def test_is_file():
@@ -47,7 +47,7 @@ def test_zim_channel_json():
 
     assert channel_json["id"] == "UC8elThf5TGMpQfQc_VE917Q"
     assert channel_json["channelName"] == "openZIM_testing"
-    assert channel_json["mainPlaylist"] == "uploads_from_openzim_testing-917Q"
+    assert channel_json["firstPlaylist"] == "videos-917Q"
 
 
 def test_zim_videos():
@@ -80,17 +80,101 @@ def test_zim_videos():
             )
 
 
-def test_zim_playlists():
+def test_zim_playlists_file():
     """Ensure playlists json files are present in ZIM file"""
 
     zim_fh = Archive(ZIM_FILE_PATH)
+
+    json_path = "playlists.json"
+    assert zim_fh.get_item(json_path).mimetype == "application/json"
+
+    video_json = zim_fh.get_content(json_path)
+    video_json = json.loads(video_json)
+    assert [video["slug"] for video in video_json["playlists"]] == [
+        "trailers-5Gph",
+        "timelapses-QgGI",
+        "coffee-O2wS",
+    ]
+    assert set(video_json["playlists"][0].keys()) == {
+        "slug",
+        "id",
+        "title",
+        "thumbnailPath",
+        "videosCount",
+        "mainVideoSlug",
+    }
+
+
+def test_zim_home_playlists_file():
+    """Ensure playlists json files are present in ZIM file"""
+
+    zim_fh = Archive(ZIM_FILE_PATH)
+
+    json_path = "home_playlists.json"
+    assert zim_fh.get_item(json_path).mimetype == "application/json"
+
+    video_json = zim_fh.get_content(json_path)
+    video_json = json.loads(video_json)
+    assert [video["slug"] for video in video_json["playlists"]] == [
+        "videos-917Q",
+        "short_videos-917Q",
+        "trailers-5Gph",
+        "timelapses-QgGI",
+        "coffee-O2wS",
+    ]
+    assert set(video_json["playlists"][0].keys()) == {
+        "slug",
+        "id",
+        "title",
+        "thumbnailPath",
+        "author",
+        "description",
+        "videosCount",
+        "publicationDate",
+        "videos",
+    }
+    assert set(video_json["playlists"][0]["videos"][0].keys()) == {
+        "slug",
+        "id",
+        "title",
+        "thumbnailPath",
+        "duration",
+    }
+
+
+def test_zim_individual_playlists_files():
+    """Ensure playlists json files are present in ZIM file"""
+
+    zim_fh = Archive(ZIM_FILE_PATH)
+
     playlists_json_list = [
-        "coffee-O2wS.json",
-        "timelapses-QgGI.json",
-        "trailers-5Gph.json",
-        "uploads_from_openzim_testing-917Q.json",
+        "videos-917Q",
+        "short_videos-917Q",
+        "trailers-5Gph",
+        "timelapses-QgGI",
+        "coffee-O2wS",
     ]
 
     for playlist_json_file in playlists_json_list:
-        json_path = "playlists/" + playlist_json_file
+        json_path = f"playlists/{playlist_json_file}.json"
         assert zim_fh.get_item(json_path).mimetype == "application/json"
+        content_json = zim_fh.get_content(json_path)
+        content_json = json.loads(content_json)
+        assert set(content_json.keys()) == {
+            "slug",
+            "id",
+            "title",
+            "thumbnailPath",
+            "author",
+            "description",
+            "videosCount",
+            "publicationDate",
+            "videos",
+        }
+        assert set(content_json["videos"][0].keys()) == {
+            "slug",
+            "id",
+            "title",
+            "thumbnailPath",
+            "duration",
+        }
