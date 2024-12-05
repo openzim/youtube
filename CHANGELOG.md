@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Corrected the short video resolution in the UI (#366)
 - Check for empty playlists after filtering, and after downloading videos (#375)
+- Unlisted videos must also be included inside the ZIM (#379)
 
 ## [3.2.1] - 2024-11-01
 

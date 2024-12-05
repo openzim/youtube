@@ -332,7 +332,7 @@ def skip_deleted_videos(item):
 
 def skip_non_public_videos(item):
     """filter func to filter-out non-public videos"""
-    return item["status"]["privacyStatus"] == "public"
+    return item["status"]["privacyStatus"] in ("public", "unlisted")
 
 
 def skip_outofrange_videos(date_range, item):
