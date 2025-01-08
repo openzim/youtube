@@ -11,7 +11,7 @@ dependencies = [
   "python-slugify==8.0.4",
   "yt-dlp",                      # youtube-dl should be updated as frequently as possible
   "python-dateutil==2.9.0.post0",
-  "jinja2==3.1.4",
+  "jinja2==3.1.5",
   "zimscraperlib==4.0.0",
   "requests==2.32.3",
   "kiwixstorage==0.9.0",
