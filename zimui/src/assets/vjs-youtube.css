@@ -55,7 +55,6 @@
   border-radius: 8px;
 }
 
-
 .video-js.vjs-fluid,
 .video-js.vjs-16-9,
 .video-js.vjs-4-3,
@@ -88,4 +87,19 @@ video.vjs-tech {
   height: 100% !important;
   max-height: 100vh;
   object-fit: contain;
+}
+
+.custom-marker {
+  position: absolute;
+  bottom: 0;
+  width: 5px;
+  height: 100%;
+  background-color: #aaa;
+  cursor: pointer;
+}
+
+.vjs-time-tooltip {
+  transform: translateY(-80%) !important;
+  line-height: 1.5;
+  padding: 3px 6px !important;
 }

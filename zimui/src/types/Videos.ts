@@ -10,6 +10,8 @@ export interface Video {
   thumbnailPath?: string
   subtitlePath?: string
   subtitleList: Subtitle[]
+  chaptersPath?: string
+  chapterList: Chapter[]
   duration: string
 }
 
@@ -24,4 +26,10 @@ export interface VideoPreview {
 export default interface Subtitle {
   code: string
   name: string
+}
+
+export interface Chapter {
+  startTime: number
+  endTime: number
+  title: string
 }
