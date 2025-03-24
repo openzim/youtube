@@ -85,6 +85,10 @@ const videoPoster = computed<string>(() => {
   return video.value?.thumbnailPath || ''
 })
 
+const chapterList = computed(() => {
+  return video.value?.chapterList ?? []
+})
+
 const subtitles = computed(() => {
   return video.value?.subtitleList.map((subtitle) => {
     return {
@@ -94,6 +98,25 @@ const subtitles = computed(() => {
       label: subtitle.name
     }
   })
+})
+
+const chapters = computed(() => {
+  if (!video.value?.chaptersPath) {
+    return []
+  }
+  return [
+    {
+      kind: 'chapters',
+      src: `${video.value?.chaptersPath}/chapters.vtt`,
+      srclang: 'en',
+      label: 'Chapters',
+      default: true
+    }
+  ]
+})
+
+const tracks = computed(() => {
+  return [...subtitles.value, ...chapters.value]
 })
 
 const videoOptions = ref({
@@ -118,7 +141,7 @@ const videoOptions = ref({
       type: videoFormat
     }
   ],
-  tracks: subtitles
+  tracks: tracks
 })
 
 const currentVideoIndex = computed(() => {
@@ -187,6 +210,7 @@ watch(
         <video-player
           :options="videoOptions"
           :loop="main.loop === LoopOptions.loopVideo"
+          :chapters-list="chapterList"
           @video-ended="onVideoEnded"
         />
         <!-- Playlist panel for mobile devices -->

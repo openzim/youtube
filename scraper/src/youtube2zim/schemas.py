@@ -26,6 +26,14 @@ class Subtitle(CamelModel):
     name: str
 
 
+class Chapter(CamelModel):
+    """Class to serialize data about YouTube Video chapter"""
+
+    start_time: float | int
+    end_time: float | int
+    title: str
+
+
 class Subtitles(CamelModel):
     """Class to serialize data about a list of YouTube video subtitles."""
 
@@ -44,6 +52,8 @@ class Video(CamelModel):
     thumbnail_path: str | None = None
     subtitle_path: str | None = None
     subtitle_list: list[Subtitle]
+    chapters_path: str | None = None
+    chapter_list: list[Chapter]
     duration: str
 
 

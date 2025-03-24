@@ -58,6 +58,7 @@ from youtube2zim.processing import post_process_video, process_thumbnail
 from youtube2zim.schemas import (
     Author,
     Channel,
+    Chapter,
     Config,
     HomePlaylists,
     Playlist,
@@ -214,6 +215,10 @@ class Youtube2Zim:
     @property
     def subtitles_cache_dir(self):
         return self.cache_dir.joinpath("subtitles")
+
+    @property
+    def chapters_cache_dir(self):
+        return self.cache_dir.joinpath("chapters")
 
     @property
     def videos_dir(self):
@@ -455,6 +460,7 @@ class Youtube2Zim:
         # cache folder to store youtube-api results
         self.cache_dir.mkdir(exist_ok=True)
         self.subtitles_cache_dir.mkdir(exist_ok=True)
+        self.chapters_cache_dir.mkdir(exist_ok=True)
 
         # make videos placeholder
         self.videos_dir.mkdir(exist_ok=True)
@@ -805,6 +811,64 @@ class Youtube2Zim:
                 self.upload_to_cache(s3_key, thumbnail_path, preset.VERSION)
             return True
 
+    def add_chapters_to_zim(self, video_id: str):
+        """add chapters file to zim file"""
+
+        chapters_file = self.videos_dir.joinpath(video_id, "chapters.vtt")
+        if chapters_file.exists():
+            self.add_file_to_zim(
+                f"videos/{video_id}/{chapters_file.name}",
+                chapters_file,
+                callback=(delete_callback, chapters_file),
+            )
+
+    def generate_chapters_vtt(self, video_id):
+        """generate the chapters file of a video if chapters available"""
+
+        metadata_file = self.videos_dir.joinpath(video_id, "video.info.json")
+        if metadata_file.exists():
+            with open(metadata_file, encoding="utf-8") as f:
+                metadata = json.load(f)
+                chapters = metadata.get("chapters", [])
+
+                if not chapters:
+                    logger.info(f"No chapters found for {video_id}")
+                    return
+
+                logger.info(f"Found {len(chapters)} chapters for {video_id}")
+
+                save_json(
+                    self.chapters_cache_dir,
+                    video_id,
+                    {"chapters": chapters},
+                )
+
+                chapters_file = self.videos_dir.joinpath(video_id, "chapters.vtt")
+                with chapters_file.open("w", encoding="utf8") as chapter_f:
+                    chapter_f.write("WEBVTT\n\n")
+                    for chapter in chapters:
+                        start = chapter["start_time"]
+                        end = chapter["end_time"]
+                        title = chapter["title"]
+
+                        start_time = (
+                            f"{int(start//3600):02}:"
+                            f"{int((start%3600)//60):02}:"
+                            f"{int(start%60):02}."
+                            f"{int((start%1)*1000):03}"
+                        )
+                        end_time = (
+                            f"{int(end//3600):02}:"
+                            f"{int((end%3600)//60):02}:"
+                            f"{int(end%60):02}."
+                            f"{int((end%1)*1000):03}"
+                        )
+
+                        chapter_f.write(f"{start_time} --> {end_time}\n")
+                        chapter_f.write(f"{title}\n\n")
+                logger.info(f"Chapters file saved for {video_id}")
+                self.add_chapters_to_zim(video_id)
+
     def fetch_video_subtitles_list(self, video_id: str) -> Subtitles:
         """fetch list of subtitles for a video"""
 
@@ -812,7 +876,7 @@ class Youtube2Zim:
         languages = [
             x.stem.split(".")[1]
             for x in video_dir.iterdir()
-            if x.is_file() and x.name.endswith(".vtt")
+            if x.is_file() and x.name.endswith(".vtt") and x.name != "chapters.vtt"
         ]
 
         def to_subtitle_object(lang) -> Subtitle:
@@ -855,7 +919,9 @@ class Youtube2Zim:
         """download subtitles for a video"""
 
         options_copy = options.copy()
-        options_copy.update({"skip_download": True, "writethumbnail": False})
+        options_copy.update(
+            {"skip_download": True, "writethumbnail": False, "writeinfojson": True}
+        )
         try:
             with yt_dlp.YoutubeDL(options_copy) as ydl:
                 ydl.download([video_id])
@@ -883,6 +949,7 @@ class Youtube2Zim:
                 video_id, options
             ):
                 self.download_subtitles(video_id, options)
+                self.generate_chapters_vtt(video_id)
                 succeeded.append(video_id)
             else:
                 failed.append(video_id)
@@ -1010,6 +1077,12 @@ class Youtube2Zim:
                 return []
             return subtitles_list["subtitles"]
 
+        def get_chapters(video_id) -> list[Chapter]:
+            chapters_list = load_json(self.chapters_cache_dir, video_id)
+            if chapters_list is None:
+                return []
+            return chapters_list["chapters"]
+
         def get_videos_list(playlist):
             videos = load_mandatory_json(
                 self.cache_dir, f"playlist_{playlist.playlist_id}_videos"
@@ -1025,6 +1098,7 @@ class Youtube2Zim:
             author = videos_channels[video_id]
             subtitles_list = get_subtitles(video_id)
             channel_data = get_channel_json(author["channelId"])
+            chapters_list = get_chapters(video_id)
 
             return Video(
                 id=video_id,
@@ -1043,6 +1117,10 @@ class Youtube2Zim:
                 thumbnail_path=get_thumbnail_path(video_id),
                 subtitle_path=f"videos/{video_id}" if len(subtitles_list) > 0 else None,
                 subtitle_list=subtitles_list,
+                chapters_path=(
+                    f"videos/{video_id}" if len(chapters_list) > 0 else None
+                ),
+                chapter_list=chapters_list,
                 duration=videos_channels[video_id]["duration"],
             )
 
