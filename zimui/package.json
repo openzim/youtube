@@ -16,8 +16,10 @@
   },
   "dependencies": {
     "@fontsource/roboto": "^5.1.0",
+    "@types/linkify-it": "^5.0.0",
     "axios": "^1.7.7",
     "dayjs": "^1.11.13",
+    "linkify-it": "^5.0.0",
     "pinia": "^2.2.2",
     "resize-observer-polyfill": "^1.5.1",
     "video.js": "^8.17.4",

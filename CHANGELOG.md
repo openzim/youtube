@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add support for video chapters (#170)
+- Activate links, emails of video description (#390)
 
 ## [3.3.0] - 2024-12-05
 
