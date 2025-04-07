@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add support for video chapters (#170)
 - Activate links, emails of video description (#390)
+- Add skip forward/backward functionality and keyboard & touch controls (#397)
 
 ## [3.3.0] - 2024-12-05
 

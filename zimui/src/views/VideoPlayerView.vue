@@ -180,6 +180,30 @@ const onVideoEnded = () => {
   }
 }
 
+const goToNextVideo = () => {
+  if (!playlist.value) return
+  if (currentVideoIndex.value === playlist.value.videos.length - 1) return
+  video_slug.value =
+    playlist.value.videos[(currentVideoIndex.value + 1) % playlist.value.videos.length].slug
+  router.push({
+    name: 'watch-video',
+    params: { slug: video_slug.value },
+    query: { list: playlist_slug.value }
+  })
+}
+
+const goToPrevVideo = () => {
+  if (!playlist.value) return
+  if (currentVideoIndex.value === 0) return
+  video_slug.value =
+    playlist.value.videos[(currentVideoIndex.value - 1) % playlist.value.videos.length].slug
+  router.push({
+    name: 'watch-video',
+    params: { slug: video_slug.value },
+    query: { list: playlist_slug.value }
+  })
+}
+
 const { smAndDown, mdAndDown } = useDisplay()
 
 const loopOptions: LoopOptions[] = [
@@ -212,6 +236,8 @@ watch(
           :loop="main.loop === LoopOptions.loopVideo"
           :chapters-list="chapterList"
           @video-ended="onVideoEnded"
+          @next-video="goToNextVideo"
+          @prev-video="goToPrevVideo"
         />
         <!-- Playlist panel for mobile devices -->
         <div v-if="smAndDown && playlist" class="mt-5">

@@ -1,5 +1,6 @@
 .vjs-youtube,
 .vjs-youtube video {
+  font-family: 'Roboto', sans-serif;
   border-radius: 8px;
   width: 100%;
   height: auto;
@@ -102,4 +103,171 @@ video.vjs-tech {
   transform: translateY(-80%) !important;
   line-height: 1.5;
   padding: 3px 6px !important;
+}
+
+.custom-video-indicator {
+  background: #000000b7;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  opacity: 0;
+}
+
+.custom-video-indicator.skip-indicator {
+  aspect-ratio: 1/1;
+  color: rgba(90, 88, 88, 0.048);
+  padding: 10px;
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: small;
+  transition: opacity 0.5s color 0.5s;
+}
+
+.custom-video-indicator.skip-indicator.forward {
+  right: 20%;
+}
+
+.custom-video-indicator.skip-indicator.backward {
+  left: 20%;
+}
+
+.custom-video-indicator.skip-indicator.show {
+  opacity: 1;
+  color: white !important;
+}
+
+.custom-video-indicator.volume-indicator {
+  flex-direction: column;
+  row-gap: 25px;
+  padding: 25px 20px 15px;
+  border-radius: 5%;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: xx-large;
+  transition: opacity 0.5s color 0.5s;
+}
+
+.custom-video-indicator.volume-indicator .text {
+  font-size: small;
+  color: gray;
+}
+
+.custom-video-indicator.volume-indicator.show {
+  opacity: 1;
+  color: white !important;
+}
+
+.custom-video-indicator.chapter-indicator {
+  flex-direction: column;
+  row-gap: 20px;
+  padding: 15px;
+  border-radius: 5%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: medium;
+  transition: opacity 0.5s color 0.5s;
+}
+
+.custom-video-indicator.chapter-indicator.show {
+  opacity: 1;
+}
+
+.custom-video-indicator.playback-rate-indicator {
+  flex-direction: column;
+  row-gap: 25px;
+  padding: 20px;
+  border-radius: 5%;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: xx-large;
+  transition: opacity 0.5s color 0.5s;
+}
+
+.custom-video-indicator.playback-rate-indicator.show {
+  opacity: 1;
+}
+
+.shortCutsPopupBtn {
+  cursor: pointer;
+  position: absolute;
+  height: 35px;
+  width: 35px;
+  border-radius: 50%;
+  top: 10px;
+  right: 10px;
+  font-size: x-large;
+  background: #000000a2;
+  padding: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+}
+
+.shortCutsPopupBtn.show {
+  opacity: 1;
+}
+
+@media (max-width: 480px) {
+  .shortCutsPopupBtn {
+    display: none !important;
+  }
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.884);
+  color: white;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  font-size: larger;
+}
+
+.popup-overlay.show {
+  display: flex;
+}
+
+.popup-overlay .table-wraper {
+  background: white;
+  padding: 1em;
+  border-radius: 8px;
+  min-width: 300px;
+  max-width: 90%;
+  min-height: 300px;
+  max-height: 90%;
+  color: black;
+  overflow-y: auto;
+}
+
+.popup-overlay table td:first-child,
+.popup-overlay table th:first-child {
+  padding-right: 10em;
+}
+
+.popup-overlay .table-wraper table {
+  border-collapse: separate;
+  border-spacing: 0 1em;
+}
+
+.popup-overlay table th,
+.popup-overlay table td {
+  padding: 1em;
+  border-bottom: 1px solid rgba(12, 12, 12, 0.2);
+  text-align: left;
+}
+
+.popup-overlay table th {
+  font-weight: bold;
+  border-bottom: 2px solid rgba(3, 3, 3, 0.4);
 }
