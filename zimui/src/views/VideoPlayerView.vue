@@ -226,56 +226,59 @@ watch(
 </script>
 
 <template>
-  <v-container v-if="video" :fluid="mdAndDown">
-    <v-row>
-      <v-spacer />
-      <v-col cols="12" md="7" lg="8" xl="6">
-        <!-- Video Player -->
-        <video-player
-          :options="videoOptions"
-          :loop="main.loop === LoopOptions.loopVideo"
-          :chapters-list="chapterList"
-          @video-ended="onVideoEnded"
-          @next-video="goToNextVideo"
-          @prev-video="goToPrevVideo"
+  <v-container v-if="video" :fluid="mdAndDown" :class="{'watch-theater-mode': main.theaterMode, 'watch-default-mode': !main.theaterMode && !smAndDown, 'watch-default-mode-smAndDown': !main.theaterMode && smAndDown}">
+    <!-- Video Player -->
+    <div class="video-player">
+      <video-player
+        :options="videoOptions"
+        :loop="main.loop === LoopOptions.loopVideo"
+        :chapters-list="chapterList"
+        @video-ended="onVideoEnded"
+        @next-video="goToNextVideo" 
+        @prev-video="goToPrevVideo"
         />
-        <!-- Playlist panel for mobile devices -->
-        <div v-if="smAndDown && playlist" class="mt-5">
-          <playlist-panel-preview
-            v-if="!showPlaylistPanel"
-            :playlist="playlist"
-            :current-video-index="currentVideoIndex"
-            @click="() => (showPlaylistPanel = !showPlaylistPanel)"
-          />
-          <playlist-panel
-            v-else
-            :playlist="playlist"
-            :video-slug="video_slug"
-            :playlist-slug="playlist_slug"
-            :current-video-index="currentVideoIndex"
-            :loop="main.loop"
-            :shuffle="main.shuffle"
-            :show-toggle="true"
-            @shuffle="() => main.setShuffle(!main.shuffle)"
-            @loop="cycleLoopOption"
-            @hide-panel="() => (showPlaylistPanel = false)"
-          />
-        </div>
-        <!-- Video Details -->
-        <div class="mt-5">
-          <video-title-info :title="video.title" :publication-date="video.publicationDate" />
-          <video-channel-info
-            :profile-path="video.author.profilePath || ''"
-            :channel-title="video.author.channelTitle || ''"
-            :channel-description="video.author.channelDescription || ''"
-            :joined-date="video.author.channelJoinedDate || ''"
-          />
-          <video-description :description="video.description" />
-        </div>
-      </v-col>
-      <!-- Playlist Panel -->
-      <v-col v-if="!smAndDown && playlist" cols="12" md="5" lg="4" xl="3">
+    </div>
+
+    <!-- Video Details & Mobile Playlist Panel -->
+    <div>
+      <!-- Playlist panel for mobile devices -->
+      <div v-if="smAndDown && playlist" class="mt-5">
+        <playlist-panel-preview
+          v-if="!showPlaylistPanel"
+          :playlist="playlist"
+          :current-video-index="currentVideoIndex"
+          @click="() => (showPlaylistPanel = !showPlaylistPanel)"
+        />
         <playlist-panel
+          v-else
+          :playlist="playlist"
+          :video-slug="video_slug"
+          :playlist-slug="playlist_slug"
+          :current-video-index="currentVideoIndex"
+          :loop="main.loop"
+          :shuffle="main.shuffle"
+          :show-toggle="true"
+          @shuffle="() => main.setShuffle(!main.shuffle)"
+          @loop="cycleLoopOption"
+          @hide-panel="() => (showPlaylistPanel = false)"
+        />
+      </div>
+      <!-- Video Details -->
+      <div class="mt-5">
+        <video-title-info :title="video.title" :publication-date="video.publicationDate" />
+        <video-channel-info
+          :profile-path="video.author.profilePath || ''"
+          :channel-title="video.author.channelTitle || ''"
+          :channel-description="video.author.channelDescription || ''"
+          :joined-date="video.author.channelJoinedDate || ''"
+        />
+        <video-description :description="video.description" />
+      </div>
+    </div>
+
+    <!-- Desktop Playlist Panel -->
+    <div v-if="!smAndDown" :class="['playlist-panel ml-5', main.theaterMode ? 'mt-5': '']">
+      <playlist-panel
           :playlist="playlist"
           :video-slug="video_slug"
           :playlist-slug="playlist_slug"
@@ -286,8 +289,6 @@ watch(
           @shuffle="() => main.setShuffle(!main.shuffle)"
           @loop="cycleLoopOption"
         />
-      </v-col>
-      <v-spacer />
-    </v-row>
+    </div>
   </v-container>
 </template>
