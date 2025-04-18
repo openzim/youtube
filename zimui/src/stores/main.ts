@@ -11,6 +11,7 @@ export type RootState = {
   errorDetails: string
   loop: LoopOptions
   shuffle: boolean
+  theaterMode: boolean
 }
 
 export const useMainStore = defineStore('main', {
@@ -21,7 +22,8 @@ export const useMainStore = defineStore('main', {
       errorMessage: '',
       errorDetails: '',
       loop: 'off',
-      shuffle: false
+      shuffle: false,
+      theaterMode: false
     }) as RootState,
   getters: {},
   actions: {

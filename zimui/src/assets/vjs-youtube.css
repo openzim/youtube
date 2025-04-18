@@ -271,3 +271,23 @@ video.vjs-tech {
   font-weight: bold;
   border-bottom: 2px solid rgba(3, 3, 3, 0.4);
 }
+
+.watch-default-mode, 
+.watch-theater-mode {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  grid-template-rows: repeat(2,auto);
+}
+
+.watch-default-mode-smAndDown {
+  grid-template-columns: 1fr;
+}
+
+.watch-default-mode .playlist-panel{
+  grid-column: 2;
+  grid-row: 1 / 3;
+}
+
+.watch-theater-mode .video-player{
+  grid-column: 1 / 3;
+}
