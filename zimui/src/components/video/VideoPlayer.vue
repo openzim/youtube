@@ -8,6 +8,7 @@ import '@/assets/vjs-youtube.css'
 import '@/plugins/videojs-ogvjs.js'
 import { timeToSeconds } from '@/utils/format-utils'
 import type TimeTooltip from '@/types/videojs'
+import { useMainStore } from '@/stores/main'
 
 const props = defineProps({
   options: {
@@ -29,8 +30,28 @@ const player = ref<Player>()
 const chapterList = ref<{ startTime: number; endTime: number; title: string }[]>([])
 const isControlBarVisible = ref(false)
 const isShortcutsPopupVisible = ref(false)
+const main = useMainStore()
+
+const Button = videojs.getComponent('Button')
+
+const TheaterToggleButton = class extends Button {
+  constructor(player: Player) {
+    super(player)
+    this.el().querySelector('.vjs-icon-placeholder')?.classList.add('mdi','mdi-rectangle-outline')
+    this.on('click', toggleTheaterMode)
+  }
+};
 
 const emit = defineEmits(['video-ended', 'next-video', 'prev-video'])
+
+const addTheaterBtn = () => {
+  if (player.value) {
+    videojs.registerComponent('TheaterToggleButton', TheaterToggleButton);
+    const controlBar = player.value.getChild('controlBar')
+    const index = controlBar?.children().findIndex((item) => item.name() === 'FullscreenToggle')
+    controlBar?.addChild('TheaterToggleButton', {}, index ? index - 1 : -1)
+  }
+}
 
 const addMarkers = () => {
   if (player.value) {
@@ -137,6 +158,7 @@ const appendShortCutsPopup = () => {
         <tr><td>Arrow Down</td><td>Decrease volume</td></tr>
         <tr><td>Space</td><td>Play/Pause</td></tr>
         <tr><td>f</td><td>Toggle fullscreen</td></tr>
+        <tr><td>t</td><td>Toggle theater mode</td></tr>
         <tr><td>m</td><td>Toggle mute</td></tr>
         <tr><td>j</td><td>Skip -10s</td></tr>
         <tr><td>k</td><td>Play/Pause</td></tr>
@@ -371,6 +393,10 @@ const toggleFullScreen = () => {
   }
 }
 
+const toggleTheaterMode = () => {
+  main.theaterMode = !main.theaterMode
+}
+
 const toggleMute = () => {
   if (!player.value) return
   const volume = player.value.volume()
@@ -518,6 +544,9 @@ const keyActions: Record<string, (e: KeyboardEvent) => void> = {
   f: () => toggleFullScreen(),
   F: () => toggleFullScreen(),
 
+  t: () => toggleTheaterMode(),
+  T: () => toggleTheaterMode(),
+
   m: () => toggleMute(),
   M: () => toggleMute(),
 
@@ -577,6 +606,7 @@ const initPlayer = () => {
     player.value.on('play', updateControlBarState)
 
     player.value?.on('loadedmetadata', () => {
+      addTheaterBtn()
       addMarkers()
       appendShortCutsPopupBtn()
       appendShortCutsPopup()
