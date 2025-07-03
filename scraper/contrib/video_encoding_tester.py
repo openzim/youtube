@@ -3,9 +3,9 @@
 # ruff: noqa: T201, T203, DTZ003
 
 """
-    video encoding comparator
+video encoding comparator
 
-    tests a set of videos accross different ffmpeg settings
+tests a set of videos accross different ffmpeg settings
 """
 
 
@@ -15,6 +15,7 @@ import json
 import pathlib
 import subprocess
 import sys
+from pprint import pprint as pp
 
 import humanfriendly
 import jinja2
@@ -358,7 +359,6 @@ def main(output_dir: pathlib.Path):
 
     with open(output_dir.joinpath("report.json"), "w") as fh:
         json.dump(report, fh, indent=4)
-    from pprint import pprint as pp
 
     pp(report)
     write_html_report(output_dir, report)

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # vim: ai ts=4 sts=4 et sw=4 nu
 
-""" turn a regular build-folder into a low-quality one by re-encoding all videos.
+"""turn a regular build-folder into a low-quality one by re-encoding all videos.
 
-    shortcut to call the FFMPEG youtube-dl hook we use in the scraper.
-    videos are replaced.
+shortcut to call the FFMPEG youtube-dl hook we use in the scraper.
+videos are replaced.
 
-    Usage: python youtube2zim/reencode_low_quality.py my/project/build/
+Usage: python youtube2zim/reencode_low_quality.py my/project/build/
 """
 
 import json

@@ -5,7 +5,7 @@ COPY zimui /src
 RUN yarn install --frozen-lockfile
 RUN yarn build
 
-FROM python:3.12-bookworm
+FROM python:3.13-bookworm
 LABEL org.opencontainers.image.source https://github.com/openzim/youtube
 
 # Install necessary packages

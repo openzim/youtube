@@ -2,9 +2,9 @@
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 """
-    create project on Google Developer console
-    Add Youtube Data API v3 to it
-    Create credentials (Other non-UI, Public Data)
+create project on Google Developer console
+Add Youtube Data API v3 to it
+Create credentials (Other non-UI, Public Data)
 """
 
 import concurrent.futures
@@ -15,37 +15,30 @@ import re
 import shutil
 import subprocess
 import tempfile
-from collections.abc import Callable
 from gettext import gettext as _
 from pathlib import Path
-from typing import Any
 
 import yt_dlp
 from kiwixstorage import KiwixStorage
 from pif import get_public_ip
 from schedule import every, run_pending
 from zimscraperlib.download import stream_file
-from zimscraperlib.i18n import NotFoundError, get_language_details
+from zimscraperlib.i18n import NotFoundError, get_language
 from zimscraperlib.image.conversion import convert_image
 from zimscraperlib.image.presets import WebpHigh
 from zimscraperlib.image.probing import get_colors, is_hex_color
 from zimscraperlib.image.transformation import resize_image
 from zimscraperlib.inputs import compute_descriptions
+from zimscraperlib.typing import Callback
 from zimscraperlib.video.presets import (
     VideoMp4High,
     VideoMp4Low,
     VideoWebmHigh,
     VideoWebmLow,
 )
-from zimscraperlib.zim import Creator
-from zimscraperlib.zim.filesystem import validate_zimfile_creatable
+from zimscraperlib.zim import Creator, metadata
+from zimscraperlib.zim.filesystem import validate_file_creatable
 from zimscraperlib.zim.indexing import IndexData
-from zimscraperlib.zim.metadata import (
-    validate_description,
-    validate_longdescription,
-    validate_tags,
-    validate_title,
-)
 
 from youtube2zim.constants import (
     ROOT_DIR,
@@ -150,16 +143,19 @@ class Youtube2Zim:
         self.secondary_color = secondary_color
         self.disable_metadata_checks = disable_metadata_checks
 
+        metadata.APPLY_RECOMMENDATIONS = not self.disable_metadata_checks
+
         if not self.disable_metadata_checks:
             # Validate ZIM metadata early so that we do not waste time doing operations
             # for a scraper which will fail anyway in the end
-            validate_tags("Tags", self.tags)
+            if self.tags:
+                metadata.TagsMetadata(self.tags)
             if self.title:
-                validate_title("Title", self.title)
+                metadata.TitleMetadata(self.title)
             if self.description:
-                validate_description("Description", self.description)
+                metadata.DescriptionMetadata(self.description)
             if self.long_description:
-                validate_longdescription("LongDescription", self.long_description)
+                metadata.LongDescriptionMetadata(self.long_description)
 
         # directory setup
         self.output_dir = Path(output_dir).expanduser().resolve()
@@ -256,7 +252,7 @@ class Youtube2Zim:
             )
 
             # check that we can create a ZIM file in the output directory
-            validate_zimfile_creatable(self.output_dir, self.fname)
+            validate_file_creatable(self.output_dir, self.fname)
 
             # check that build_dir is correct
             if not self.build_dir.exists() or not self.build_dir.is_dir():
@@ -329,20 +325,29 @@ class Youtube2Zim:
                 filename=self.output_dir / self.fname,
                 main_path="index.html",
                 ignore_duplicates=True,
-                disable_metadata_checks=self.disable_metadata_checks,
             )
             self.zim_file.config_metadata(
-                Name=self.name,
-                Language=self.language,
-                Title=self.title,
-                Description=self.description,
-                LongDescription=self.long_description,
-                Creator=self.creator,
-                Publisher=self.publisher,
-                Tags=";".join(self.tags) if self.tags else "",
-                Scraper=SCRAPER,
-                Date=datetime.date.today(),
-                Illustration_48x48_at_1=illustration_data,
+                metadata.StandardMetadataList(
+                    Name=metadata.NameMetadata(self.name),
+                    Title=metadata.TitleMetadata(self.title),
+                    Publisher=metadata.PublisherMetadata(self.publisher),
+                    Date=metadata.DateMetadata(
+                        datetime.datetime.now(tz=datetime.UTC).date()
+                    ),
+                    Creator=metadata.CreatorMetadata(self.creator),
+                    Description=metadata.DescriptionMetadata(self.description),
+                    LongDescription=(
+                        metadata.LongDescriptionMetadata(self.long_description)
+                        if self.long_description
+                        else None
+                    ),
+                    Language=metadata.LanguageMetadata(self.language),
+                    Tags=(metadata.TagsMetadata(self.tags) if self.tags else None),
+                    Scraper=metadata.ScraperMetadata(SCRAPER),
+                    Illustration_48x48_at_1=metadata.DefaultIllustrationMetadata(
+                        illustration_data
+                    ),
+                ),
             )
             self.zim_file.start()
 
@@ -721,7 +726,9 @@ class Youtube2Zim:
             )
             if self.download_from_cache(s3_key, video_path, preset.VERSION):
                 self.add_file_to_zim(
-                    zim_path, video_path, callback=(delete_callback, video_path)
+                    zim_path,
+                    video_path,
+                    callback=Callback(delete_callback, args=(video_path,)),
                 )
                 return True
 
@@ -744,7 +751,9 @@ class Youtube2Zim:
                 self.video_format,
             )
             self.add_file_to_zim(
-                zim_path, video_path, callback=(delete_callback, video_path)
+                zim_path,
+                video_path,
+                callback=Callback(delete_callback, args=(video_path,)),
             )
         except (
             yt_dlp.utils.DownloadError,
@@ -777,7 +786,9 @@ class Youtube2Zim:
             )
             if self.download_from_cache(s3_key, thumbnail_path, preset.VERSION):
                 self.add_file_to_zim(
-                    zim_path, thumbnail_path, callback=(delete_callback, thumbnail_path)
+                    zim_path,
+                    thumbnail_path,
+                    callback=Callback(delete_callback, args=(thumbnail_path,)),
                 )
                 return True
 
@@ -795,7 +806,9 @@ class Youtube2Zim:
                 ydl.download([video_id])
             process_thumbnail(thumbnail_path, preset)
             self.add_file_to_zim(
-                zim_path, thumbnail_path, callback=(delete_callback, thumbnail_path)
+                zim_path,
+                thumbnail_path,
+                callback=Callback(delete_callback, args=(thumbnail_path,)),
             )
         except (
             yt_dlp.utils.DownloadError,
@@ -819,7 +832,7 @@ class Youtube2Zim:
             self.add_file_to_zim(
                 f"videos/{video_id}/{chapters_file.name}",
                 chapters_file,
-                callback=(delete_callback, chapters_file),
+                callback=Callback(delete_callback, args=(chapters_file,)),
             )
 
     def generate_chapters_vtt(self, video_id):
@@ -879,13 +892,13 @@ class Youtube2Zim:
             if x.is_file() and x.name.endswith(".vtt") and x.name != "chapters.vtt"
         ]
 
-        def to_subtitle_object(lang) -> Subtitle:
+        def to_subtitle_object(lang: str) -> Subtitle:
             try:
                 try:
-                    subtitle = get_language_details(YOUTUBE_LANG_MAP.get(lang, lang))
+                    subtitle = get_language(YOUTUBE_LANG_MAP.get(lang, lang))
                 except NotFoundError:
                     lang_simpl = re.sub(r"^([a-z]{2})-.+$", r"\1", lang)
-                    subtitle = get_language_details(
+                    subtitle = get_language(
                         YOUTUBE_LANG_MAP.get(lang_simpl, lang_simpl)
                     )
             except Exception:
@@ -896,7 +909,7 @@ class Youtube2Zim:
                 raise Exception("Empty language details")
             return Subtitle(
                 code=lang,
-                name=f"{subtitle['english'].title()} - {subtitle['query']}",
+                name=f"{subtitle.english} - {subtitle.query}",
             )
 
         # Youtube.com sorts subtitles by English name
@@ -912,7 +925,7 @@ class Youtube2Zim:
                 self.add_file_to_zim(
                     f"videos/{video_id}/{file.name}",
                     file,
-                    callback=(delete_callback, file),
+                    callback=Callback(delete_callback, args=(file,)),
                 )
 
     def download_subtitles(self, video_id, options):
@@ -967,7 +980,7 @@ class Youtube2Zim:
             self.add_file_to_zim(
                 f"channels/{channel_id}/profile.jpg",
                 channel_profile_path,
-                callback=(delete_callback, channel_profile_path),
+                callback=Callback(delete_callback, args=(channel_profile_path,)),
             )
 
     def add_main_channel_branding_to_zim(self):
@@ -979,7 +992,9 @@ class Youtube2Zim:
         ]
         for filename, path in branding_items:
             if path.exists():
-                self.add_file_to_zim(filename, path, callback=(delete_callback, path))
+                self.add_file_to_zim(
+                    filename, path, callback=Callback(delete_callback, args=(path,))
+                )
 
     def update_metadata(self):
         # we use title, description, profile and banner of channel/user
@@ -1327,7 +1342,7 @@ class Youtube2Zim:
         self,
         path: str,
         fpath: Path,
-        callback: Callable | tuple[Callable, Any] | None = None,
+        callback: Callback | list[Callback] | None = None,
     ):
         """add a file to a ZIM file"""
 
@@ -1338,7 +1353,7 @@ class Youtube2Zim:
         self.zim_file.add_item_for(
             path,
             fpath=fpath,
-            callback=callback,
+            callbacks=callback,
         )
 
     def add_custom_item_to_zim_index(
