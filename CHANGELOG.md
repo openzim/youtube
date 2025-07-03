@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add skip forward/backward functionality and keyboard & touch controls (#397)
 - Add theater mode to video player (#399)
 
+### Fixed
+
+- Fix detection of credentials validity (#402)
+
 ## [3.3.0] - 2024-12-05
 
 ### Changed
