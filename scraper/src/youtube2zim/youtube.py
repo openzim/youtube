@@ -91,7 +91,7 @@ def credentials_ok():
         logger.error(f"HTTP {req.status_code} Error response: {req.text}")
     try:
         req.raise_for_status()
-        return bool(req.json()["items"])
+        return bool(req.json()["regionCode"])
     except Exception:
         return False
 
