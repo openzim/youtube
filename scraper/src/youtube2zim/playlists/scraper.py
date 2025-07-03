@@ -2,13 +2,13 @@
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 """
-    Youtube Playlists to individual ZIMs scraper
+Youtube Playlists to individual ZIMs scraper
 
-    Invokes youtube2zim scraper individally for each playlist
-    Also forwards regular requests to youtube2zim (can be used as generic entrypoint)
+Invokes youtube2zim scraper individally for each playlist
+Also forwards regular requests to youtube2zim (can be used as generic entrypoint)
 
-    - Uploads playlist (all videos of the channel) is excluded
-    - Only displays youtube2zim's output on failure
+- Uploads playlist (all videos of the channel) is excluded
+- Only displays youtube2zim's output on failure
 """
 
 import json

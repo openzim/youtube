@@ -1,22 +1,22 @@
 [build-system]
-requires = ["hatchling", "hatch-openzim==0.2.1"]
+requires = ["hatchling", "hatch-openzim"]
 build-backend = "hatchling.build"
 
 [project]
 name = "youtube2zim"
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.13,<3.14"
 description = "Make ZIM file from a Youtube channel, user or playlist(s)"
 readme = "../README.md"
 dependencies = [
   "python-slugify==8.0.4",
   "yt-dlp",                      # youtube-dl should be updated as frequently as possible
   "python-dateutil==2.9.0.post0",
-  "jinja2==3.1.4",
-  "zimscraperlib==4.0.0",
-  "requests==2.32.3",
+  "jinja2==3.1.6",
+  "zimscraperlib==5.1.1",
+  "requests==2.32.4",
   "kiwixstorage==0.9.0",
   "pif==0.8.2",
-  "pydantic==2.9.1",
+  "pydantic==2.11.7",
   "pyhumps==3.8.0",
   "schedule==1.2.2",
 ]
@@ -31,12 +31,12 @@ additional-keywords = ["youtube"]
 
 [project.optional-dependencies]
 scripts = ["invoke==2.2.0"]
-lint = ["black==24.8.0", "ruff==0.6.4"]
-check = ["pyright==1.1.380"]
-test = ["pytest==8.3.3", "coverage==7.6.1"]
+lint = ["black==25.1.0", "ruff==0.12.1"]
+check = ["pyright==1.1.402"]
+test = ["pytest==8.4.1", "coverage==7.9.1"]
 dev = [
-  "pre-commit==3.8.0",
-  "debugpy==1.8.5",
+  "pre-commit==4.2.0",
+  "debugpy==1.8.14",
   "youtube2zim[scripts]",
   "youtube2zim[lint]",
   "youtube2zim[test]",
@@ -75,7 +75,7 @@ html = "inv coverage --html --args '{args}'"
 
 [tool.hatch.envs.lint]
 template = "lint"
-python = "py312"
+python = "py313"
 skip-install = false
 features = ["scripts", "lint"]
 
@@ -96,11 +96,11 @@ all = "inv checkall --args '{args}'"
 
 [tool.black]
 line-length = 88
-target-version = ['py312']
+target-version = ['py313']
 exclude = "(src/youtube2zim/templates/.*|.hatch/.*)"
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py313"
 line-length = 88
 src = ["src"]
 
@@ -222,6 +222,6 @@ exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 include = ["src", "tests", "tasks.py"]
 exclude = [".env/**", ".venv/**", "src/youtube2zim/templates", ".hatch"]
 extraPaths = ["src"]
-pythonVersion = "3.12"
+pythonVersion = "3.13"
 typeCheckingMode = "basic"
 disableBytesTypePromotions = true

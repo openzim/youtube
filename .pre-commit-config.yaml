@@ -23,15 +23,15 @@ repos:
     - --config
     - zimui/.eslintrc.cjs
 - repo: https://github.com/psf/black
-  rev: "24.4.2"
+  rev: "25.1.0"
   hooks:
   -   id: black
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.4.10
+  rev: v0.12.1
   hooks:
   - id: ruff
 - repo: https://github.com/RobertCraigie/pyright-python
-  rev: v1.1.371
+  rev: v1.1.402
   hooks:
   - id: pyright
     name: pyright (system)

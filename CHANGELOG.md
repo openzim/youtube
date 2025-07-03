@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix detection of credentials validity (#402)
 
+### Changed
+
+- Upgraded to zimscraperlib 5.1.1, Python 3.13, and upgraded other Python dependencies (#404)
+
 ## [3.3.0] - 2024-12-05
 
 ### Changed

@@ -6,6 +6,7 @@ import logging
 import sys
 
 from youtube2zim.constants import NAME, SCRAPER, logger
+from youtube2zim.playlists.scraper import YoutubeHandler
 from youtube2zim.utils import has_argument
 
 
@@ -99,8 +100,6 @@ def main():
         parser.error("--playlists-name is mandatory in playlists mode")
 
     logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
-
-    from youtube2zim.playlists.scraper import YoutubeHandler
 
     try:
         handler = YoutubeHandler(dict(args._get_kwargs()), extra_args=extra_args)
