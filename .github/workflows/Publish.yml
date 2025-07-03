@@ -6,7 +6,7 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       id-token: write  # mandatory for PyPI trusted publishing
 
@@ -26,7 +26,7 @@ jobs:
           python -m build --sdist --wheel
 
       - name: Upload to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1.9
+        uses: pypa/gh-action-pypi-publish@release/v1.12
         with:
           packages-dir: scraper/dist/
 
