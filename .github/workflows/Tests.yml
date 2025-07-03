@@ -8,7 +8,7 @@ on:
 
 jobs:
   test-scraper:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +36,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   build-scraper:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -53,7 +53,7 @@ jobs:
           python3 -m build --sdist --wheel
 
   build-and-test-zimui:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -88,7 +88,7 @@ jobs:
 
   # this job replaces the standard "build_docker" job since it builds the docker image
   run-integration-tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
