@@ -804,7 +804,7 @@ class Youtube2Zim:
             )
             with yt_dlp.YoutubeDL(options_copy) as ydl:
                 ydl.download([video_id])
-            process_thumbnail(thumbnail_path, preset)
+            process_thumbnail(thumbnail_path, preset.options)
             self.add_file_to_zim(
                 zim_path,
                 thumbnail_path,

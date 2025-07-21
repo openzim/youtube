@@ -1,31 +1,37 @@
 #!/usr/bin/env python3
 # vim: ai ts=4 sts=4 et sw=4 nu
 
-from zimscraperlib.image.optimization import optimize_image
+import pathlib
+
+from zimscraperlib.image.conversion import convert_image
+from zimscraperlib.image.optimization import OptimizeWebpOptions, optimize_webp
+from zimscraperlib.image.probing import format_for
 from zimscraperlib.image.transformation import resize_image
 from zimscraperlib.video.encoding import reencode
 
 from youtube2zim.constants import logger
 
 
-def process_thumbnail(thumbnail_path, preset):
+def process_thumbnail(thumbnail_path: pathlib.Path, options: OptimizeWebpOptions):
     # thumbnail might be WebP as .webp, JPEG as .jpg or WebP as .jpg
-    tmp_thumbnail = thumbnail_path
     if not thumbnail_path.exists():
         logger.debug("We don't have video.webp, thumbnail is .jpg")
-        tmp_thumbnail = thumbnail_path.with_suffix(".jpg")
+        raw_thumbnail_path = thumbnail_path.with_suffix(".jpg")
+        src_format = format_for(raw_thumbnail_path, from_suffix=False)
+        if src_format != "webp":
+            convert_image(raw_thumbnail_path, thumbnail_path)
 
     # resize thumbnail. we use max width:248x187px in listing
     # but our posters are 480x270px
     resize_image(
-        tmp_thumbnail,
+        thumbnail_path,
         width=480,
         height=270,
         method="cover",
         allow_upscaling=True,
     )
-    optimize_image(tmp_thumbnail, thumbnail_path, delete_src=True, **preset.options)
-    return True
+
+    optimize_webp(thumbnail_path, thumbnail_path, options)
 
 
 def post_process_video(video_dir, video_id, preset, video_format):
