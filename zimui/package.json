@@ -52,7 +52,7 @@
     "terser": "^5.32.0",
     "typescript": "~5.6.2",
     "vite": "^5.4.4",
-    "vite-plugin-static-copy": "^1.0.6",
+    "vite-plugin-static-copy": "^2.3.2",
     "vitest": "^2.1.0",
     "vue-tsc": "^2.1.6"
   },
