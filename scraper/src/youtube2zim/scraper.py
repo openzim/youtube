@@ -47,7 +47,7 @@ from youtube2zim.constants import (
     YOUTUBE_LANG_MAP,
     logger,
 )
-from youtube2zim.processing import post_process_video, process_thumbnail
+from youtube2zim.processing import post_process_video, process_thumbnail, find_video_in_dir
 from youtube2zim.schemas import (
     Author,
     Channel,
@@ -115,6 +115,7 @@ class Youtube2Zim:
         banner_image=None,
         main_color=None,
         secondary_color=None,
+        skip_reencode=False,
     ):
         # data-retrieval info
         self.youtube_id = youtube_id
@@ -142,6 +143,7 @@ class Youtube2Zim:
         self.main_color = main_color
         self.secondary_color = secondary_color
         self.disable_metadata_checks = disable_metadata_checks
+        self.skip_reencode = skip_reencode
 
         metadata.APPLY_RECOMMENDATIONS = not self.disable_metadata_checks
 
@@ -744,12 +746,20 @@ class Youtube2Zim:
             )
             with yt_dlp.YoutubeDL(options_copy) as ydl:
                 ydl.download([video_id])
-            post_process_video(
-                video_location,
-                video_id,
-                preset,
-                self.video_format,
-            )
+
+            if self.skip_reencode:
+                video_path = find_video_in_dir(
+                    video_location,
+                    video_id
+                )
+            else:
+                post_process_video(
+                    video_location,
+                    video_id,
+                    preset,
+                    self.video_format,
+                )
+
             self.add_file_to_zim(
                 zim_path,
                 video_path,

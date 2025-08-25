@@ -202,6 +202,12 @@ def main():
         dest="stats_filename",
     )
 
+    parser.add_argument(
+        "--skip-reencode",
+        help="Skip reencoding downloaded videos, increasing disk usage.",
+        dest="skip_reencode", action="store_true", default=False
+    )
+
     args = parser.parse_args()
     logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
 
