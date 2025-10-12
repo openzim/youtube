@@ -183,7 +183,14 @@ def main():
         "Format: YYYYMMDD or (now|today)[+-][0-9](day|week|month|year)(s)?",
     )
 
-    parser.add_argument(
+    """
+    skip-reencoding wont play nice with s3_storage,
+    s3_storage assumes all videos haave same format,
+    which is not assured when skipping reencoding downloads
+    """
+    mutually_exclusive_group_1 = parser.add_mutually_exclusive_group()
+
+    mutually_exclusive_group_1.add_argument(
         "--optimization-cache",
         help="URL with credentials to S3 for using as optimization cache",
         dest="s3_url_with_credentials",
@@ -200,6 +207,15 @@ def main():
         "--stats-filename",
         help="Path to store the progress JSON file to.",
         dest="stats_filename",
+    )
+
+    mutually_exclusive_group_1.add_argument(
+        "--skip-reencoding",
+        help="Skip reencoding downloaded videos, keeping original quality at"
+        "the expense of increased final ZIM size and potential codec issues.",
+        dest="skip_reencoding",
+        action="store_true",
+        default=False,
     )
 
     args = parser.parse_args()

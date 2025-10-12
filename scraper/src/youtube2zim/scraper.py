@@ -47,7 +47,11 @@ from youtube2zim.constants import (
     YOUTUBE_LANG_MAP,
     logger,
 )
-from youtube2zim.processing import post_process_video, process_thumbnail
+from youtube2zim.processing import (
+    find_video_in_dir,
+    post_process_video,
+    process_thumbnail,
+)
 from youtube2zim.schemas import (
     Author,
     Channel,
@@ -106,6 +110,7 @@ class Youtube2Zim:
         publisher,
         disable_metadata_checks,
         stats_filename,
+        skip_reencoding,
         title=None,
         description=None,
         long_description=None,
@@ -124,6 +129,7 @@ class Youtube2Zim:
         # video-encoding info
         self.video_format = video_format
         self.low_quality = low_quality
+        self.videos_zim_path = {}
 
         # options & zim params
         self.nb_videos_per_page = nb_videos_per_page
@@ -142,6 +148,7 @@ class Youtube2Zim:
         self.main_color = main_color
         self.secondary_color = secondary_color
         self.disable_metadata_checks = disable_metadata_checks
+        self.skip_reencoding = skip_reencoding
 
         metadata.APPLY_RECOMMENDATIONS = not self.disable_metadata_checks
 
@@ -720,6 +727,7 @@ class Youtube2Zim:
 
         s3_key = None
         if self.s3_storage:
+
             s3_key = f"{self.video_format}/{self.video_quality}/{video_id}"
             logger.debug(
                 f"Attempting to download video file for {video_id} from cache..."
@@ -730,6 +738,7 @@ class Youtube2Zim:
                     video_path,
                     callback=Callback(delete_callback, args=(video_path,)),
                 )
+                self.videos_zim_path.update({video_id: zim_path})
                 return True
 
         try:
@@ -744,17 +753,24 @@ class Youtube2Zim:
             )
             with yt_dlp.YoutubeDL(options_copy) as ydl:
                 ydl.download([video_id])
-            post_process_video(
-                video_location,
-                video_id,
-                preset,
-                self.video_format,
-            )
+
+            if self.skip_reencoding:
+                video_path = find_video_in_dir(video_location, video_id)
+                zim_path = f"videos/{video_id}/video{video_path.suffix}"
+            else:
+                post_process_video(
+                    video_location,
+                    video_id,
+                    preset,
+                    self.video_format,
+                )
+
             self.add_file_to_zim(
                 zim_path,
                 video_path,
                 callback=Callback(delete_callback, args=(video_path,)),
             )
+            self.videos_zim_path.update({video_id: zim_path})
         except (
             yt_dlp.utils.DownloadError,
             FileNotFoundError,
@@ -1128,7 +1144,7 @@ class Youtube2Zim:
                     banner_path=f"channels/{author['channelId']}/banner.jpg",
                 ),
                 publication_date=video["contentDetails"]["videoPublishedAt"],
-                video_path=f"videos/{video_id}/video.{self.video_format}",
+                video_path=self.videos_zim_path[video_id],
                 thumbnail_path=get_thumbnail_path(video_id),
                 subtitle_path=f"videos/{video_id}" if len(subtitles_list) > 0 else None,
                 subtitle_list=subtitles_list,

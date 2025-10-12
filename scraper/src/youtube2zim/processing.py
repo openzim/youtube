@@ -34,11 +34,7 @@ def process_thumbnail(thumbnail_path: pathlib.Path, options: OptimizeWebpOptions
     optimize_webp(thumbnail_path, thumbnail_path, options)
 
 
-def post_process_video(video_dir, video_id, preset, video_format):
-    """apply custom post-processing to downloaded video
-
-    - resize thumbnail
-    - recompress video"""
+def find_video_in_dir(video_dir, video_id):
 
     # find downloaded video from video_dir
     files = [
@@ -56,7 +52,17 @@ def post_process_video(video_dir, video_id, preset, video_format):
             f"Multiple video file candidates for {video_id} in {video_dir}. "
             f"Picking {files[0]} out of {files}"
         )
-    src_path = files[0]
+
+    return files[0]
+
+
+def post_process_video(video_dir, video_id, preset, video_format):
+    """apply custom post-processing to downloaded video
+
+    - resize thumbnail
+    - recompress video"""
+
+    src_path = find_video_in_dir(video_dir, video_id)
 
     dst_path = src_path.with_name(f"video.{video_format}")
     logger.info(f"Reencode video to {dst_path}")
