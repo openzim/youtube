@@ -42,7 +42,7 @@ const load = async ({ done }: { done: (status: 'ok' | 'empty') => void }) => {
           :count="playlist?.videosCount || 0"
           :count-text="playlist?.videosCount === 1 ? 'video' : 'videos'"
           icon="mdi-video-outline"
-          :video-slug="playlist.videos[0].slug"
+          :video-slug="playlist.videos[0]?.slug || ''"
           :playlist-slug="playlist.slug"
         />
         <video-carousel

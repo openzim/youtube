@@ -28,7 +28,7 @@ const fetchData = async function () {
         playlists.value = resp.playlists
         isLoading.value = false
       }
-    } catch (error) {
+    } catch {
       main.setErrorMessage('An unexpected error occured when fetching playlists.')
     }
   }

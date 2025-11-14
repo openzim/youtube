@@ -1,11 +1,11 @@
-FROM node:20-alpine as zimui
+FROM node:24-alpine as zimui
 
 WORKDIR /src
 COPY zimui /src
 RUN yarn install --frozen-lockfile
 RUN yarn build
 
-FROM python:3.13-bookworm
+FROM python:3.14-trixie
 LABEL org.opencontainers.image.source https://github.com/openzim/youtube
 
 # Install necessary packages
@@ -29,6 +29,9 @@ WORKDIR /output
 COPY README.md /src/
 COPY scraper/pyproject.toml /src/scraper/
 COPY scraper/src/youtube2zim/__about__.py /src/scraper/src/youtube2zim/__about__.py
+
+# Install deno (required by yt-dlp)
+RUN curl -fsSL https://deno.land/install.sh | sh -s -- -y
 
 # Install Python dependencies
 RUN pip install --no-cache-dir /src/scraper

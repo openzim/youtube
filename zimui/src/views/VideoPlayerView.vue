@@ -32,7 +32,7 @@ const fetchPlaylistData = async function (playlist_slug: string) {
       if (resp) {
         playlist.value = resp
       }
-    } catch (error) {
+    } catch {
       main.setErrorMessage('An unexpected error occured when fetching playlist data.')
     }
   }
@@ -46,7 +46,7 @@ const fetchVideoData = async function (video_slug: string) {
       if (resp) {
         video.value = resp
       }
-    } catch (error) {
+    } catch {
       main.setErrorMessage('An unexpected error occured when fetching video data.')
     }
   }
@@ -156,7 +156,7 @@ const onVideoEnded = () => {
     do {
       randomIndex = Math.floor(Math.random() * playlist.value.videos.length)
     } while (randomIndex === currentVideoIndex.value)
-    video_slug.value = playlist.value.videos[randomIndex].slug
+    video_slug.value = playlist.value.videos[randomIndex]?.slug || ''
     router.push({
       name: 'watch-video',
       params: { slug: video_slug.value },
@@ -171,7 +171,8 @@ const onVideoEnded = () => {
       return
     }
     video_slug.value =
-      playlist.value.videos[(currentVideoIndex.value + 1) % playlist.value.videos.length].slug
+      playlist.value.videos[(currentVideoIndex.value + 1) % playlist.value.videos.length]?.slug ||
+      ''
     router.push({
       name: 'watch-video',
       params: { slug: video_slug.value },
@@ -184,7 +185,7 @@ const goToNextVideo = () => {
   if (!playlist.value) return
   if (currentVideoIndex.value === playlist.value.videos.length - 1) return
   video_slug.value =
-    playlist.value.videos[(currentVideoIndex.value + 1) % playlist.value.videos.length].slug
+    playlist.value.videos[(currentVideoIndex.value + 1) % playlist.value.videos.length]?.slug || ''
   router.push({
     name: 'watch-video',
     params: { slug: video_slug.value },
@@ -196,7 +197,7 @@ const goToPrevVideo = () => {
   if (!playlist.value) return
   if (currentVideoIndex.value === 0) return
   video_slug.value =
-    playlist.value.videos[(currentVideoIndex.value - 1) % playlist.value.videos.length].slug
+    playlist.value.videos[(currentVideoIndex.value - 1) % playlist.value.videos.length]?.slug || ''
   router.push({
     name: 'watch-video',
     params: { slug: video_slug.value },
@@ -213,7 +214,8 @@ const loopOptions: LoopOptions[] = [
 ]
 const cycleLoopOption = () => {
   const currentIndex = loopOptions.indexOf(main.loop)
-  main.setLoop(loopOptions[(currentIndex + 1) % loopOptions.length])
+  const loopOption = loopOptions[(currentIndex + 1) % loopOptions.length]
+  if (loopOption) main.setLoop(loopOption)
 }
 
 // Update the document title with the video title
@@ -226,7 +228,15 @@ watch(
 </script>
 
 <template>
-  <v-container v-if="video" :fluid="mdAndDown" :class="{'watch-theater-mode': main.theaterMode, 'watch-default-mode': !main.theaterMode && !smAndDown, 'watch-default-mode-smAndDown': !main.theaterMode && smAndDown}">
+  <v-container
+    v-if="video"
+    :fluid="mdAndDown"
+    :class="{
+      'watch-theater-mode': main.theaterMode,
+      'watch-default-mode': !main.theaterMode && !smAndDown,
+      'watch-default-mode-smAndDown': !main.theaterMode && smAndDown
+    }"
+  >
     <!-- Video Player -->
     <div class="video-player">
       <video-player
@@ -234,9 +244,9 @@ watch(
         :loop="main.loop === LoopOptions.loopVideo"
         :chapters-list="chapterList"
         @video-ended="onVideoEnded"
-        @next-video="goToNextVideo" 
+        @next-video="goToNextVideo"
         @prev-video="goToPrevVideo"
-        />
+      />
     </div>
 
     <!-- Video Details & Mobile Playlist Panel -->
@@ -277,18 +287,18 @@ watch(
     </div>
 
     <!-- Desktop Playlist Panel -->
-    <div v-if="!smAndDown" :class="['playlist-panel ml-5', main.theaterMode ? 'mt-5': '']">
+    <div v-if="!smAndDown" :class="['playlist-panel ml-5', main.theaterMode ? 'mt-5' : '']">
       <playlist-panel
-          :playlist="playlist"
-          :video-slug="video_slug"
-          :playlist-slug="playlist_slug"
-          :current-video-index="currentVideoIndex"
-          :loop="main.loop"
-          :shuffle="main.shuffle"
-          :show-toggle="false"
-          @shuffle="() => main.setShuffle(!main.shuffle)"
-          @loop="cycleLoopOption"
-        />
+        :playlist="playlist"
+        :video-slug="video_slug"
+        :playlist-slug="playlist_slug"
+        :current-video-index="currentVideoIndex"
+        :loop="main.loop"
+        :shuffle="main.shuffle"
+        :show-toggle="false"
+        @shuffle="() => main.setShuffle(!main.shuffle)"
+        @loop="cycleLoopOption"
+      />
     </div>
   </v-container>
 </template>

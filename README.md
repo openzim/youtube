@@ -24,6 +24,7 @@ For more details / advanced usage than what is in this README, see the [Manual](
 # Requirements
 
 * [`ffmpeg`](https://ffmpeg.org/) for video transcoding.
+* [`deno`](https://deno.com/) (or another Javascript runtime, see https://github.com/yt-dlp/yt-dlp/issues/15012) for yt-dlp operations when fetching Youtube videos.
 * [`Yarn`](https://yarnpkg.com/getting-started/install) to install Javascript dependencies for the Vue.js UI.
 
 # Installation

@@ -31,7 +31,7 @@ const fetchData = async function () {
         videos.value = resp.videos
         isLoading.value = false
       }
-    } catch (error) {
+    } catch {
       main.setErrorMessage('An unexpected error occured when fetching videos.')
     }
   }
