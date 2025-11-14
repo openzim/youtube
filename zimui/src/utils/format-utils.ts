@@ -39,15 +39,6 @@ export const truncateText = (text: string, maxLength: number): string => {
 
 export const timeToSeconds = (timestr: string) => {
   const parts = timestr.split(':').map(Number)
-  let seconds = 0
-
-  if (parts.length === 3) {
-    seconds = parts[0] * 3600 + parts[1] * 60 + parts[2]
-  } else if (parts.length === 2) {
-    seconds = parts[0] * 60 + parts[1]
-  } else if (parts.length === 1) {
-    seconds = parts[0]
-  }
-
-  return seconds
+  const [h = 0, m = 0, s = 0] = parts
+  return h * 3600 + m * 60 + s
 }

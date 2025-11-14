@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.6.0
+  rev: v6.0.0
   hooks:
   -   id: trailing-whitespace
   -   id: end-of-file-fixer
@@ -12,26 +12,24 @@ repos:
   - id: prettier
     files: zimui\/.*$ # files in zimui folder
 - repo: https://github.com/pre-commit/mirrors-eslint
-  rev: v8.51.0
+  rev: v9.39.1
   hooks:
   - id: eslint
     types: [file]
     files: zimui\/src\/.*(?:\.[jt]sx?|\.vue)$ # *.js, *.jsx, *.ts, *.tsx, *.vue in zimui/src folder
     args:
-    - --ignore-path
-    - zimui/.eslintignore
     - --config
-    - zimui/.eslintrc.cjs
+    - zimui/eslint.config.js
 - repo: https://github.com/psf/black
-  rev: "25.1.0"
+  rev: "25.11.0"
   hooks:
   -   id: black
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.12.1
+  rev: v0.14.5
   hooks:
   - id: ruff
 - repo: https://github.com/RobertCraigie/pyright-python
-  rev: v1.1.402
+  rev: v1.1.407
   hooks:
   - id: pyright
     name: pyright (system)

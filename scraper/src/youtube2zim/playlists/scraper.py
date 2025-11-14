@@ -90,11 +90,11 @@ class YoutubeHandler:
         logger.info("compute playlists list to retrieve")
         (
             playlists,
-            main_channel_id,
-            user_long_uploads_playlist_id,
-            user_short_uploads_playlist_id,
-            user_lives_playlist_id,
-            is_playlist,
+            _main_channel_id,
+            _user_long_uploads_playlist_id,
+            _user_short_uploads_playlist_id,
+            _user_lives_playlist_id,
+            _is_playlist,
         ) = extract_playlists_details_from(self.youtube_id)
 
         logger.info(

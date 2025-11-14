@@ -1,4 +1,3 @@
-/* eslint-disable no-prototype-builtins */
 /**
  * videojs-ogvjs
  * @version 1.0.0

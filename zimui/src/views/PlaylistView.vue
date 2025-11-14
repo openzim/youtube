@@ -29,7 +29,7 @@ const fetchPlaylistData = async function () {
         playlist.value = resp
         isLoading.value = false
       }
-    } catch (error) {
+    } catch {
       main.setErrorMessage('An unexpected error occured when fetching playlist data.')
     }
   }
@@ -39,7 +39,7 @@ const onPlayAllClick = function () {
   main.setShuffle(false)
   router.push({
     name: 'watch-video',
-    params: { slug: playlist.value.videos[0].slug },
+    params: { slug: playlist.value.videos[0]?.slug },
     query: { list: slug }
   })
 }
@@ -50,7 +50,7 @@ const onShuffleClick = function () {
   const randomVideo = playlist.value.videos[randomIndex]
   router.push({
     name: 'watch-video',
-    params: { slug: randomVideo.slug },
+    params: { slug: randomVideo?.slug },
     query: { list: slug }
   })
 }

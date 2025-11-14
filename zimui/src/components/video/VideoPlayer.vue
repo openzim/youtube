@@ -37,16 +37,16 @@ const Button = videojs.getComponent('Button')
 const TheaterToggleButton = class extends Button {
   constructor(player: Player) {
     super(player)
-    this.el().querySelector('.vjs-icon-placeholder')?.classList.add('mdi','mdi-rectangle-outline')
+    this.el().querySelector('.vjs-icon-placeholder')?.classList.add('mdi', 'mdi-rectangle-outline')
     this.on('click', toggleTheaterMode)
   }
-};
+}
 
 const emit = defineEmits(['video-ended', 'next-video', 'prev-video'])
 
 const addTheaterBtn = () => {
   if (player.value) {
-    videojs.registerComponent('TheaterToggleButton', TheaterToggleButton);
+    videojs.registerComponent('TheaterToggleButton', TheaterToggleButton)
     const controlBar = player.value.getChild('controlBar')
     const index = controlBar?.children().findIndex((item) => item.name() === 'FullscreenToggle')
     controlBar?.addChild('TheaterToggleButton', {}, index ? index - 1 : -1)
@@ -383,13 +383,21 @@ const changePlaybackRate = (direction: number) => {
 
 const togglePause = () => {
   if (player.value) {
-    player.value.paused() ? player.value.play() : player.value.pause()
+    if (player.value.paused()) {
+      player.value.play()
+    } else {
+      player.value.pause()
+    }
   }
 }
 
 const toggleFullScreen = () => {
   if (player.value) {
-    player.value.isFullscreen() ? player.value.exitFullscreen() : player.value.requestFullscreen()
+    if (player.value.isFullscreen()) {
+      player.value.exitFullscreen()
+    } else {
+      player.value.requestFullscreen()
+    }
   }
 }
 
@@ -473,7 +481,9 @@ const handleTouch = (e: TouchEvent) => {
   if (!tappedOnVideoElement) {
     tappedOnVideoElement = setTimeout(() => {
       tappedOnVideoElement = null
-      player.value?.hasStarted_ || player.value?.play()
+      if (!player.value?.hasStarted_) {
+        player.value?.play()
+      }
     }, 300)
   } else {
     clearTimeout(tappedOnVideoElement)
@@ -483,6 +493,8 @@ const handleTouch = (e: TouchEvent) => {
     if (!videoElement) return
 
     const touch = e.touches[0]
+    if (!touch) return
+
     const clickX = touch.clientX - videoElement.getBoundingClientRect().left
     const middle = videoElement.clientWidth / 2
 
@@ -516,9 +528,11 @@ const updateControlBarState = () => {
 const keyActions: Record<string, (e: KeyboardEvent) => void> = {
   '?': (e: KeyboardEvent) => {
     if (e.shiftKey) {
-      isShortcutsPopupVisible.value
-        ? (isShortcutsPopupVisible.value = false)
-        : (isShortcutsPopupVisible.value = true)
+      if (isShortcutsPopupVisible.value) {
+        isShortcutsPopupVisible.value = false
+      } else {
+        isShortcutsPopupVisible.value = true
+      }
     }
   },
 
@@ -557,7 +571,9 @@ const keyActions: Record<string, (e: KeyboardEvent) => void> = {
 const handleKeydown = (e: KeyboardEvent) => {
   if (keyActions[e.key]) {
     e.preventDefault()
-    keyActions[e.key](e)
+    const keyAction = keyActions[e.key]
+    if (!keyAction) return
+    keyAction(e)
   }
 }
 
@@ -581,8 +597,13 @@ const initPlayer = () => {
   // Append sources dynamically
   props.options.sources.forEach((source: Record<string, string>) => {
     const sourceElement = document.createElement('source')
-    sourceElement.src = source.src
-    sourceElement.type = source.type
+    if (!sourceElement) return
+    if (source.src) {
+      sourceElement.src = source.src
+    }
+    if (source.type) {
+      sourceElement.type = source.type
+    }
     videoElement.appendChild(sourceElement)
   })
 
@@ -619,7 +640,9 @@ const initPlayer = () => {
         playerEl.addEventListener('touchstart', handleTouch, { passive: false })
         playerEl.addEventListener('click', () => {
           if (!player.value) return
-          player.value.hasStarted_ || player.value.play()
+          if (!player.value.hasStarted_) {
+            player.value.play()
+          }
         })
       }
       nextTick(() => {

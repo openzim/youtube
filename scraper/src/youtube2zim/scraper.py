@@ -19,6 +19,7 @@ from gettext import gettext as _
 from pathlib import Path
 
 import yt_dlp
+import yt_dlp.utils
 from kiwixstorage import KiwixStorage
 from pif import get_public_ip
 from schedule import every, run_pending
@@ -458,7 +459,9 @@ class Youtube2Zim:
 
     def validate_dateafter_input(self):
         try:
-            self.dateafter = yt_dlp.DateRange(self.dateafter)
+            self.dateafter = yt_dlp.utils.DateRange(
+                self.dateafter  # pyright: ignore[reportArgumentType]
+            )
         except Exception as exc:
             logger.error(
                 "Invalid dateafter input. Valid dateafter format: "
