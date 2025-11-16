@@ -31,7 +31,8 @@ COPY scraper/pyproject.toml /src/scraper/
 COPY scraper/src/youtube2zim/__about__.py /src/scraper/src/youtube2zim/__about__.py
 
 # Install deno (required by yt-dlp)
-RUN curl -fsSL https://deno.land/install.sh | sh -s -- -y
+RUN curl -fsSL https://deno.land/install.sh | sh -s \
+  && ln -s /root/.deno/bin/deno /usr/local/bin/deno
 
 # Install Python dependencies
 RUN pip install --no-cache-dir /src/scraper
