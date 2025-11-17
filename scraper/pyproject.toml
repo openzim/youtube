@@ -9,7 +9,7 @@ description = "Make ZIM file from a Youtube channel, user or playlist(s)"
 readme = "../README.md"
 dependencies = [
   "python-slugify==8.0.4",
-  "yt-dlp[default]",            # youtube-dl should be updated as frequently as possible
+  "yt-dlp[default,curl_cffi]", # youtube-dl should be updated as frequently as possible
   "python-dateutil==2.9.0.post0",
   "jinja2==3.1.6",
   "zimscraperlib==5.3.0",
