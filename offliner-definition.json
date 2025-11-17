@@ -187,6 +187,12 @@
       "title": "Temp folder",
       "description": "Where to create temporay build folder. Leave it as `/output`",
       "pattern": "^/output$"
+    },
+    "skip_reencoding": {
+      "type": "boolean",
+      "required": false,
+      "title": "Skip reencoding",
+      "description": "Skip reencoding downloaded videos, keeping original quality at the expense of increased final ZIM size and potential codec issues."
     }
   }
 }
