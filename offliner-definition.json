@@ -145,13 +145,13 @@
       "description": "Custom banner image. Will be resized to 1060x175px"
     },
     "main_color": {
-      "type": "string",
+      "type": "color",
       "required": false,
       "title": "Main Color",
       "description": "Custom color. Hex/HTML syntax (#DEDEDE). Default to main color of profile image."
     },
     "secondary_color": {
-      "type": "string",
+      "type": "color",
       "required": false,
       "title": "Secondary Color",
       "description": "Custom secondary color. Hex/HTML syntax (#DEDEDE). Default to secondary color of profile image."
