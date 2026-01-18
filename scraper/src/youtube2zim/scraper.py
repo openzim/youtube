@@ -86,6 +86,23 @@ from youtube2zim.youtube import (
     skip_non_public_videos,
     skip_outofrange_videos,
 )
+import re
+
+def parse_iso_duration(duration_str):
+    """
+    Parses a Youtube duration string (e.g 'PT2H3M4S') into seconds.
+    Returns 0 if the format is invalid.
+    """
+    if not duration_str:
+        return 0
+
+    match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', duration_str)
+    if not match:
+        return 0
+    h = int(match.group(1) or 0)
+    m = int(match.group(2) or 0)
+    s = int(match.group(3) or 0)
+    return (h * 3600) + (m * 60) + s
 
 
 class Youtube2Zim:
@@ -1231,6 +1248,29 @@ class Youtube2Zim:
         has_channel = functools.partial(video_has_channel, videos_channels)
         # filter videos to exclude those for which we have no channel (#76)
         videos = list(filter(has_channel, videos))
+
+        try:
+            total_seconds = 0
+            for vid_obj in videos:
+                # We need the ID to look up the duration in the other dictionary
+                v_id = vid_obj["contentDetails"]["videoId"]
+                if v_id in videos_channels:
+                    duration_str = videos_channels[v_id].get("duration")
+                    total_seconds += parse_iso_duration(duration_str)
+
+            # Format and Log
+            m, s = divmod(total_seconds, 60)
+            h, m = divmod(m, 60)
+
+            duration_str = f"{int(s)}s"
+            if m > 0 or h > 0:
+                duration_str = f"{int(m)}m {duration_str}"
+            if h > 0:
+                duration_str = f"{int(h)}h {duration_str}"
+            logger.info(f".. Total duration: {duration_str}")
+        except Exception as e:
+            logger.warning(f"Could not calculate total duration: {e}")
+
         for video in videos:
             slug = get_video_slug(video)
             self.zim_file.add_item_for(
