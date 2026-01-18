@@ -1103,6 +1103,30 @@ class Youtube2Zim:
         )
         png_profile_path.unlink()
 
+    def log_total_duration(self, videos, videos_channels):
+        """Calculates and logs the total duration of the provided videos."""
+        try:
+            total_seconds = 0
+            for vid_obj in videos:
+                # We need the ID to look up the duration in the other dictionary
+                v_id = vid_obj["contentDetails"]["videoId"]
+                if v_id in videos_channels:
+                    duration_str = videos_channels[v_id].get("duration")
+                    total_seconds += parse_iso_duration(duration_str)
+
+            # Format and Log
+            m, s = divmod(total_seconds, 60)
+            h, m = divmod(m, 60)
+
+            duration_str = f"{int(s)}s"
+            if m > 0 or h > 0:
+                duration_str = f"{int(m)}m {duration_str}"
+            if h > 0:
+                duration_str = f"{int(h)}h {duration_str}"
+            logger.info(f".. Total duration: {duration_str}")
+        except Exception as e:
+            logger.warning(f"Could not calculate total duration: {e}")
+
     def make_json_files(self, actual_videos_ids):
         """Generate JSON files to be consumed by the frontend"""
 
@@ -1249,27 +1273,7 @@ class Youtube2Zim:
         # filter videos to exclude those for which we have no channel (#76)
         videos = list(filter(has_channel, videos))
 
-        try:
-            total_seconds = 0
-            for vid_obj in videos:
-                # We need the ID to look up the duration in the other dictionary
-                v_id = vid_obj["contentDetails"]["videoId"]
-                if v_id in videos_channels:
-                    duration_str = videos_channels[v_id].get("duration")
-                    total_seconds += parse_iso_duration(duration_str)
-
-            # Format and Log
-            m, s = divmod(total_seconds, 60)
-            h, m = divmod(m, 60)
-
-            duration_str = f"{int(s)}s"
-            if m > 0 or h > 0:
-                duration_str = f"{int(m)}m {duration_str}"
-            if h > 0:
-                duration_str = f"{int(h)}h {duration_str}"
-            logger.info(f".. Total duration: {duration_str}")
-        except Exception as e:
-            logger.warning(f"Could not calculate total duration: {e}")
+        self.log_total_duration(videos, videos_channels)
 
         for video in videos:
             slug = get_video_slug(video)
