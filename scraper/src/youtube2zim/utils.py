@@ -3,6 +3,7 @@
 
 import json
 import os
+import re
 from pathlib import Path
 
 from slugify import slugify
@@ -51,3 +52,19 @@ def delete_callback(fpath: str | Path):
     """callback to delete file"""
     if Path(fpath).exists():
         os.unlink(fpath)
+
+def parse_iso_duration(duration_str):
+    """
+    Parses a Youtube duration string (e.g 'PT2H3M4S') into seconds.
+    Returns 0 if the format is invalid.
+    """
+    if not duration_str:
+        return 0
+
+    match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', duration_str)
+    if not match:
+        return 0
+    h = int(match.group(1) or 0)
+    m = int(match.group(2) or 0)
+    s = int(match.group(3) or 0)
+    return (h * 3600) + (m * 60) + s

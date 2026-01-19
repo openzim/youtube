@@ -74,6 +74,7 @@ from youtube2zim.utils import (
     load_json,
     load_mandatory_json,
     save_json,
+    parse_iso_duration,
 )
 from youtube2zim.youtube import (
     credentials_ok,
@@ -86,23 +87,7 @@ from youtube2zim.youtube import (
     skip_non_public_videos,
     skip_outofrange_videos,
 )
-import re
 
-def parse_iso_duration(duration_str):
-    """
-    Parses a Youtube duration string (e.g 'PT2H3M4S') into seconds.
-    Returns 0 if the format is invalid.
-    """
-    if not duration_str:
-        return 0
-
-    match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', duration_str)
-    if not match:
-        return 0
-    h = int(match.group(1) or 0)
-    m = int(match.group(2) or 0)
-    s = int(match.group(3) or 0)
-    return (h * 3600) + (m * 60) + s
 
 
 class Youtube2Zim:
@@ -1118,14 +1103,21 @@ class Youtube2Zim:
             m, s = divmod(total_seconds, 60)
             h, m = divmod(m, 60)
 
-            duration_str = f"{int(s)}s"
-            if m > 0 or h > 0:
-                duration_str = f"{int(m)}m {duration_str}"
+            parts = []
             if h > 0:
-                duration_str = f"{int(h)}h {duration_str}"
+                parts.append(f"{int(h)}h")
+            if m > 0:
+                parts.append(f"{int(m)}m")
+            # Only include seconds if they are non-zero or if no other unit was added
+            if s > 0 or not parts:
+                parts.append(f"{int(s)}s")
+
+            duration_str = " ".join(parts)
             logger.info(f".. Total duration: {duration_str}")
-        except Exception as e:
-            logger.warning(f"Could not calculate total duration: {e}")
+        except (KeyError, TypeError, ValueError) as e:
+            logger.warning(f"Could not calculate total duration due to data issue: {e}")
+        except Exception:
+            logger.exception("Unexpected error while calculating total duration")
 
     def make_json_files(self, actual_videos_ids):
         """Generate JSON files to be consumed by the frontend"""
