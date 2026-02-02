@@ -3,6 +3,7 @@
 
 from http import HTTPStatus
 
+import isodate
 import requests
 from dateutil import parser as dt_parser
 from zimscraperlib.download import stream_file
@@ -264,12 +265,17 @@ def get_videos_authors_info(videos_ids):
             req.raise_for_status()
             videos_json = req.json()
             for item in videos_json["items"]:
+                duration_iso = item["contentDetails"]["duration"]
+                duration_seconds = int(
+                    isodate.parse_duration(duration_iso).total_seconds()
+                )
                 req_items.update(
                     {
                         item["id"]: {
                             "channelId": item["snippet"]["channelId"],
                             "channelTitle": item["snippet"]["channelTitle"],
-                            "duration": item["contentDetails"]["duration"],
+                            "duration": duration_iso,
+                            "duration_seconds": duration_seconds,
                         }
                     }
                 )

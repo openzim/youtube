@@ -6,7 +6,8 @@
       "title": "Timelapses",
       "thumbnailPath": "videos/9TgosbGRsTk/video.webp",
       "videosCount": 2,
-      "mainVideoSlug": "timelapse-9Tgo"
+      "mainVideoSlug": "timelapse-9Tgo",
+      "duration": "PT47S"
     },
     {
       "slug": "trailers-5Gph",
@@ -14,7 +15,8 @@
       "title": "Trailers",
       "thumbnailPath": "videos/TcMBFSGVi1c/video.webp",
       "videosCount": 1,
-      "mainVideoSlug": "marvel_studios_avengers_endgame_official_trailer-TcMB"
+      "mainVideoSlug": "marvel_studios_avengers_endgame_official_trailer-TcMB",
+      "duration": "PT2M27S"
     },
     {
       "slug": "coffee-O2wS",
@@ -22,7 +24,8 @@
       "title": "Coffee",
       "thumbnailPath": "videos/DYvYGQHYScc/video.webp",
       "videosCount": 1,
-      "mainVideoSlug": "coffee_machine-DYvY"
+      "mainVideoSlug": "coffee_machine-DYvY",
+      "duration": "PT9S"
     }
   ]
 }

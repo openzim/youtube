@@ -5,7 +5,7 @@ import { useMainStore } from '@/stores/main'
 import { useRoute, useRouter } from 'vue-router'
 
 import type { Playlist } from '@/types/Playlists'
-import { formatDate } from '@/utils/format-utils'
+import { formatDate, formatTimestamp } from '@/utils/format-utils'
 
 import PlaylistPanelItem from '@/components/playlist/panel/PlaylistPanelItem.vue'
 import thumbnailPlaceholder from '@/assets/images/thumbnail-placeholder.jpg'
@@ -101,9 +101,16 @@ watch(
           <p class="playlist-channel text-body-1 font-weight-medium mt-2">
             {{ playlist.author.channelTitle }}
           </p>
-          <p class="playlist-info text-caption mt-1">
-            <v-icon>mdi-video-outline</v-icon> {{ playlist.videosCount }} videos |
-            {{ formatDate(playlist.publicationDate) }}
+          <p class="playlist-info text-caption mt-1 d-flex flex-column">
+            <span>
+              <v-icon>mdi-video-outline</v-icon> {{ playlist.videosCount }} videos
+            </span>
+            <span>
+              Published on {{ formatDate(playlist.publicationDate) }}
+            </span>
+            <span>
+              <v-icon>mdi-clock-outline</v-icon> Total Duration: {{ formatTimestamp(playlist.duration) }}
+            </span>
           </p>
           <div class="mt-6 d-flex align-center justify-center">
             <v-btn

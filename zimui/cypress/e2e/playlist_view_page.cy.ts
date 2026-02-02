@@ -17,7 +17,11 @@ describe('playlist view', () => {
     cy.contains('.playlist-title', 'Timelapses').should('be.visible')
     cy.contains('.playlist-channel', 'openZIM_testing').should('be.visible')
     cy.contains('.playlist-description', 'A playlist of timelapse videos.').should('be.visible')
-    cy.contains('.playlist-info', '2 videos | Jun 4, 2024').should('be.visible')
+    cy.get('.playlist-info').within(() => {
+      cy.contains('2 videos').should('be.visible')
+      cy.contains('Published on Jun 4, 2024').should('be.visible')
+      cy.contains('Total Duration:').should('be.visible')
+    })
 
     cy.contains('.v-card-title', 'Timelapse').should('be.visible')
     cy.contains('.v-card-title', 'Cloudy Sky Time Lapse').should('be.visible')

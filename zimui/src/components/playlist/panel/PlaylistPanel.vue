@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import { useDisplay } from 'vuetify'
+import { formatTimestamp } from '@/utils/format-utils'
 
 import type { Playlist } from '@/types/Playlists'
 import { LoopOptions } from '@/types/Playlists'
@@ -90,6 +91,9 @@ const load = async ({ done }: { done: (status: 'ok' | 'empty') => void }) => {
               {{ props.playlist.author.channelTitle }}
             </span>
             - {{ props.currentVideoIndex + 1 }}/{{ props.playlist.videos.length }}
+          </v-card-subtitle>
+          <v-card-subtitle class="panel-channel text-caption">
+            Total Duration: {{ formatTimestamp(props.playlist.duration) }}
           </v-card-subtitle>
         </v-col>
         <v-col v-if="showToggle" cols="3" class="d-flex align-center justify-end">

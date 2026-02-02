@@ -11,6 +11,7 @@ export interface Playlist {
   thumbnailPath?: string
   videos: VideoPreview[]
   videosCount: number
+  duration: string
 }
 export interface PlaylistPreview {
   slug: string

@@ -31,7 +31,8 @@
           "duration": "PT11S"
         }
       ],
-      "videosCount": 2
+      "videosCount": 2,
+      "duration": "PT20S"
     },
     {
       "id": "PLMK6hZr9PcshJpNSRVaKReGlwhVlh5Gph",
@@ -57,7 +58,8 @@
           "duration": "PT2M27S"
         }
       ],
-      "videosCount": 1
+      "videosCount": 1,
+      "duration": "PT2M27S"
     },
     {
       "id": "PLMK6hZr9PcsjcF5mnaQk8Fi-xnb0AQgGI",
@@ -90,7 +92,8 @@
           "duration": "PT36S"
         }
       ],
-      "videosCount": 2
+      "videosCount": 2,
+      "duration": "PT47S"
     },
     {
       "id": "PLMK6hZr9PcsjTJ5u2z-khzvDNXlqdO2wS",
@@ -116,7 +119,8 @@
           "duration": "PT9S"
         }
       ],
-      "videosCount": 1
+      "videosCount": 1,
+      "duration": "PT9S"
     }
   ]
 }

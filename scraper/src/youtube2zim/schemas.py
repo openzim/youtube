@@ -79,6 +79,7 @@ class Playlist(CamelModel):
     thumbnail_path: str | None = None
     videos: list[VideoPreview]
     videos_count: int
+    duration: str
 
 
 class PlaylistPreview(CamelModel):
@@ -90,6 +91,7 @@ class PlaylistPreview(CamelModel):
     thumbnail_path: str | None = None
     videos_count: int
     main_video_slug: str
+    duration: str
 
 
 class Playlists(CamelModel):

@@ -19,6 +19,7 @@ dependencies = [
   "pydantic==2.12.4",
   "pyhumps==3.8.0",
   "schedule==1.2.2",
+  "isodate==0.7.2"
 ]
 dynamic = ["authors", "classifiers", "keywords", "license", "version", "urls"]
 
