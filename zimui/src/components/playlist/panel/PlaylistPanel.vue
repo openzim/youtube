@@ -21,8 +21,6 @@ const props = defineProps<{
   shuffle: boolean
 }>()
 
-const isLoading = computed(() => props.playlist.videos === undefined)
-
 const windowHeight = ref(
   window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
 )
@@ -78,10 +76,7 @@ const load = async ({ done }: { done: (status: 'ok' | 'empty') => void }) => {
 </script>
 
 <template>
-  <div v-if="isLoading" class="container mt-8 d-flex justify-center">
-    <v-progress-circular class="d-inline" indeterminate></v-progress-circular>
-  </div>
-  <v-card v-else class="border-thin rounded-lg" flat>
+  <v-card class="border-thin rounded-lg" flat>
     <v-card-item class="border-b-thin px-2">
       <v-row class="px-2">
         <v-col :cols="showToggle ? 9 : 12">
