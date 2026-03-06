@@ -43,7 +43,7 @@ const props = defineProps({
               name: 'view-playlist',
               params: { slug: props.playlistSlug }
             }"
-            class="text-black"
+            class="text-onSurface"
           >
             {{ props.title }}
           </router-link>

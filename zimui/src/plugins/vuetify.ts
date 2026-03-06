@@ -15,31 +15,52 @@ async function loadVuetify() {
       const config: Config = response.data
       primaryColor = config.mainColor || primaryColor
       secondaryColor = config.secondaryColor || secondaryColor
-    } else {
-      console.error('Failed to fetch config.json')
     }
   } catch (error) {
     console.error('Error loading config:', error)
   }
 
-  const zimuiTheme = {
+  const prefersDark =
+    window.matchMedia &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+
+  // Light Theme
+  const zimuiLight = {
+    dark: false,
     colors: {
-      background: secondaryColor,
-      surface: secondaryColor,
-      primary: primaryColor
+      background: '#FFFFFF',
+      surface: '#FFFFFF',
+      primary: primaryColor,
+      secondary: secondaryColor,
+      onPrimary: '#FFFFFF',
+      onSurface: '#000000',
+    }
+  }
+
+  // Dark Theme
+  const zimuiDark = {
+    dark: true,
+    colors: {
+      background: '#121212',
+      surface: '#1E1E1E',
+      primary: primaryColor,
+      secondary: secondaryColor,
+      onPrimary: '#FFFFFF',
+      onSurface: '#FFFFFF',
     }
   }
 
   return createVuetify({
     theme: {
-      defaultTheme: 'zimuiTheme',
+      defaultTheme: prefersDark ? 'zimuiDark' : 'zimuiLight',
       variations: {
-        colors: ['background', 'primary'],
+        colors: ['primary', 'secondary'],
         lighten: 2,
         darken: 2
       },
       themes: {
-        zimuiTheme
+        zimuiLight,
+        zimuiDark
       }
     }
   })

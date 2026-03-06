@@ -721,3 +721,20 @@ onBeforeUnmount(() => {
 <template>
   <div ref="videoContainer"></div>
 </template>
+
+<style scoped>
+:deep(.popup-overlay .table-wraper) {
+  background-color: rgb(var(--v-theme-surface));
+  color: rgb(var(--v-theme-on-surface));
+}
+
+:deep(.popup-overlay table th) {
+  color: rgb(var(--v-theme-on-surface));
+}
+
+@media (prefers-color-scheme: dark) {
+  :deep(.popup-overlay) {
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+}
+</style>

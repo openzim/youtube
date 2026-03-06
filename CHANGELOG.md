@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Implement dark mode (#424)
 - Added Total playlist duration in the Playlist view and Playlist panel. (#435)
 
 ## [3.5.0] - 2025-11-17
