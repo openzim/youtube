@@ -16,13 +16,11 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
       component: HomeView,
-      redirect: '/channel-home',
       children: [
         {
-          path: 'channel-home',
-          name: 'channel-home',
+          path: '',
+          name: 'home',
           component: ChannelHomeTab
         },
         {

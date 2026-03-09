@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Resolve home tab underbar not updating (#448)
+
 ### Added
 
 - Implement dark mode (#424)

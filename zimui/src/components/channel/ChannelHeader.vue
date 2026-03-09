@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useDisplay } from 'vuetify'
 
 import AboutDialogButton from '@/components/channel/AboutDialogButton.vue'
@@ -42,8 +42,6 @@ const tabs = computed(() => {
 
 // Hide tabs if there is only one playlist
 const hideTabs = computed(() => main.channel?.playlistCount === 1)
-
-const tab = ref<number>(tabs.value[0]?.id || 0)
 </script>
 
 <template>
@@ -87,8 +85,8 @@ const tab = ref<number>(tabs.value[0]?.id || 0)
       </v-container>
 
       <!-- Tabs Navigation -->
-      <v-tabs v-if="!hideTabs" v-model="tab" align-tabs="center">
-        <v-tab v-for="item in tabs" :key="item.id" :to="item.to">
+      <v-tabs v-if="!hideTabs" align-tabs="center">
+        <v-tab v-for="item in tabs" :key="item.id" :to="item.to" exact>
           {{ item.title }}
         </v-tab>
       </v-tabs>
