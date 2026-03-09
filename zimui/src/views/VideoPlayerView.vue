@@ -287,7 +287,10 @@ watch(
     </div>
 
     <!-- Desktop Playlist Panel -->
-    <div v-if="!smAndDown" :class="['playlist-panel ml-5', main.theaterMode ? 'mt-5' : '']">
+    <div
+      v-if="!smAndDown && playlist"
+      :class="['playlist-panel ml-5', main.theaterMode ? 'mt-5' : '']"
+    >
       <playlist-panel
         :playlist="playlist"
         :video-slug="video_slug"
