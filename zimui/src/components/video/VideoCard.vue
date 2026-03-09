@@ -52,7 +52,7 @@ onMounted(async () => {
       query: { list: props.playlistSlug }
     }"
   >
-    <v-card flat class="mx-4">
+    <v-card flat class="mx-4 bg-transparent">
       <v-row no-gutters>
         <v-col :cols="carouselMode ? 12 : 5" md="12">
           <div class="position-relative">
@@ -83,7 +83,7 @@ onMounted(async () => {
           }"
         >
           <v-card-title
-            class="text-body-2 text-wrap px-4 px-md-0 pb-0"
+            class="text-body-2 text-wrap px-4 px-md-0 pb-0 text-onSurface"
             :title="props.video.title"
             >{{ truncatedTitle }}</v-card-title
           >

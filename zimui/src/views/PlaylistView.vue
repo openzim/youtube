@@ -139,7 +139,7 @@ watch(
             :to="{ name: 'playlists' }"
             flat
             block
-            color="grey-darken-3"
+            color="medium-emphasis"
           >
             <v-icon icon="mdi-arrow-left" start></v-icon>
             Back to Playlists

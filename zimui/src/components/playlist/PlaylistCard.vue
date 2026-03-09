@@ -49,7 +49,7 @@ onMounted(async () => {
       query: { list: props.playlist.slug }
     }"
   >
-    <v-card flat class="mx-4">
+    <v-card flat class="mx-4 bg-transparent">
       <v-row no-gutters>
         <v-col cols="5" md="12">
           <div class="d-flex flex-column align-center">
@@ -84,7 +84,7 @@ onMounted(async () => {
           class="d-flex flex-column align-start align-md-center justify-center justify-md-center text-left text-md-center"
         >
           <v-card-title
-            class="text-body-1 text-wrap px-4 px-md-0 pb-0"
+            class="text-body-1 text-wrap px-4 px-md-0 pb-0 text-onSurface"
             :title="props.playlist.title"
             >{{ truncatedTitle }}</v-card-title
           >
