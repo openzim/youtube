@@ -39,14 +39,15 @@ def analyze_zim(path: str):
 
 
 def main():
-    if len(sys.argv) < 2:
-        print(f"Usage: {sys.argv[0]} <zim_file> [<zim_file> ...]")
+    min_args = 2
+    if len(sys.argv) < min_args:
+        print(f"Usage: {sys.argv[0]} <zim_file> [<zim_file> ...]")  # noqa: T201
         sys.exit(1)
 
     all_ratios = []
 
     for zim_path in sys.argv[1:]:
-        print(f"  {zim_path}")
+        print(f"  {zim_path}")  # noqa: T201
 
         videos = analyze_zim(zim_path)
         ratios = []
@@ -56,7 +57,7 @@ def main():
             mins = dur / 60
             ratio = mb / mins
             ratios.append(ratio)
-            print(
+            print(  # noqa: T201
                 f"  {slug[:50]:<50s}  {mins:6.1f}min  {mb:7.1f}MB  {ratio:5.2f} MB/min"
             )
 
@@ -65,7 +66,7 @@ def main():
             ratios.sort()
             median = ratios[len(ratios) // 2]
             std = (sum((r - avg) ** 2 for r in ratios) / len(ratios)) ** 0.5
-            print(
+            print(  # noqa: T201
                 f"\n  {len(ratios)} videos — avg {avg:.2f} MB/min, "
                 f"median {median:.2f}, std {std:.2f}"
             )
@@ -76,9 +77,10 @@ def main():
         std = (sum((r - avg) ** 2 for r in all_ratios) / len(all_ratios)) ** 0.5
         all_ratios.sort()
         median = all_ratios[len(all_ratios) // 2]
-        print(f"  OVERALL ({len(all_ratios)} videos across {len(sys.argv)-1} ZIMs)")
-        print(
-            f"  1 min of YouTube ≈ {avg:.2f} MB in ZIM  (±{std:.2f}, median {median:.2f})"
+        print(f"  OVERALL ({len(all_ratios)} videos across {len(sys.argv)-1} ZIMs)")  # noqa: T201
+        print(  # noqa: T201
+            f"  1 min of YouTube ≈ {avg:.2f} MB in ZIM  "
+            f"(±{std:.2f}, median {median:.2f})"
         )
 
 
