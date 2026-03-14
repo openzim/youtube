@@ -426,8 +426,8 @@ class Youtube2Zim:
                 index_html_path = self.zimui_dist / path
                 html_content = index_html_path.read_text(encoding="utf-8")
                 new_html_content = re.sub(
-                    r"(<title>)(.*?)(</title>)",
-                    rf"\1{self.title}\3",
+                    r"<title>.*?</title>",
+                    f"<title>{self.title}</title>",
                     html_content,
                     flags=re.IGNORECASE,
                 )
