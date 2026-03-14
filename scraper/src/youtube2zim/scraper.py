@@ -427,7 +427,7 @@ class Youtube2Zim:
                 html_content = index_html_path.read_text(encoding="utf-8")
                 new_html_content = re.sub(
                     r"(<title>)(.*?)(</title>)",
-                    rf"\1{self.title}\3",
+                    lambda match: f"{match.group(1)}{self.title}{match.group(3)}",
                     html_content,
                     flags=re.IGNORECASE,
                 )
