@@ -23,9 +23,19 @@ For more details / advanced usage than what is in this README, see the [Manual](
 
 # Requirements
 
+
 * [`ffmpeg`](https://ffmpeg.org/) for video transcoding.
 * [`deno`](https://deno.com/) (or another Javascript runtime, see https://github.com/yt-dlp/yt-dlp/issues/15012) for yt-dlp operations when fetching Youtube videos.
+
 * [`Yarn`](https://yarnpkg.com/getting-started/install) to install Javascript dependencies for the Vue.js UI.
+
+**Important:** Before running the scraper, you must build the ZIM UI first:
+
+```bash
+cd zimui && yarn install && yarn build
+```
+
+The scraper will fail with an explicit error if 'zimui/dist' is missing or empty.
 
 # Installation
 
@@ -95,6 +105,8 @@ When scraping playlists, you can pass multiple playlist IDs separated by a comma
 For more details / advanced usage, see the [Manual](https://github.com/openzim/youtube/wiki/Manual).
 
 ## Notes
+
+
 
 * Your API_KEY is subject to usage quotas (10,000 requests/day by default). Be careful to not waste your quota, especially when scraping large channels.
 
