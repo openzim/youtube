@@ -421,16 +421,16 @@ class Youtube2Zim:
         logger.info("all done!")
 
     def add_zimui(self):
-        # Fix for zimui dist folder missing or empty (which can happen if user forgets to build the UI or if they are using the repo without the UI)
+        "Fix for zimui dist folder missing or empty when user forgets"
+        "to build the UI or if they are using the repo without the UI."
         if not (
             self.zimui_dist.exists()
             and self.zimui_dist.is_dir()
             and any(self.zimui_dist.iterdir())
         ):
             raise ValueError(
-                "zimui/dist is empty or missing. "
-                "Please build the UI first: cd zimui && yarn install && yarn build. "
-                "Then check if you see the dist folder"
+                "zimui/dist is empty or missing. Please build the UI first: "
+                "cd zimui && yarn install && yarn build."
             )
 
         logger.info(f"Adding files in {self.zimui_dist}")

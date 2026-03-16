@@ -21,27 +21,25 @@ subtitles and the authors' profile pictures; It then produces JSON files contain
 
 For more details / advanced usage than what is in this README, see the [Manual](https://github.com/openzim/youtube/wiki/Manual) and [FAQ/FEE](https://github.com/openzim/youtube/wiki/FAQ---FEE).
 
-# Requirements
+# Prerequisites
 
-
-* [`ffmpeg`](https://ffmpeg.org/) for video transcoding.
-* [`deno`](https://deno.com/) (or another Javascript runtime, see https://github.com/yt-dlp/yt-dlp/issues/15012) for yt-dlp operations when fetching Youtube videos.
-
-* [`Yarn`](https://yarnpkg.com/getting-started/install) to install Javascript dependencies for the Vue.js UI.
-
-**Important:** Before running the scraper, you must build the ZIM UI first:
-
-```bash
-cd zimui && yarn install && yarn build
-```
-
-The scraper will fail with an explicit error if 'zimui/dist' is missing or empty.
+- [Docker](https://docs.docker.com/engine/install/)
+- amd64 architecture
 
 # Installation
 
-Here comes a few different ways to install `youtube2zim`.
+The recommended way to run `youtube2zim` is using the pre-built Docker image:
 
-## Virtualenv
+```sh
+docker pull ghcr.io/openzim/youtube
+```
+
+<details>
+
+<summary>Run from source code</summary>
+
+> [!WARNING]
+> Running from source requires manual setup. Using the Docker image is strongly recommended.
 
 `youtube2zim` is a Python3 software. If you are not using the [Docker](https://docker.com) image,
 you are advised to use it in a [virtualenv](https://virtualenv.pypa.io) to avoid installing software
@@ -49,32 +47,38 @@ dependencies on your system. [Hatch](https://hatch.pypa.io/) is the proper tool 
 virtualenv and install the software locally. Ensure to use proper Python version as well (see
 pyproject.toml).
 
-If you do not already have it on your system, install hatch to build the software and manage virtual
-environments (you might be interested by our detailed
-[Developer Setup](https://github.com/openzim/_python-bootstrap/blob/main/docs/Developer-Setup.md) as well,
+You might also be interested in our detailed [Developer Setup](https://github.com/openzim/_python-bootstrap/blob/main/docs/Developer-Setup.md) as well,
 especially regarding how to configure hatch globally for proper detection of its virtual environments
-by Visual Studio Code).
+by Visual Studio Code.
 
-``` bash
+## Prerequisites for local execution
+
+* [`ffmpeg`](https://ffmpeg.org/) for video transcoding.
+* [`deno`](https://deno.com/) for yt-dlp operations when fetching Youtube videos.
+* [`Yarn`](https://yarnpkg.com/getting-started/install) to install Javascript dependencies for the Vue.js UI.
+
+## Local execution setup
+
+Install hatch: 
+
+```sh
 pip3 install hatch
 ```
 
-Start a hatch shell: this will install software including dependencies in an isolated virtual environment.
+Build the ZIM UI first:
 
-``` bash
-cd scraper
-hatch shell
+```sh
+cd zimui && yarn install && yarn build
 ```
 
-```bash
-youtube2zim --help       # Display youtube2zim help
+Start a hatch shell:
+
+```sh
+cd scraper && hatch shell
+youtube2zim --help
 ```
 
-## Docker
-
-```bash
-docker run -v my_dir:/output ghcr.io/openzim/youtube youtube2zim --help
-```
+</details>
 
 # Usage
 
@@ -105,8 +109,6 @@ When scraping playlists, you can pass multiple playlist IDs separated by a comma
 For more details / advanced usage, see the [Manual](https://github.com/openzim/youtube/wiki/Manual).
 
 ## Notes
-
-
 
 * Your API_KEY is subject to usage quotas (10,000 requests/day by default). Be careful to not waste your quota, especially when scraping large channels.
 
