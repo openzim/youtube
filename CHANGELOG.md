@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Resolve home tab underbar not updating (#448)
 - Resolve Cypress E2E crash and prevent premature PlaylistPanel rendering (#450)
+- Resolve re.PatternError for invalid regex group reference (#434)
 
 ### Added
 
