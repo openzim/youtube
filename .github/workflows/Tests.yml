@@ -96,6 +96,9 @@ jobs:
         run: |
           docker build -t youtube2zim .
 
+      - name: Ensure zimui and its files are present in Docker image
+        run: docker run --rm youtube2zim python -c "from pathlib import Path; import youtube2zim; path = Path(youtube2zim.__file__).parent / 'zimui'; assert (path / 'index.html').is_file() and (path / 'assets').is_dir(), 'zimui not found'"
+
       - name: Run scraper
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
