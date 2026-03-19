@@ -113,6 +113,7 @@ class Youtube2Zim:
         disable_metadata_checks,
         stats_filename,
         skip_reencoding,
+        subtitles_chapters_cache_expiry_days,
         title=None,
         description=None,
         long_description=None,
@@ -151,6 +152,10 @@ class Youtube2Zim:
         self.secondary_color = secondary_color
         self.disable_metadata_checks = disable_metadata_checks
         self.skip_reencoding = skip_reencoding
+
+        self.subtitles_chapters_cache_expiry_seconds = (
+            subtitles_chapters_cache_expiry_days * 86400
+        )
 
         metadata.APPLY_RECOMMENDATIONS = not self.disable_metadata_checks
 
@@ -675,40 +680,60 @@ class Youtube2Zim:
 
         return overall_succeeded, overall_failed
 
-    def download_from_cache(self, key, video_path, encoder_version):
+    def download_from_cache(
+        self, key, dest_path, encoder_version=None, max_age_seconds=None
+    ):
         """whether it successfully downloaded from cache"""
         if not self.s3_storage:
             raise Exception(
                 "Cannot download from cache if s3_storage is not configured"
             )
-        if self.use_any_optimized_version:
-            if not self.s3_storage.has_object(key, self.s3_storage.bucket_name):
+
+        if encoder_version:
+            if self.use_any_optimized_version:
+                if not self.s3_storage.has_object(key, self.s3_storage.bucket_name):
+                    return False
+            elif not self.s3_storage.has_object_matching_meta(
+                key, tag="encoder_version", value=f"v{encoder_version}"
+            ):
                 return False
-        elif not self.s3_storage.has_object_matching_meta(
-            key, tag="encoder_version", value=f"v{encoder_version}"
-        ):
+        elif not self.s3_storage.has_object(key, self.s3_storage.bucket_name):
             return False
-        video_path.parent.mkdir(parents=True, exist_ok=True)
+
+        if max_age_seconds is not None:
+            try:
+                response = self.s3_storage.client.head_object(
+                    Bucket=self.s3_storage.bucket_name, Key=key
+                )
+                age_seconds = (
+                    datetime.datetime.now(datetime.UTC) - response["LastModified"]
+                ).total_seconds()
+                if age_seconds > max_age_seconds:
+                    logger.debug(f"S3 cache for {key} is expired")
+                    return False
+            except Exception:
+                return False
+
+        dest_path.parent.mkdir(parents=True, exist_ok=True)
         try:
-            self.s3_storage.download_file(key, video_path)
+            self.s3_storage.download_file(key, dest_path)
         except Exception as exc:
             logger.error(f"{key} failed to download from cache: {exc}")
             return False
-        logger.info(f"downloaded {video_path} from cache at {key}")
+        logger.info(f"downloaded {dest_path} from cache at {key}")
         return True
 
-    def upload_to_cache(self, key, video_path, encoder_version):
+    def upload_to_cache(self, key, dest_path, encoder_version=None):
         """whether it successfully uploaded to cache"""
         if not self.s3_storage:
             raise Exception("Cannot upload to cache if s3_storage is not configured")
         try:
-            self.s3_storage.upload_file(
-                video_path, key, meta={"encoder_version": f"v{encoder_version}"}
-            )
+            meta = {"encoder_version": f"v{encoder_version}"} if encoder_version else {}
+            self.s3_storage.upload_file(dest_path, key, meta=meta)
         except Exception as exc:
             logger.error(f"{key} failed to upload to cache: {exc}")
             return False
-        logger.info(f"uploaded {video_path} to cache at {key}")
+        logger.info(f"uploaded {dest_path} to cache at {key}")
         return True
 
     def download_video(self, video_id, options):
@@ -855,8 +880,53 @@ class Youtube2Zim:
                 callback=Callback(delete_callback, args=(chapters_file,)),
             )
 
+    def _write_chapters_vtt(self, video_id, chapters):
+        """write chapters list to a .vtt file in videos_dir and return path"""
+        chapters_file = self.videos_dir.joinpath(video_id, "chapters.vtt")
+        chapters_file.parent.mkdir(parents=True, exist_ok=True)
+
+        with chapters_file.open("w", encoding="utf8") as chapter_f:
+            chapter_f.write("WEBVTT\n\n")
+            for chapter in chapters:
+                start = chapter["start_time"]
+                end = chapter["end_time"]
+                title = chapter["title"]
+                start_time = (
+                    f"{int(start//3600):02}:"
+                    f"{int((start%3600)//60):02}:"
+                    f"{int(start%60):02}."
+                    f"{int((start%1)*1000):03}"
+                )
+                end_time = (
+                    f"{int(end//3600):02}:"
+                    f"{int((end%3600)//60):02}:"
+                    f"{int(end%60):02}."
+                    f"{int((end%1)*1000):03}"
+                )
+                chapter_f.write(f"{start_time} --> {end_time}\n")
+                chapter_f.write(f"{title}\n\n")
+        return chapters_file
+
     def generate_chapters_vtt(self, video_id):
         """generate the chapters file of a video if chapters available"""
+
+        s3_chapters_key = f"chapters/{video_id}.json"
+        chapters_path = self.chapters_cache_dir.joinpath(f"{video_id}.json")
+
+        if self.s3_storage:
+            if self.download_from_cache(
+                s3_chapters_key,
+                chapters_path,
+                max_age_seconds=self.subtitles_chapters_cache_expiry_seconds,
+            ):
+                logger.info(f"chapters for {video_id} loaded from S3 cache")
+                with open(chapters_path, encoding="utf-8") as f:
+                    cached = json.load(f)
+                chapters = cached.get("chapters", [])
+                if chapters:
+                    self._write_chapters_vtt(video_id, chapters)
+                    self.add_chapters_to_zim(video_id)
+                return
 
         metadata_file = self.videos_dir.joinpath(video_id, "video.info.json")
         if metadata_file.exists():
@@ -876,31 +946,12 @@ class Youtube2Zim:
                     {"chapters": chapters},
                 )
 
-                chapters_file = self.videos_dir.joinpath(video_id, "chapters.vtt")
-                with chapters_file.open("w", encoding="utf8") as chapter_f:
-                    chapter_f.write("WEBVTT\n\n")
-                    for chapter in chapters:
-                        start = chapter["start_time"]
-                        end = chapter["end_time"]
-                        title = chapter["title"]
-
-                        start_time = (
-                            f"{int(start//3600):02}:"
-                            f"{int((start%3600)//60):02}:"
-                            f"{int(start%60):02}."
-                            f"{int((start%1)*1000):03}"
-                        )
-                        end_time = (
-                            f"{int(end//3600):02}:"
-                            f"{int((end%3600)//60):02}:"
-                            f"{int(end%60):02}."
-                            f"{int((end%1)*1000):03}"
-                        )
-
-                        chapter_f.write(f"{start_time} --> {end_time}\n")
-                        chapter_f.write(f"{title}\n\n")
+                self._write_chapters_vtt(video_id, chapters)
                 logger.info(f"Chapters file saved for {video_id}")
                 self.add_chapters_to_zim(video_id)
+
+                if self.s3_storage:
+                    self.upload_to_cache(s3_chapters_key, chapters_path)
 
     def fetch_video_subtitles_list(self, video_id: str) -> Subtitles:
         """fetch list of subtitles for a video"""
@@ -951,6 +1002,47 @@ class Youtube2Zim:
     def download_subtitles(self, video_id, options):
         """download subtitles for a video"""
 
+        s3_subtitles_key = f"subtitles/{video_id}.json"
+        subtitles_path = self.subtitles_cache_dir.joinpath(f"{video_id}.json")
+
+        if self.s3_storage:
+            if self.download_from_cache(
+                s3_subtitles_key,
+                subtitles_path,
+                max_age_seconds=self.subtitles_chapters_cache_expiry_seconds,
+            ):
+                logger.info(f"subtitles for {video_id} loaded from S3 cache")
+                # retrieve language codes from cached JSON
+                # to know which .vtt files to fetch
+                with open(subtitles_path, encoding="utf-8") as f:
+                    cached = json.load(f)
+
+                video_dir = self.videos_dir.joinpath(video_id)
+                video_dir.mkdir(parents=True, exist_ok=True)
+
+                for subtitle in cached.get("subtitles", []):
+                    lang = subtitle["code"]
+                    vtt_filename = f"video.{lang}.vtt"
+                    vtt_s3_key = f"subtitles/{video_id}/{vtt_filename}"
+                    vtt_path = video_dir / vtt_filename
+
+                    if not self.download_from_cache(
+                        vtt_s3_key,
+                        vtt_path,
+                        max_age_seconds=self.subtitles_chapters_cache_expiry_seconds,
+                    ):
+                        # if any .vtt is missing
+                        # fall through to yt_dlp for the whole video
+                        logger.warning(
+                            f"subtitle {vtt_filename} for {video_id} "
+                            "missing from cache, re-downloading from yt_dlp"
+                        )
+                        break
+                else:
+                    # all .vtt files retrieved succeffuly
+                    self.add_video_subtitles_to_zim(video_id)
+                    return
+
         options_copy = options.copy()
         options_copy.update(
             {"skip_download": True, "writethumbnail": False, "writeinfojson": True}
@@ -968,6 +1060,18 @@ class Youtube2Zim:
             self.add_video_subtitles_to_zim(video_id)
         except Exception:
             logger.error(f"Could not download subtitles for {video_id}")
+            return
+
+        # upload JSON and each .vtt to s3
+        if self.s3_storage:
+            self.upload_to_cache(s3_subtitles_key, subtitles_path)
+            video_dir = self.videos_dir.joinpath(video_id)
+
+            for vtt_file in video_dir.iterdir():
+                if vtt_file.suffix == ".vtt" and vtt_file.name != "chapters.vtt":
+                    self.upload_to_cache(
+                        f"subtitles/{video_id}/{vtt_file.name}", vtt_file
+                    )
 
     def download_video_files_batch(self, options, videos_ids):
         """download video file and thumbnail for all videos in batch
