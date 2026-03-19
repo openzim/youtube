@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Implement dark mode (#424)
 - Added Total playlist duration in the Playlist view and Playlist panel. (#435)
+- Added `analyze_zim.py` contrib script to analyze video duration vs. file size correlation in ZIM files (#439)
 
 ## [3.5.0] - 2025-11-17
 
