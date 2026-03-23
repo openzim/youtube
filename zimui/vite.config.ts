@@ -35,5 +35,9 @@ export default defineConfig({
   },
   preview: {
     port: 5173
+  },
+  build: {
+    outDir: '../scraper/src/youtube2zim/zimui',
+    emptyOutDir: true,
   }
 })

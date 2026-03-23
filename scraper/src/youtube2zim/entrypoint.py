@@ -5,6 +5,7 @@ import argparse
 import logging
 import os
 import sys
+from pathlib import Path
 
 from youtube2zim.constants import NAME, SCRAPER, logger
 from youtube2zim.scraper import Youtube2Zim
@@ -79,7 +80,10 @@ def main():
         help=(
             "Directory containing Vite build output from the Zim UI Vue.JS application"
         ),
-        default=os.getenv("YOUTUBE_ZIMUI_DIST", "../zimui/dist"),
+        default=os.getenv(
+            "YOUTUBE_ZIMUI_DIST",
+            str(Path(__file__).parent / "zimui"),
+        ),
     )
 
     parser.add_argument(

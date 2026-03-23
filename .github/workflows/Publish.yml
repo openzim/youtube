@@ -13,6 +13,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Set up Node js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: zimui/.node-version
+
+      - name: Build zimui
+        working-directory: zimui
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
+
       - name: Set up Python
         uses: actions/setup-python@v6
         with:

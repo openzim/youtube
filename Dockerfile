@@ -1,9 +1,9 @@
 FROM node:24-alpine as zimui
 
 WORKDIR /src
-COPY zimui /src
-RUN yarn install --frozen-lockfile
-RUN yarn build
+COPY . /src
+RUN cd zimui && yarn install --frozen-lockfile
+RUN cd zimui && yarn build
 
 FROM python:3.14-trixie
 LABEL org.opencontainers.image.source https://github.com/openzim/youtube
@@ -37,17 +37,17 @@ RUN curl -fsSL https://deno.land/install.sh | sh -s \
 # Install Python dependencies
 RUN pip install --no-cache-dir /src/scraper
 
-# Copy code + associated artifacts
+# Copy code
 COPY scraper/src /src/scraper/src
+
+# Copy zimui build output
+COPY --from=zimui /src/scraper/src/youtube2zim/zimui /src/scraper/src/youtube2zim/zimui
+
+# Copy associated artifacts
 COPY *.md LICENSE CHANGELOG.md /src/
 
 # Install + cleanup
 RUN pip install --no-cache-dir /src/scraper \
  && rm -rf /src/scraper
-
-# Copy zimui build output
-COPY --from=zimui /src/dist /src/zimui
-
-ENV YOUTUBE_ZIMUI_DIST=/src/zimui
 
 CMD ["youtube2zim", "--help"]

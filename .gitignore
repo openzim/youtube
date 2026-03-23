@@ -365,14 +365,8 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/linux,macos,python,database,visualstudiocode,intellij
 
-# JS deps
-scraper/src/youtube2zim/templates/assets/chosen/
-scraper/src/youtube2zim/templates/assets/jquery.min.js
-scraper/src/youtube2zim/templates/assets/ogvjs/
-scraper/src/youtube2zim/templates/assets/videojs-ogvjs.js
-scraper/src/youtube2zim/templates/assets/videojs/
-scraper/src/youtube2zim/templates/assets/polyfills.js
-scraper/src/youtube2zim/templates/assets/webp-hero.bundle.js
+# Zimui build dist
+scraper/src/youtube2zim/zimui/
 
 # output dir
 output
