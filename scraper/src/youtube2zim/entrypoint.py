@@ -222,6 +222,14 @@ def main():
         default=False,
     )
 
+    parser.add_argument(
+        "--subtitles-chapters-cache-expiry-days",
+        help="Number of days a cached file is allowed to live"
+        " before the scraper fetches a fresh copy",
+        type=int,
+        default=30,
+    )
+
     args = parser.parse_args()
     logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
 
