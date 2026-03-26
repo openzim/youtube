@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Resolve home tab underbar not updating (#448)
 - Resolve Cypress E2E crash and prevent premature PlaylistPanel rendering (#450)
+- Raise explicit error when `zimui/dist` is empty or missing, with instructions to build the UI. (#457)
 - Resolve re.PatternError for invalid regex group reference (#434)
 
 ### Added
@@ -20,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Total playlist duration in the Playlist view and Playlist panel. (#435)
 - Added `analyze_zim.py` contrib script to analyze video duration vs. file size correlation in ZIM files (#439)
 - Bundle ZIM UI inside pip package (#459)
+
+### Changed
+
+- Rework README to push Docker as the recommended installation method. (#457)
 
 ## [3.5.0] - 2025-11-17
 
