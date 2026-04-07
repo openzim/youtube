@@ -2,7 +2,7 @@ FROM node:24-alpine as zimui
 
 WORKDIR /src
 COPY . /src
-RUN cd zimui && yarn install --frozen-lockfile
+RUN cd zimui && corepack enable && yarn install --immutable
 RUN cd zimui && yarn build
 
 FROM python:3.14-trixie

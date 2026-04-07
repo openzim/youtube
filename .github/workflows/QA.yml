@@ -48,14 +48,19 @@ jobs:
         with:
           node-version-file: zimui/.node-version
 
+      - name: Enable Corepack for Yarn Modern
+        run: corepack enable
+
       - name: Install JS dependencies
         working-directory: zimui
         run: |
-          yarn install
+          yarn install --immutable
+
       - name: Check prettier
         working-directory: zimui
         run: |
           yarn format
+
       - name: Check eslint
         working-directory: zimui
         run: |
