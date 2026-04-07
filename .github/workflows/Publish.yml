@@ -18,10 +18,17 @@ jobs:
         with:
           node-version-file: zimui/.node-version
 
+      - name: Enable Corepack for Yarn Modern
+        run: corepack enable
+
+      - name: Install JS dependencies
+        working-directory: zimui
+        run: |
+          yarn install --immutable
+
       - name: Build zimui
         working-directory: zimui
         run: |
-          yarn install --frozen-lockfile
           yarn build
 
       - name: Set up Python

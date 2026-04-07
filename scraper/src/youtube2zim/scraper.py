@@ -430,7 +430,7 @@ class Youtube2Zim:
         ):
             raise ValueError(
                 "zimui/dist is empty or missing. Please build the UI first: "
-                "cd zimui && yarn install && yarn build."
+                "cd zimui && corepack enable && yarn install && yarn build."
             )
 
         logger.info(f"Adding files in {self.zimui_dist}")

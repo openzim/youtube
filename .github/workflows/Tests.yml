@@ -62,10 +62,13 @@ jobs:
         with:
           node-version-file: zimui/.node-version
 
+      - name: Enable Corepack for Yarn Modern
+        run: corepack enable
+
       - name: Install dependencies
         working-directory: zimui
         run: |
-          yarn install
+          yarn install --immutable
 
       - name: Build
         working-directory: zimui

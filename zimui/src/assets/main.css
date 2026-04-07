@@ -1,16 +1,11 @@
-* {
-  margin: 0;
-  padding: 0;
-}
-
 html {
-  overflow: auto !important;
+  overflow: auto;
   font-family: 'Roboto', sans-serif;
-  overflow-y: scroll !important;
+  overflow-y: scroll;
 }
 
 body {
-  background: rgba(var(--v-theme-background)) !important;
+  background: rgba(var(--v-theme-background));
 }
 
 a {
@@ -114,7 +109,7 @@ a {
 }
 
 .v-btn {
-  display: flex !important;
+  display: flex;
 }
 
 .v-slide-group__content {
@@ -131,29 +126,29 @@ a {
 }
 
 .carousel__icon {
-    fill: rgb(var(--v-theme-on-surface)) !important;
+  fill: rgb(var(--v-theme-on-surface));
 }
 
 .carousel__next,
 .carousel__prev {
-  background: rgb(var(--v-theme-surface)) !important;
-  border-radius: 50% !important;
+  background: rgb(var(--v-theme-surface));
+  border-radius: 50%;
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.2),
     0 1px 2px rgba(0, 0, 0, 0.15);
-  width: 40px !important;
-  height: 40px !important;
+  width: 40px;
+  height: 40px;
 }
 
 .carousel__track {
-  align-items: start !important;
+  align-items: start;
 }
 
 .carousel__prev--disabled,
 .carousel__next--disabled {
-  display: none !important;
+  display: none;
 }
 
 .video-list .v-infinite-scroll__side {
-  padding: 0 !important;
+  padding: 0;
 }

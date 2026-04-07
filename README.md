@@ -59,7 +59,7 @@ by Visual Studio Code.
 
 ## Local execution setup
 
-Install hatch: 
+Install hatch:
 
 ```sh
 pip3 install hatch
@@ -68,7 +68,7 @@ pip3 install hatch
 Build the ZIM UI first:
 
 ```sh
-cd zimui && yarn install && yarn build
+cd zimui && corepack enable && yarn install && yarn build
 ```
 
 Start a hatch shell:
