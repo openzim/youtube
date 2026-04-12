@@ -20,9 +20,7 @@ async function loadVuetify() {
     console.error('Error loading config:', error)
   }
 
-  const prefersDark =
-    window.matchMedia &&
-    window.matchMedia('(prefers-color-scheme: dark)').matches
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
 
   // Light Theme
   const zimuiLight = {
@@ -33,7 +31,7 @@ async function loadVuetify() {
       primary: primaryColor,
       secondary: secondaryColor,
       onPrimary: '#FFFFFF',
-      onSurface: '#000000',
+      onSurface: '#000000'
     }
   }
 
@@ -46,7 +44,7 @@ async function loadVuetify() {
       primary: primaryColor,
       secondary: secondaryColor,
       onPrimary: '#FFFFFF',
-      onSurface: '#FFFFFF',
+      onSurface: '#FFFFFF'
     }
   }
 

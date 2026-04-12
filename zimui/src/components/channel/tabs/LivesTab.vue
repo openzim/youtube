@@ -3,5 +3,5 @@ import GenericTab from './GenericTab.vue'
 </script>
 
 <template>
-    <generic-tab :playlist-slug="'userLivesPlaylist'" title-prefix="Lives" />
+  <generic-tab :playlist-slug="'userLivesPlaylist'" title-prefix="Lives" />
 </template>

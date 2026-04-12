@@ -55,8 +55,8 @@ jobs:
       - name: Check prettier
         working-directory: zimui
         run: |
-          yarn format
+          yarn format-check
       - name: Check eslint
         working-directory: zimui
         run: |
-          yarn lint
+          yarn lint-check

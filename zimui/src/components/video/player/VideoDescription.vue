@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {computed} from "vue"
-import {formatVideoDescription} from "@/utils/description-utils";
+import { computed } from 'vue'
+import { formatVideoDescription } from '@/utils/description-utils'
 
 const props = defineProps({
   description: {
@@ -9,7 +9,7 @@ const props = defineProps({
   }
 })
 
-const description = computed(() => formatVideoDescription(props.description));
+const description = computed(() => formatVideoDescription(props.description))
 </script>
 
 <template>
@@ -19,9 +19,13 @@ const description = computed(() => formatVideoDescription(props.description));
         <v-card-title class="text-subtitle-1 font-weight-medium">Description</v-card-title>
         <v-card-text class="video-description text-pre-wrap" v-if="description.length">
           <template v-for="(item, index) in description" :key="index">
-            <component 
+            <component
               :is="item[1] === 'a' ? 'a' : item[1] === 'br' ? 'br' : 'span'"
-              v-bind="item[1] === 'a' ? { href: item[0], target: '_blank', rel: 'noopener noreferrer' } : {}"
+              v-bind="
+                item[1] === 'a'
+                  ? { href: item[0], target: '_blank', rel: 'noopener noreferrer' }
+                  : {}
+              "
             >
               {{ item[1] === 'br' ? '\n' : item[0] }}
             </component>
