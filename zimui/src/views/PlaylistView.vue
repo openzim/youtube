@@ -102,14 +102,11 @@ watch(
             {{ playlist.author.channelTitle }}
           </p>
           <p class="playlist-info text-caption mt-1 d-flex flex-column">
+            <span> <v-icon>mdi-video-outline</v-icon> {{ playlist.videosCount }} videos </span>
+            <span> Published on {{ formatDate(playlist.publicationDate) }} </span>
             <span>
-              <v-icon>mdi-video-outline</v-icon> {{ playlist.videosCount }} videos
-            </span>
-            <span>
-              Published on {{ formatDate(playlist.publicationDate) }}
-            </span>
-            <span>
-              <v-icon>mdi-clock-outline</v-icon> Total Duration: {{ formatTimestamp(playlist.duration) }}
+              <v-icon>mdi-clock-outline</v-icon> Total Duration:
+              {{ formatTimestamp(playlist.duration) }}
             </span>
           </p>
           <div class="mt-6 d-flex align-center justify-center">

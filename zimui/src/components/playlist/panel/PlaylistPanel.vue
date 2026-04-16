@@ -92,22 +92,44 @@ const load = async ({ done }: { done: (status: 'ok' | 'empty') => void }) => {
           </v-card-subtitle>
         </v-col>
         <v-col v-if="showToggle" cols="3" class="d-flex align-center justify-end">
-          <v-btn class="pa-2" icon="mdi-close" size="md" variant="text" @click="() => emit('hide-panel')"></v-btn>
+          <v-btn
+            class="pa-2"
+            icon="mdi-close"
+            size="md"
+            variant="text"
+            @click="() => emit('hide-panel')"
+          ></v-btn>
         </v-col>
       </v-row>
       <v-row dense no-gutters>
         <v-col class="d-flex">
-          <v-btn class="pa-2" size="md" variant="text"
+          <v-btn
+            class="pa-2"
+            size="md"
+            variant="text"
             :icon="loop === LoopOptions.loopVideo ? 'mdi-repeat-once' : 'mdi-repeat'"
-            :color="loop !== LoopOptions.off ? 'onSurface' :'medium-emphasis'" :title="loop === LoopOptions.off
-              ? 'Loop playlist'
-              : loop === LoopOptions.loopPlaylist
-                ? 'Loop video'
-                : 'Turn off loop'
-              " flat @click="() => emit('loop')">
+            :color="loop !== LoopOptions.off ? 'onSurface' : 'medium-emphasis'"
+            :title="
+              loop === LoopOptions.off
+                ? 'Loop playlist'
+                : loop === LoopOptions.loopPlaylist
+                  ? 'Loop video'
+                  : 'Turn off loop'
+            "
+            flat
+            @click="() => emit('loop')"
+          >
           </v-btn>
-          <v-btn class="pa-2" size="md" variant="text" icon="mdi-shuffle" :color="shuffle ? 'onSurface' : 'medium-emphasis'"
-            title="Shuffle Playlist" flat @click="() => emit('shuffle')"></v-btn>
+          <v-btn
+            class="pa-2"
+            size="md"
+            variant="text"
+            icon="mdi-shuffle"
+            :color="shuffle ? 'onSurface' : 'medium-emphasis'"
+            title="Shuffle Playlist"
+            flat
+            @click="() => emit('shuffle')"
+          ></v-btn>
         </v-col>
       </v-row>
     </v-card-item>
@@ -115,9 +137,15 @@ const load = async ({ done }: { done: (status: 'ok' | 'empty') => void }) => {
     <v-card-item class="pa-0">
       <div id="panel-items-container" :style="{ height: panelContainerHeight }">
         <v-infinite-scroll class="h-full overflow-hidden" :items="items" empty-text="" @load="load">
-          <playlist-panel-item v-for="(item, index) in items" :id="`video-item-${index}`" :key="item.slug" :video="item"
-            :order="index + 1" :selected="item.slug === props.videoSlug"
-            :playlist-slug="props.playlistSlug"></playlist-panel-item>
+          <playlist-panel-item
+            v-for="(item, index) in items"
+            :id="`video-item-${index}`"
+            :key="item.slug"
+            :video="item"
+            :order="index + 1"
+            :selected="item.slug === props.videoSlug"
+            :playlist-slug="props.playlistSlug"
+          ></playlist-panel-item>
         </v-infinite-scroll>
       </div>
     </v-card-item>
