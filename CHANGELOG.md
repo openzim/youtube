@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Total playlist duration in the Playlist view and Playlist panel. (#435)
 - Added `analyze_zim.py` contrib script to analyze video duration vs. file size correlation in ZIM files (#439)
 - Bundle ZIM UI inside pip package (#459)
+- Added `linux/arm64` support to Docker image and CI (#458)
 
 ### Changed
 

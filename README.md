@@ -24,7 +24,7 @@ For more details / advanced usage than what is in this README, see the [Manual](
 # Prerequisites
 
 - [Docker](https://docs.docker.com/engine/install/)
-- amd64 architecture
+- amd64 or arm64 architecture
 
 # Installation
 
