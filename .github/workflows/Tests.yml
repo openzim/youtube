@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  test-scraper:
+  test-scraper-amd64:
     runs-on: ubuntu-24.04
 
     steps:
@@ -35,7 +35,35 @@ jobs:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
 
-  build-scraper:
+  test-scraper-arm64:
+    runs-on: ubuntu-24.04-arm
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: scraper/pyproject.toml
+
+      - name: Install dependencies (and project)
+        working-directory: scraper
+        run: |
+          pip install -U pip
+          pip install -e .[test,scripts]
+
+      - name: Run the tests
+        working-directory: scraper
+        run: inv coverage --args "-vvv"
+
+      - name: Upload coverage report to codecov
+        uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+
+  build-scraper-amd64:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
@@ -52,7 +80,23 @@ jobs:
           pip install -U pip build
           python3 -m build --sdist --wheel
 
-  build-and-test-zimui:
+  build-scraper-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: scraper/pyproject.toml
+
+      - name: Ensure we can build Python targets
+        working-directory: scraper
+        run: |
+          pip install -U pip build
+          python3 -m build --sdist --wheel
+
+  build-and-test-zimui-amd64:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
@@ -86,8 +130,42 @@ jobs:
           cd zimui
           $(yarn bin)/cypress run
 
+  build-and-test-zimui-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: zimui/.node-version
+
+      - name: Install dependencies
+        working-directory: zimui
+        run: |
+          yarn install
+
+      - name: Build
+        working-directory: zimui
+        run: |
+          yarn build
+
+      - name: Start web server
+        working-directory: zimui
+        run: |
+          yarn preview &
+
+      - name: Wait for web server to be ready
+        run: |
+          npx wait-on http://localhost:5173
+
+      - name: Run frontend tests
+        run: |
+          cd zimui
+          $(yarn bin)/cypress run
+
   # this job replaces the standard "build_docker" job since it builds the docker image
-  run-integration-tests:
+  run-integration-tests-amd64:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
@@ -107,3 +185,26 @@ jobs:
 
       - name: Run integration test suite
         run: docker run -v $PWD/scraper/tests-integration/integration.py:/src/scraper/tests-integration/integration.py -v $PWD/output:/output youtube2zim bash -c "pip install pytest; pytest -v /src/scraper/tests-integration/integration.py"
+
+
+  run-integration-tests-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Ensure we can build the Docker image
+        run: |
+          docker build -t youtube2zim .
+
+      - name: Ensure zimui and its files are present in Docker image
+        run: docker run --rm youtube2zim python -c "from pathlib import Path; import youtube2zim; path = Path(youtube2zim.__file__).parent / 'zimui'; assert (path / 'index.html').is_file() and (path / 'assets').is_dir(), 'zimui not found'"
+
+      - name: Run scraper
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          OPTIMIZATION_CACHE_URL: ${{ secrets.OPTIMIZATION_CACHE_URL }}
+        run: docker run -v $PWD/output:/output youtube2zim youtube2zim --api-key "$YOUTUBE_API_KEY" --optimization-cache "$OPTIMIZATION_CACHE_URL" --id "UC8elThf5TGMpQfQc_VE917Q" --name "tests_en_openzim-testing" --zim-file "openZIM_testing.zim" --tags "tEsTing,x-mark:yes"
+
+      - name: Run integration test suite
+        run: docker run -v $PWD/scraper/tests-integration/integration.py:/src/scraper/tests-integration/integration.py -v $PWD/output:/output youtube2zim bash -c "pip install pytest; pytest -v /src/scraper/tests-integration/integration.py"
+
