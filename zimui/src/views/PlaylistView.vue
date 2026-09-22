@@ -97,11 +97,13 @@ watch(
             class="d-block rounded-lg"
           />
 
-          <p class="playlist-title text-h5 font-weight-bold mt-4">{{ playlist.title }}</p>
-          <p class="playlist-channel text-body-1 font-weight-medium mt-2">
+          <p class="playlist-title text-headline-small font-weight-bold mt-4">
+            {{ playlist.title }}
+          </p>
+          <p class="playlist-channel text-body-large font-weight-medium mt-2">
             {{ playlist.author.channelTitle }}
           </p>
-          <p class="playlist-info text-caption mt-1 d-flex flex-column">
+          <p class="playlist-info text-body-small mt-1 d-flex flex-column">
             <span> <v-icon>mdi-video-outline</v-icon> {{ playlist.videosCount }} videos </span>
             <span> Published on {{ formatDate(playlist.publicationDate) }} </span>
             <span>
@@ -143,7 +145,7 @@ watch(
           </v-btn>
           <p
             v-if="playlist.description !== ''"
-            class="playlist-description text-caption text-pre-wrap mt-4"
+            class="playlist-description text-body-small text-pre-wrap mt-4"
           >
             {{ playlist.description }}
           </p>
@@ -151,7 +153,7 @@ watch(
       </v-col>
       <v-col cols="12" md="7" lg="8" xl="6" xxl="4">
         <v-container class="pa-0">
-          <v-row dense>
+          <v-row density="compact">
             <v-col
               v-for="(video, idx) in playlist.videos"
               :key="video.id"

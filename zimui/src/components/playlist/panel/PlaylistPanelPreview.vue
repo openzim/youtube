@@ -23,7 +23,7 @@ const emit = defineEmits(['click'])
       <v-card-title>{{ props.playlist.title }}</v-card-title>
     </template>
     <template #subtitle>
-      <v-card-subtitle class="text-caption">
+      <v-card-subtitle class="text-body-small">
         <span class="font-weight-medium">
           {{ props.playlist.author.channelTitle }}
         </span>

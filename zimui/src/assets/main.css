@@ -115,6 +115,7 @@ a {
 
 .v-btn {
   display: flex !important;
+  text-transform: uppercase !important;
 }
 
 .v-slide-group__content {

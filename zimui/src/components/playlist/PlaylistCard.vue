@@ -84,7 +84,7 @@ onMounted(async () => {
           class="d-flex flex-column align-start align-md-center justify-center justify-md-center text-left text-md-center"
         >
           <v-card-title
-            class="text-body-1 text-wrap px-4 px-md-0 pb-0 text-onSurface"
+            class="text-body-large text-wrap px-4 px-md-0 pb-0 text-onSurface"
             :title="props.playlist.title"
             >{{ truncatedTitle }}</v-card-title
           >
@@ -94,7 +94,7 @@ onMounted(async () => {
               params: { slug: props.playlist.slug }
             }"
           >
-            <v-card-subtitle class="view-playlist-link text-caption text-wrap px-4 px-md-0">
+            <v-card-subtitle class="view-playlist-link text-body-small text-wrap px-4 px-md-0">
               View full playlist
             </v-card-subtitle>
           </router-link>

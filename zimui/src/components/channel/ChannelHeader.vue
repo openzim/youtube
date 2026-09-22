@@ -66,7 +66,7 @@ const hideTabs = computed(() => main.channel?.playlistCount === 1)
                 alt="Channel Avatar"
               />
             </v-avatar>
-            <v-card-title class="channel-title text-h5 font-weight-medium">
+            <v-card-title class="channel-title text-headline-small font-weight-medium">
               {{ main.channel?.channelName }}
             </v-card-title>
           </v-col>
@@ -95,8 +95,8 @@ const hideTabs = computed(() => main.channel?.playlistCount === 1)
 </template>
 
 <style scoped>
-/* Make border zero on .header-card for mobile screens less that 960 px*/
-@media (max-width: 960px) {
+/* Make border zero on .header-card for mobile screens less that 1024 px*/
+@media (max-width: 1024px) {
   .header-card {
     border-left: 0 !important;
     border-right: 0 !important;

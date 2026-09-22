@@ -49,10 +49,10 @@ onMounted(async () => {
       query: { list: playlistSlug }
     }"
   >
-    <v-row dense>
+    <v-row density="compact">
       <v-col cols="4" md="5" xl="4">
         <div class="d-flex position-relative">
-          <div class="d-flex align-center justify-center text-caption">
+          <div class="d-flex align-center justify-center text-body-small">
             <v-icon v-if="selected" class="mx-1" size="15"> mdi-play </v-icon>
             <span v-else class="mx-2">{{ order }}</span>
           </div>
@@ -64,7 +64,7 @@ onMounted(async () => {
             max-width="300"
           ></v-img>
           <v-chip
-            class="bg-black opacity-80 position-absolute bottom-0 right-0 pa-1 mb-1 mr-1 text-caption"
+            class="bg-black opacity-80 position-absolute bottom-0 right-0 pa-1 mb-1 mr-1 text-body-small"
             size="xs"
             rounded="lg"
           >
@@ -73,7 +73,7 @@ onMounted(async () => {
         </div>
       </v-col>
       <v-col cols="8" md="7" xl="8">
-        <v-card-title class="text-body-2 text-wrap py-0 pr-2" :title="props.video.title">{{
+        <v-card-title class="text-body-medium text-wrap py-0 pr-2" :title="props.video.title">{{
           truncatedTitle
         }}</v-card-title>
       </v-col>

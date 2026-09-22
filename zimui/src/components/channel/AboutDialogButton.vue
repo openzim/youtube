@@ -40,15 +40,15 @@ const formattedDate = computed(() => {
       <v-card-text>
         <v-row>
           <v-col cols="12">
-            <p class="text-h6">Channel</p>
+            <p class="text-title-large">Channel</p>
             <p>{{ props.title || notAvailable }}</p>
           </v-col>
           <v-col cols="12">
-            <p class="text-h6">Description</p>
+            <p class="text-title-large">Description</p>
             <p class="text-pre-wrap">{{ props.description || notAvailable }}</p>
           </v-col>
           <v-col cols="12">
-            <p class="text-h6">Joined Date</p>
+            <p class="text-title-large">Joined Date</p>
             <p>{{ formattedDate }}</p>
           </v-col>
         </v-row>
