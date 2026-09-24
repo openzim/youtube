@@ -136,7 +136,7 @@ const load = async ({ done }: { done: (status: 'ok' | 'empty') => void }) => {
 
     <v-card-item class="pa-0">
       <div id="panel-items-container" :style="{ height: panelContainerHeight }">
-        <v-infinite-scroll class="h-full overflow-hidden" :items="items" empty-text="" @load="load">
+        <v-infinite-scroll class="h-100 overflow-hidden" :items="items" empty-text="" @load="load">
           <playlist-panel-item
             v-for="(item, index) in items"
             :id="`video-item-${index}`"

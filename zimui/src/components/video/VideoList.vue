@@ -35,7 +35,7 @@ const load = async ({ done }: { done: (status: 'ok' | 'empty') => void }) => {
 
 <template>
   <v-container class="px-1 py-0 video-list" :fluid="mdAndDown">
-    <v-infinite-scroll class="h-full overflow-hidden" :items="items" empty-text="" @load="load">
+    <v-infinite-scroll class="h-100 overflow-hidden" :items="items" empty-text="" @load="load">
       <div v-for="playlist in items" :key="playlist.id">
         <video-carousel-info
           :title="playlist?.title || 'Main Playlist'"
