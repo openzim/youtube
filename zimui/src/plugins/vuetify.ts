@@ -1,5 +1,6 @@
 import 'vuetify/styles'
 import '@mdi/font/css/materialdesignicons.css'
+import '@/styles/legacy-utilities.css'
 import axios from 'axios'
 import { createVuetify } from 'vuetify'
 import type { Config } from '@/types/Channel'
