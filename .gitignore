@@ -373,3 +373,11 @@ output
 
 # ignore all vscode, this is not standard configuration in this place
 .vscode
+
+# Parent README copied by hatch-openzim while building the scraper package.
+scraper/README.md
+
+# ignore zimui Vuetify MCP-related files
+zimui/.mcp.json
+zimui/.vuetify/
+zimui/.yarn/
