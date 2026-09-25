@@ -81,13 +81,13 @@ const load = async ({ done }: { done: (status: 'ok' | 'empty') => void }) => {
       <v-row class="px-2">
         <v-col :cols="showToggle ? 9 : 12">
           <v-card-title class="panel-title">{{ props.playlist.title }}</v-card-title>
-          <v-card-subtitle class="panel-channel text-caption">
+          <v-card-subtitle class="panel-channel text-body-small">
             <span class="font-weight-medium">
               {{ props.playlist.author.channelTitle }}
             </span>
             - {{ props.currentVideoIndex + 1 }}/{{ props.playlist.videos.length }}
           </v-card-subtitle>
-          <v-card-subtitle class="panel-channel text-caption">
+          <v-card-subtitle class="panel-channel text-body-small">
             Total Duration: {{ formatTimestamp(props.playlist.duration) }}
           </v-card-subtitle>
         </v-col>
@@ -101,7 +101,7 @@ const load = async ({ done }: { done: (status: 'ok' | 'empty') => void }) => {
           ></v-btn>
         </v-col>
       </v-row>
-      <v-row dense no-gutters>
+      <v-row density="compact" no-gutters>
         <v-col class="d-flex">
           <v-btn
             class="pa-2"
@@ -136,7 +136,7 @@ const load = async ({ done }: { done: (status: 'ok' | 'empty') => void }) => {
 
     <v-card-item class="pa-0">
       <div id="panel-items-container" :style="{ height: panelContainerHeight }">
-        <v-infinite-scroll class="h-full overflow-hidden" :items="items" empty-text="" @load="load">
+        <v-infinite-scroll class="h-100 overflow-hidden" :items="items" empty-text="" @load="load">
           <playlist-panel-item
             v-for="(item, index) in items"
             :id="`video-item-${index}`"

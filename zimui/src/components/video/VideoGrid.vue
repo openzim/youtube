@@ -34,8 +34,8 @@ const load = async ({ done }: { done: (status: 'ok' | 'empty') => void }) => {
 
 <template>
   <v-container class="px-1" :fluid="mdAndDown">
-    <v-infinite-scroll class="h-full overflow-hidden" :items="items" empty-text="" @load="load">
-      <v-row dense>
+    <v-infinite-scroll class="h-100 overflow-hidden" :items="items" empty-text="" @load="load">
+      <v-row density="compact">
         <v-col
           v-for="video in items"
           :key="video.id"

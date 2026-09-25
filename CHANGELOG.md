@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Upgrade to Vuetify 4 (#470)
 - Rework README to push Docker as the recommended installation method. (#457)
 
 ## [3.5.0] - 2025-11-17

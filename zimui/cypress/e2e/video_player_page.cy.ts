@@ -1,5 +1,6 @@
 describe('video player page', () => {
   beforeEach(() => {
+    cy.viewport(1366, 768)
     cy.intercept('GET', '/channel.json', { fixture: 'channel/channel.json' }).as('getChannel')
     cy.intercept('GET', '/playlists/uploads_from_openzim_testing-917Q.json', {
       fixture: 'channel/playlists/uploads_from_openzim_testing-917Q.json'
