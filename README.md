@@ -112,6 +112,44 @@ For more details / advanced usage, see the [Manual](https://github.com/openzim/y
 
 * Your API_KEY is subject to usage quotas (10,000 requests/day by default). Be careful to not waste your quota, especially when scraping large channels.
 
+## PO token providers
+
+YouTube increasingly asks yt-dlp for a _PO token_ (_proof of origin_) before serving some formats and subtitles. When that happens, yt-dlp logs something like:
+
+```text
+[youtube] VIDEOID: web client https formats require a GVS PO Token which was not
+provided. They will be skipped as they may yield HTTP Error 403.
+```
+
+PO tokens are computed by a _provider_, which yt-dlp loads as a plugin. No provider
+is bundled with this scraper, so none of this is needed while the default clients
+keep working. When it is, point yt-dlp at whichever provider you run:
+
+```bash
+# a provider reached over HTTP, e.g. bgutil-ytdlp-pot-provider
+youtube2zim ... \
+  --yt-dlp-extractor-arg "youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416"
+
+# a provider shipped as a plugin directory
+youtube2zim ... \
+  --yt-dlp-plugin-dir /opt/yt-dlp-plugins \
+  --yt-dlp-extractor-arg "youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416"
+
+# the client Youtube documents as working well with a GVS token
+youtube2zim ... --player-client mweb
+```
+
+`--yt-dlp-extractor-arg` takes yt-dlp's own `IE_KEY:ARG=VALUES` syntax and can be
+passed several times; values of a single argument are comma-separated. It is
+forwarded untouched, so any yt-dlp extractor argument works, not only PO token
+ones. Providers installed as a Python package (`pip install`) are found without
+`--yt-dlp-plugin-dir`.
+
+See the [yt-dlp PO Token Guide](https://github.com/yt-dlp/yt-dlp/wiki/PO-Token-Guide)
+for the providers available and how to configure each of them. Whether to bake a
+provider into the Docker image is a separate decision; this scraper stays
+provider-agnostic on purpose.
+
 # youtube2zim-playlists
 
 `youtube2zim` produces a single ZIM file for a youtube request (`channel`, `user`, `handle`, `playlist`).

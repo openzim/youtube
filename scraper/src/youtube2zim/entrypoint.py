@@ -230,6 +230,37 @@ def main():
         default=30,
     )
 
+    parser.add_argument(
+        "--player-client",
+        help="YouTube player client(s) to ask yt-dlp for, comma-separated. "
+        "Defaults to yt-dlp's own default. YouTube requires a PO Token for some "
+        "clients, see --yt-dlp-extractor-arg to configure a PO token provider.",
+        dest="player_client",
+    )
+
+    parser.add_argument(
+        "--yt-dlp-extractor-arg",
+        help="Extractor argument passed to yt-dlp, in its own syntax "
+        "IE_KEY:ARG=VALUES, values being a comma-separated list. "
+        "Can be used several times. Typically used to configure a PO token "
+        "provider, e.g. "
+        "`youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416`. See "
+        "https://github.com/yt-dlp/yt-dlp/wiki/PO-Token-Guide",
+        action="append",
+        dest="yt_dlp_extractor_args",
+        default=[],
+    )
+
+    parser.add_argument(
+        "--yt-dlp-plugin-dir",
+        help="Directory holding yt-dlp plugins, such as a PO token provider, to "
+        "load in addition to the usual ones. Can be used several times. "
+        "Plugins installed as a Python package are found without this option.",
+        action="append",
+        dest="yt_dlp_plugin_dirs",
+        default=[],
+    )
+
     args = parser.parse_args()
     logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
 

@@ -74,6 +74,7 @@ from youtube2zim.utils import (
     get_slug,
     load_json,
     load_mandatory_json,
+    parse_extractor_args,
     save_json,
 )
 from youtube2zim.youtube import (
@@ -114,6 +115,9 @@ class Youtube2Zim:
         stats_filename,
         skip_reencoding,
         subtitles_chapters_cache_expiry_days,
+        player_client=None,
+        yt_dlp_extractor_args=None,
+        yt_dlp_plugin_dirs=None,
         title=None,
         description=None,
         long_description=None,
@@ -156,6 +160,37 @@ class Youtube2Zim:
         self.subtitles_chapters_cache_expiry_seconds = (
             subtitles_chapters_cache_expiry_days * 86400
         )
+
+        # yt-dlp customisation, used for PO token providers amongst others
+        self.extractor_args = parse_extractor_args(yt_dlp_extractor_args)
+        self.yt_dlp_plugin_dirs = self.check_yt_dlp_plugin_dirs(yt_dlp_plugin_dirs)
+        if player_client:
+            clients = [
+                client.strip() for client in player_client.split(",") if client.strip()
+            ]
+            if not clients:
+                raise ValueError(
+                    f"Invalid player client value: `{player_client}`. "
+                    "Expected a comma-separated list of YouTube player clients"
+                )
+            if "player_client" in self.extractor_args.get("youtube", {}):
+                logger.warning(
+                    "Ignoring youtube:player_client from --yt-dlp-extractor-arg "
+                    "in favour of --player-client"
+                )
+            self.extractor_args.setdefault("youtube", {})["player_client"] = clients
+        if self.extractor_args:
+            # values are withheld on purpose: they can hold a PO token
+            logger.info(
+                f"Using custom yt-dlp extractor arguments for: "
+                f"{', '.join(sorted(self.extractor_args))}"
+            )
+            logger.debug(f"yt-dlp extractor arguments: {self.extractor_args}")
+        if self.yt_dlp_plugin_dirs:
+            logger.info(
+                "Loading yt-dlp plugins from: "
+                f"{', '.join(str(path) for path in self.yt_dlp_plugin_dirs)}"
+            )
 
         metadata.APPLY_RECOMMENDATIONS = not self.disable_metadata_checks
 
@@ -475,6 +510,19 @@ class Youtube2Zim:
             return False
         return True
 
+    def check_yt_dlp_plugin_dirs(self, yt_dlp_plugin_dirs):
+        """resolve the user-supplied yt-dlp plugin directories, failing early"""
+
+        plugin_dirs = []
+        for plugin_dir in yt_dlp_plugin_dirs or []:
+            path = Path(plugin_dir).expanduser().resolve()
+            if not path.is_dir():
+                raise ValueError(
+                    f"--yt-dlp-plugin-dir could not be found: {plugin_dir}"
+                )
+            plugin_dirs.append(path)
+        return plugin_dirs
+
     def validate_dateafter_input(self):
         try:
             self.dateafter = yt_dlp.utils.DateRange(
@@ -610,8 +658,9 @@ class Youtube2Zim:
                 raise Exception("No videos found in playlists")
         self.videos_ids = [*all_videos.keys()]  # unpacking so it's subscriptable
 
-    def download_video_files(self, max_concurrency):
-        # prepare options which are shared with every downloader
+    def get_yt_dlp_options(self):
+        """the yt-dlp options shared by every download we do"""
+
         options = {
             "cachedir": self.videos_dir,
             "writethumbnail": True,
@@ -633,6 +682,16 @@ class Youtube2Zim:
         }
         if self.all_subtitles:
             options.update({"writeautomaticsub": True})
+        if self.extractor_args:
+            options.update({"extractor_args": self.extractor_args})
+        if self.yt_dlp_plugin_dirs:
+            options.update(
+                {"plugin_dirs": [str(path) for path in self.yt_dlp_plugin_dirs]}
+            )
+        return options
+
+    def download_video_files(self, max_concurrency):
+        options = self.get_yt_dlp_options()
 
         # find number of actuall parallel workers
         nb_videos = self.video_ids_count
