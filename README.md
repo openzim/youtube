@@ -121,14 +121,29 @@ YouTube increasingly asks yt-dlp for a _PO token_ (_proof of origin_) before ser
 provided. They will be skipped as they may yield HTTP Error 403.
 ```
 
-PO tokens are computed by a _provider_, which yt-dlp loads as a plugin. No provider
-is bundled with this scraper, so none of this is needed while the default clients
-keep working. When it is, point yt-dlp at whichever provider you run:
+PO tokens are computed by a _provider_, which yt-dlp loads as a plugin.
+
+### Bundled provider
+
+The Docker image bundles one, so that `docker run` just works: a copy of
+[bgutil-ytdlp-pot-provider-rs](https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs)
+is started in the background by the entrypoint and listens on `127.0.0.1:4416`,
+which yt-dlp discovers on its own. There is no flag to pass and nothing to
+configure. This mirrors how [mwoffliner](https://github.com/openzim/mwoffliner)
+bundles a local redis unless one is given at the CLI.
+
+The provider only ever helps: if it is slow, unreachable or fails, yt-dlp logs a
+warning and carries on without a token, exactly as it does today.
+
+### Using a different provider
+
+`--yt-dlp-plugin-dir` replaces the bundled one, and `--yt-dlp-extractor-arg`
+configures whichever provider ends up being used:
 
 ```bash
-# a provider reached over HTTP, e.g. bgutil-ytdlp-pot-provider
+# a provider reached over HTTP somewhere else
 youtube2zim ... \
-  --yt-dlp-extractor-arg "youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416"
+  --yt-dlp-extractor-arg "youtubepot-bgutilhttp:base_url=http://other-host:4416"
 
 # a provider shipped as a plugin directory
 youtube2zim ... \
@@ -145,10 +160,11 @@ forwarded untouched, so any yt-dlp extractor argument works, not only PO token
 ones. Providers installed as a Python package (`pip install`) are found without
 `--yt-dlp-plugin-dir`.
 
+The bundled provider is only used when it is actually present, so running from a
+source checkout (or any image built before this) behaves as before.
+
 See the [yt-dlp PO Token Guide](https://github.com/yt-dlp/yt-dlp/wiki/PO-Token-Guide)
-for the providers available and how to configure each of them. Whether to bake a
-provider into the Docker image is a separate decision; this scraper stays
-provider-agnostic on purpose.
+for the providers available and how to configure each of them.
 
 # youtube2zim-playlists
 

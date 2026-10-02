@@ -5,6 +5,11 @@ COPY . /src
 RUN cd zimui && yarn install --frozen-lockfile
 RUN cd zimui && yarn build
 
+# PO token provider, bundled so the image works out of the box.
+# GPL-3.0, compatible with this repository; source at
+# https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs
+FROM ghcr.io/jim60105/bgutil-pot:v0.8.1 AS potprovider
+
 FROM python:3.14-trixie
 LABEL org.opencontainers.image.source https://github.com/openzim/youtube
 
@@ -49,5 +54,10 @@ COPY *.md LICENSE CHANGELOG.md /src/
 # Install + cleanup
 RUN pip install --no-cache-dir /src/scraper \
  && rm -rf /src/scraper
+
+# The provider and the plugin yt-dlp needs to talk to it
+COPY --from=potprovider /bgutil-pot /usr/local/bin/bgutil-pot
+COPY --from=potprovider /client/yt_dlp_plugins /usr/local/share/yt-dlp-plugins
+COPY --from=potprovider /licenses/LICENSE /licenses/bgutil-ytdlp-pot-provider-LICENSE
 
 CMD ["youtube2zim", "--help"]

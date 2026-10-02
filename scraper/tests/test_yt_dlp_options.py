@@ -5,6 +5,7 @@ from typing import Any, cast
 import pytest
 import yt_dlp
 
+from youtube2zim import scraper as scraper_module
 from youtube2zim.scraper import Youtube2Zim
 
 
@@ -41,8 +42,10 @@ def build_scraper(tmp_path, **kwargs):
     return scraper
 
 
-def test_no_yt_dlp_option_by_default(tmp_path):
+def test_no_yt_dlp_option_by_default(tmp_path, monkeypatch):
     """the defaults must not change anything for existing users"""
+
+    monkeypatch.setattr(scraper_module, "BUNDLED_PLUGIN_DIR", tmp_path / "absent")
 
     scraper = build_scraper(tmp_path)
 
@@ -52,6 +55,33 @@ def test_no_yt_dlp_option_by_default(tmp_path):
     options = scraper.get_yt_dlp_options()
     assert "extractor_args" not in options
     assert "plugin_dirs" not in options
+
+
+def test_bundled_plugin_dir_is_used_when_present(tmp_path, monkeypatch):
+    """the image ships a provider, so it should be picked up without any flag"""
+
+    bundled = tmp_path / "yt-dlp-plugins"
+    bundled.mkdir()
+    monkeypatch.setattr(scraper_module, "BUNDLED_PLUGIN_DIR", bundled)
+
+    scraper = build_scraper(tmp_path)
+
+    assert scraper.yt_dlp_plugin_dirs == [bundled]
+    assert scraper.get_yt_dlp_options()["plugin_dirs"] == [str(bundled)]
+
+
+def test_explicit_plugin_dir_replaces_the_bundled_one(tmp_path, monkeypatch):
+    """--yt-dlp-plugin-dir is how a caller opts out of the bundled provider"""
+
+    bundled = tmp_path / "yt-dlp-plugins"
+    bundled.mkdir()
+    monkeypatch.setattr(scraper_module, "BUNDLED_PLUGIN_DIR", bundled)
+    custom = tmp_path / "plugins"
+    custom.mkdir()
+
+    scraper = build_scraper(tmp_path, yt_dlp_plugin_dirs=[str(custom)])
+
+    assert scraper.yt_dlp_plugin_dirs == [custom.resolve()]
 
 
 def test_extractor_args_are_forwarded(tmp_path):

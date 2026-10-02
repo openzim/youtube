@@ -89,6 +89,8 @@ from youtube2zim.youtube import (
     skip_outofrange_videos,
 )
 
+BUNDLED_PLUGIN_DIR = Path("/usr/local/share/yt-dlp-plugins")
+
 
 class Youtube2Zim:
     def __init__(
@@ -521,6 +523,8 @@ class Youtube2Zim:
                     f"--yt-dlp-plugin-dir could not be found: {plugin_dir}"
                 )
             plugin_dirs.append(path)
+        if not plugin_dirs and BUNDLED_PLUGIN_DIR.is_dir():
+            plugin_dirs.append(BUNDLED_PLUGIN_DIR)
         return plugin_dirs
 
     def validate_dateafter_input(self):
