@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Raise explicit error when `zimui/dist` is empty or missing, with instructions to build the UI. (#457)
 - Resolve re.PatternError for invalid regex group reference (#434)
 - Fix prettier and eslint check in zimui QA CI (#463)
+- Retrieve the channel banner again, from `brandingSettings.image.bannerExternalUrl` (#342)
 
 ### Added
 
