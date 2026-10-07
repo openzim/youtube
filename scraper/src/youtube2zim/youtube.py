@@ -22,6 +22,9 @@ VIDEOS_API = f"{YOUTUBE_API}/videos"
 MAX_VIDEOS_PER_REQUEST = 50  # for VIDEOS_API
 RESULTS_PER_PAGE = 50  # max: 50
 REQUEST_TIMEOUT = 60
+# Desktop banner crop, as requested by youtube.com channel pages (~6:1, matching the
+# 1060x175 banner we keep); without it, bannerExternalUrl serves the full 16:9 artwork
+BANNER_DOWNLOAD_SIZE = "w2120-fcrop64=1,00005a57ffffa5a8-k-c0xffffffff-no-nd-rj"
 
 
 class ChannelNotFoundError(Exception):
@@ -318,14 +321,18 @@ def save_channel_branding(channels_dir, channel_id, *, save_banner=False):
         # resize profile as we only use up 100px/80 sq
         resize_image(profile_path, width=100, height=100)
 
-    # currently disabled as per deprecation of the following property
-    # without an alternative way to retrieve it (using the API)
-    # See: https://developers.google.com/youtube/v3/revision_history#september-9,-2020
-    if save_banner and False:
-        banner = channel_json["brandingSettings"]["image"]["bannerImageUrl"]
+    # bannerImageUrl was deprecated in September 2020 (see
+    # https://developers.google.com/youtube/v3/revision_history#september-9,-2020);
+    # brandingSettings.image.bannerExternalUrl is the remaining banner property
+    if save_banner:
+        banner = (
+            channel_json.get("brandingSettings", {})
+            .get("image", {})
+            .get("bannerExternalUrl")
+        )
         banner_path = channel_dir.joinpath("banner.jpg")
-        if not banner_path.exists():
-            stream_file(banner, banner_path)
+        if banner and not banner_path.exists():
+            stream_file(f"{banner}={BANNER_DOWNLOAD_SIZE}", banner_path)
 
 
 def skip_deleted_videos(item):
