@@ -1218,6 +1218,12 @@ class Youtube2Zim:
                 self.channels_dir.joinpath(self.main_channel_id, "profile.jpg"),
                 self.profile_path,
             )
+        channel_banner_path = self.channels_dir.joinpath(
+            self.main_channel_id, "banner.jpg"
+        )
+        if not self.banner_path.exists() and channel_banner_path.exists():
+            shutil.copy(channel_banner_path, self.banner_path)
+            resize_image(self.banner_path, width=1060, height=175, method="thumbnail")
 
         # set colors from images if not supplied
         if self.main_color is None or self.secondary_color is None:
