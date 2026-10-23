@@ -112,6 +112,69 @@ For more details / advanced usage, see the [Manual](https://github.com/openzim/y
 
 * Your API_KEY is subject to usage quotas (10,000 requests/day by default). Be careful to not waste your quota, especially when scraping large channels.
 
+## PO token providers
+
+YouTube increasingly asks yt-dlp for a _PO token_ (_proof of origin_) before serving some formats and subtitles. When that happens, yt-dlp logs something like:
+
+```text
+[youtube] VIDEOID: web client https formats require a GVS PO Token which was not
+provided. They will be skipped as they may yield HTTP Error 403.
+```
+
+PO tokens are computed by a _provider_, which yt-dlp loads as a plugin.
+
+### Bundled provider
+
+The Docker image bundles one, so that `docker run` just works: a copy of
+[bgutil-ytdlp-pot-provider-rs](https://github.com/jim60105/bgutil-ytdlp-pot-provider-rs)
+is started in the background by the entrypoint and listens on `127.0.0.1:4416`.
+Its yt-dlp plugin is installed in yt-dlp's system plugin directory
+(`/etc/yt-dlp/plugins/bgutil/yt_dlp_plugins`), which yt-dlp scans by default, so
+there is no youtube2zim flag to pass and nothing to configure. This mirrors how
+[mwoffliner](https://github.com/openzim/mwoffliner) bundles a local redis unless
+one is given at the CLI.
+
+The provider only ever helps: if it is slow, unreachable or fails, yt-dlp logs a
+warning and carries on without a token, exactly as it does today.
+
+### Using a different provider
+
+yt-dlp loads plugins from its own default locations: its config and system
+plugin directories, the `yt-dlp-plugins` directory next to its executable, and
+every `PYTHONPATH` entry. Point any of those at a directory that directly
+contains an `yt_dlp_plugins` package; youtube2zim needs no flag of its own for
+this.
+
+```bash
+# a provider reached over HTTP somewhere else (also works with the bundled one)
+youtube2zim ... \
+  --yt-dlp-extractor-arg "youtubepot-bgutilhttp:base_url=http://other-host:4416"
+
+# a provider shipped as a plugin directory on a bare-metal install
+PYTHONPATH=/opt/yt-dlp-plugins youtube2zim ... \
+  --yt-dlp-extractor-arg "youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416"
+# /opt/yt-dlp-plugins must directly contain yt_dlp_plugins/
+
+# replace the bundled plugin in the container (/opt/yt-dlp-plugins contains
+# yt_dlp_plugins/)
+docker run -v /opt/yt-dlp-plugins:/etc/yt-dlp/plugins/bgutil:ro ... youtube2zim ...
+
+# the client Youtube documents as working well with a GVS token
+youtube2zim ... --player-client mweb
+```
+
+`--yt-dlp-extractor-arg` takes yt-dlp's own `IE_KEY:ARG=VALUES` syntax and can be
+passed several times; values of a single argument are comma-separated. It is
+forwarded untouched, so any yt-dlp extractor argument works, not only PO token
+ones. Providers installed as a Python package (`pip install`) are found without
+any extra configuration.
+
+The bundled provider only exists in the Docker image; running from a source
+checkout behaves as before.
+
+See the [yt-dlp PO Token Guide](https://github.com/yt-dlp/yt-dlp/wiki/PO-Token-Guide)
+for the providers available and how to configure each of them.
+
 # youtube2zim-playlists
 
 `youtube2zim` produces a single ZIM file for a youtube request (`channel`, `user`, `handle`, `playlist`).
