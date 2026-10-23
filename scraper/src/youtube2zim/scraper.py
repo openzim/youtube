@@ -89,8 +89,6 @@ from youtube2zim.youtube import (
     skip_outofrange_videos,
 )
 
-BUNDLED_PLUGIN_DIR = Path("/usr/local/share/yt-dlp-plugins")
-
 
 class Youtube2Zim:
     def __init__(
@@ -119,7 +117,6 @@ class Youtube2Zim:
         subtitles_chapters_cache_expiry_days,
         player_client=None,
         yt_dlp_extractor_args=None,
-        yt_dlp_plugin_dirs=None,
         title=None,
         description=None,
         long_description=None,
@@ -165,7 +162,6 @@ class Youtube2Zim:
 
         # yt-dlp customisation, used for PO token providers amongst others
         self.extractor_args = parse_extractor_args(yt_dlp_extractor_args)
-        self.yt_dlp_plugin_dirs = self.check_yt_dlp_plugin_dirs(yt_dlp_plugin_dirs)
         if player_client:
             clients = [
                 client.strip() for client in player_client.split(",") if client.strip()
@@ -188,11 +184,6 @@ class Youtube2Zim:
                 f"{', '.join(sorted(self.extractor_args))}"
             )
             logger.debug(f"yt-dlp extractor arguments: {self.extractor_args}")
-        if self.yt_dlp_plugin_dirs:
-            logger.info(
-                "Loading yt-dlp plugins from: "
-                f"{', '.join(str(path) for path in self.yt_dlp_plugin_dirs)}"
-            )
 
         metadata.APPLY_RECOMMENDATIONS = not self.disable_metadata_checks
 
@@ -512,21 +503,6 @@ class Youtube2Zim:
             return False
         return True
 
-    def check_yt_dlp_plugin_dirs(self, yt_dlp_plugin_dirs):
-        """resolve the user-supplied yt-dlp plugin directories, failing early"""
-
-        plugin_dirs = []
-        for plugin_dir in yt_dlp_plugin_dirs or []:
-            path = Path(plugin_dir).expanduser().resolve()
-            if not path.is_dir():
-                raise ValueError(
-                    f"--yt-dlp-plugin-dir could not be found: {plugin_dir}"
-                )
-            plugin_dirs.append(path)
-        if not plugin_dirs and BUNDLED_PLUGIN_DIR.is_dir():
-            plugin_dirs.append(BUNDLED_PLUGIN_DIR)
-        return plugin_dirs
-
     def validate_dateafter_input(self):
         try:
             self.dateafter = yt_dlp.utils.DateRange(
@@ -688,10 +664,6 @@ class Youtube2Zim:
             options.update({"writeautomaticsub": True})
         if self.extractor_args:
             options.update({"extractor_args": self.extractor_args})
-        if self.yt_dlp_plugin_dirs:
-            options.update(
-                {"plugin_dirs": [str(path) for path in self.yt_dlp_plugin_dirs]}
-            )
         return options
 
     def download_video_files(self, max_concurrency):

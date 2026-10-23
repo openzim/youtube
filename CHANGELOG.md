@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `analyze_zim.py` contrib script to analyze video duration vs. file size correlation in ZIM files (#439)
 - Bundle ZIM UI inside pip package (#459)
 - Added `linux/arm64` support to Docker image and CI (#458)
-- Support for a yt-dlp PO token provider via `--yt-dlp-extractor-arg` and `--yt-dlp-plugin-dir`, plus `--player-client` to pick a YouTube player client. The Docker image now bundles a provider by default, which either flag overrides (#429)
+- Support for a yt-dlp PO token provider via `--yt-dlp-extractor-arg`, plus `--player-client` to pick a YouTube player client. The Docker image now starts a bundled provider whose yt-dlp plugin is auto-discovered (#429)
 
 ### Changed
 

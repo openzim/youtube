@@ -1,15 +1,8 @@
 """Tests for the yt-dlp extractor argument parsing"""
 
 import pytest
-from yt_dlp.options import parseOpts
 
 from youtube2zim.utils import parse_extractor_args
-
-
-def yt_dlp_parse(*args):
-    """the `extractor_args` yt-dlp itself builds for the same CLI input"""
-
-    return parseOpts(list(args))[1].extractor_args
 
 
 def test_no_values():
@@ -58,30 +51,54 @@ def test_several_arguments_of_one_extractor():
     }
 
 
-def test_repeated_extractor_is_merged():
-    assert parse_extractor_args(
-        [
-            "youtube:player_client=web",
-            "youtube:fetch_pot=always",
-            "youtubepot-bgutilhttp:base_url=http://host:4416",
-        ]
-    ) == {
-        "youtube": {"player_client": ["web"], "fetch_pot": ["always"]},
-        "youtubepot-bgutilhttp": {"base_url": ["http://host:4416"]},
+def test_argument_without_value_is_an_empty_string():
+    """yt-dlp accepts `IE_KEY:ARG` and turns the value into [''], so we must too"""
+
+    assert parse_extractor_args(["youtube:player_client"]) == {
+        "youtube": {"player_client": [""]}
     }
 
 
 def test_empty_value_is_kept():
-    """yt-dlp turns `key=` into an empty list, so we must not silently drop it"""
-
     assert parse_extractor_args(["youtube:player_client="]) == {
         "youtube": {"player_client": [""]}
     }
 
 
-def test_empty_segments_are_skipped():
+def test_stray_separator_matches_yt_dlp():
+    """yt-dlp inserts a spurious empty key for a `;;`, and so do we now"""
+
     assert parse_extractor_args(["youtube:player_client=web;;fetch_pot=always;"]) == {
+        "youtube": {"player_client": ["web"], "": [""], "fetch_pot": ["always"]}
+    }
+
+
+def test_repeated_extractor_keeps_the_last_option():
+    """repeating an extractor is parsed exactly like yt-dlp's CLI: last wins"""
+
+    assert parse_extractor_args(
+        [
+            "youtube:player_client=web",
+            "youtube:fetch_pot=always",
+        ]
+    ) == {"youtube": {"fetch_pot": ["always"]}}
+
+
+def test_repeated_extractor_arguments_are_merged_in_one_option():
+    assert parse_extractor_args(["youtube:player_client=web;fetch_pot=always"]) == {
         "youtube": {"player_client": ["web"], "fetch_pot": ["always"]}
+    }
+
+
+def test_different_extractors_are_kept():
+    assert parse_extractor_args(
+        [
+            "youtube:player_client=web",
+            "youtubepot-bgutilhttp:base_url=http://host:4416",
+        ]
+    ) == {
+        "youtube": {"player_client": ["web"]},
+        "youtubepot-bgutilhttp": {"base_url": ["http://host:4416"]},
     }
 
 
@@ -90,9 +107,7 @@ def test_empty_segments_are_skipped():
     [
         "",
         "youtube",
-        "youtube:",
-        ":player_client=web",
-        "youtube:player_client",
+        "nonsense",
     ],
 )
 def test_invalid_arguments_are_rejected(value):
@@ -103,60 +118,3 @@ def test_invalid_arguments_are_rejected(value):
 def test_invalid_argument_does_not_leave_partial_state():
     with pytest.raises(ValueError):
         parse_extractor_args(["youtube:player_client=web", "broken"])
-
-
-@pytest.mark.parametrize(
-    "value",
-    [
-        "youtube:player_client=web",
-        "youtubepot-bgutilhttp:base_url=http://host:4416",
-        "youtube:player_client=web,mweb",
-        r"youtube:player_client=web\,mweb",
-        "youtube:player-client=web\\,mweb;fetch_pot=always",
-        "youtubepot-bgutilhttp:base_url=http://host:4416;token_ttl=6",
-    ],
-)
-def test_matches_yt_dlp_own_parsing(value):
-    """our output must be exactly what yt-dlp builds for the same CLI input"""
-
-    assert parse_extractor_args([value]) == yt_dlp_parse("--extractor-args", value)
-
-
-def test_repeated_extractor_merges_instead_of_overriding():
-    """yt-dlp's CLI keeps only the last option for an extractor, which silently
-    drops whatever came before; we merge so nothing gets lost"""
-
-    values = [
-        "youtube:player_client=web",
-        "youtube:fetch_pot=always",
-    ]
-    assert parse_extractor_args(values) == {
-        "youtube": {"player_client": ["web"], "fetch_pot": ["always"]}
-    }
-
-    # yt-dlp itself only keeps the last one
-    assert yt_dlp_parse(
-        "--extractor-args",
-        values[0],
-        "--extractor-args",
-        values[1],
-    ) == {"youtube": {"fetch_pot": ["always"]}}
-
-    # which is what a single option holding both arguments gives
-    assert parse_extractor_args(values) == yt_dlp_parse(
-        "--extractor-args", "youtube:player_client=web;fetch_pot=always"
-    )
-
-
-def test_matches_yt_dlp_across_repeated_options():
-    """repeated options for *different* extractors must behave like yt-dlp"""
-
-    values = [
-        "youtube:player_client=web",
-        "youtubepot-bgutilhttp:base_url=http://host:4416",
-    ]
-    cli = []
-    for value in values:
-        cli += ["--extractor-args", value]
-
-    assert parse_extractor_args(values) == yt_dlp_parse(*cli)

@@ -251,16 +251,6 @@ def main():
         default=[],
     )
 
-    parser.add_argument(
-        "--yt-dlp-plugin-dir",
-        help="Directory holding yt-dlp plugins, such as a PO token provider, to "
-        "load in addition to the usual ones. Can be used several times. "
-        "Plugins installed as a Python package are found without this option.",
-        action="append",
-        dest="yt_dlp_plugin_dirs",
-        default=[],
-    )
-
     args = parser.parse_args()
     logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
 

@@ -3,10 +3,10 @@
 
 import json
 import os
-import re
 from pathlib import Path
 
 from slugify import slugify
+from yt_dlp.options import parseOpts
 
 
 def get_slug(text, *, js_safe=True):
@@ -51,42 +51,19 @@ def has_argument(arg_name, all_args):
 def parse_extractor_args(values):
     """turn yt-dlp-style `IE_KEY:ARG=VALUES` strings into a `extractor_args` dict
 
-    Values are parsed exactly like yt-dlp parses its own `--extractor-args`:
-    extractor and argument names are lower-cased with dashes turned into
-    underscores, each value is a comma-separated list, a backslash escapes a
-    literal comma, and every value is stored as a list of strings since that is
-    the only shape yt-dlp reads.
+    Parsing is delegated to yt-dlp's own CLI parser so the result is always
+    exactly what `--extractor-args` produces, including edge cases. Config
+    files are ignored so this never reads the user's yt-dlp configuration as
+    a side effect."""
 
-    One deliberate difference: passing the same extractor twice merges the
-    arguments instead of replacing them. yt-dlp's command line keeps only the
-    last one, which silently drops whatever was set before."""
-
-    extractor_args: dict[str, dict[str, list[str]]] = {}
-    for value in values or []:
-        ie_key, _, args = value.partition(":")
-        ie_key = ie_key.strip().lower()
-        if not ie_key or not args.strip():
-            raise ValueError(
-                f"Invalid extractor argument `{value}`. "
-                "Expected IE_KEY:ARG=VALUES, such as "
-                "`youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416`"
-            )
-        for arg in args.split(";"):
-            if not arg.strip():
-                continue
-            name, separator, arg_values = arg.partition("=")
-            name = name.strip().lower().replace("-", "_")
-            if not separator or not name:
-                raise ValueError(
-                    f"Invalid extractor argument `{value}`. "
-                    "Expected IE_KEY:ARG=VALUES, such as "
-                    "`youtubepot-bgutilhttp:base_url=http://127.0.0.1:4416`"
-                )
-            extractor_args.setdefault(ie_key, {})[name] = [
-                val.replace(r"\,", ",").strip()
-                for val in re.split(r"(?<!\\),", arg_values)
-            ]
-    return extractor_args
+    if not values:
+        return {}
+    argv = [token for value in values for token in ("--extractor-args", value)]
+    try:
+        _, options, _ = parseOpts(argv, ignore_config_files="if_override")
+    except Exception as exc:
+        raise ValueError(f"Invalid extractor argument: {exc}") from exc
+    return options.extractor_args
 
 
 def delete_callback(fpath: str | Path):

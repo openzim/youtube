@@ -1,5 +1,4 @@
 #!/bin/sh
-set -e
 
 echo "Attempting to update yt-dlp…"
 pip3 install -U yt-dlp

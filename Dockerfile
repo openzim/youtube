@@ -55,9 +55,11 @@ COPY *.md LICENSE CHANGELOG.md /src/
 RUN pip install --no-cache-dir /src/scraper \
  && rm -rf /src/scraper
 
-# The provider and the plugin yt-dlp needs to talk to it
+# The provider and the plugin yt-dlp needs to talk to it. The plugin is
+# installed in yt-dlp's system plugin root (/etc/yt-dlp/plugins/<pkg>), which
+# yt-dlp scans by default: no flag and no scraper code are involved.
 COPY --from=potprovider /bgutil-pot /usr/local/bin/bgutil-pot
-COPY --from=potprovider /client/yt_dlp_plugins /usr/local/share/yt-dlp-plugins
+COPY --from=potprovider /client/yt_dlp_plugins /etc/yt-dlp/plugins/bgutil/yt_dlp_plugins
 COPY --from=potprovider /licenses/LICENSE /licenses/bgutil-ytdlp-pot-provider-LICENSE
 
 CMD ["youtube2zim", "--help"]
