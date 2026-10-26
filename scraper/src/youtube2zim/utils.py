@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 
 from slugify import slugify
+from yt_dlp.options import parseOpts
 
 
 def get_slug(text, *, js_safe=True):
@@ -45,6 +46,24 @@ def load_mandatory_json(cache_dir: Path, key):
 def has_argument(arg_name, all_args):
     """whether --arg_name is specified in all_args"""
     return list(filter(lambda x: x.startswith(f"--{arg_name}"), all_args))
+
+
+def parse_extractor_args(values):
+    """turn yt-dlp-style `IE_KEY:ARG=VALUES` strings into a `extractor_args` dict
+
+    Parsing is delegated to yt-dlp's own CLI parser so the result is always
+    exactly what `--extractor-args` produces, including edge cases. Config
+    files are ignored so this never reads the user's yt-dlp configuration as
+    a side effect."""
+
+    if not values:
+        return {}
+    argv = [token for value in values for token in ("--extractor-args", value)]
+    try:
+        _, options, _ = parseOpts(argv, ignore_config_files="if_override")
+    except Exception as exc:
+        raise ValueError(f"Invalid extractor argument: {exc}") from exc
+    return options.extractor_args
 
 
 def delete_callback(fpath: str | Path):
