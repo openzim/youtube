@@ -183,6 +183,16 @@ jobs:
           OPTIMIZATION_CACHE_URL: ${{ secrets.OPTIMIZATION_CACHE_URL }}
         run: docker run -v $PWD/output:/output youtube2zim youtube2zim --api-key "$YOUTUBE_API_KEY" --optimization-cache "$OPTIMIZATION_CACHE_URL" --id "UC8elThf5TGMpQfQc_VE917Q" --name "tests_en_openzim-testing" --zim-file "openZIM_testing.zim" --tags "tEsTing,x-mark:yes"
 
+      - name: Archive ZIM
+        uses: actions/upload-artifact@v7
+        with:
+          name: openZIM_testing_amd64.zim
+          path: output/openZIM_testing.zim
+          retention-days: 7
+
+      - name: Run zimcheck
+        run: docker run --rm -v $PWD/output:/output:ro ghcr.io/openzim/zim-tools:3.8.0 zimcheck --empty --checksum --integrity --metadata --favicon --main /output/openZIM_testing.zim
+
       - name: Run integration test suite
         run: docker run -v $PWD/scraper/tests-integration/integration.py:/src/scraper/tests-integration/integration.py -v $PWD/output:/output youtube2zim bash -c "pip install pytest; pytest -v /src/scraper/tests-integration/integration.py"
 
