@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bundle ZIM UI inside pip package (#459)
 - Added `linux/arm64` support to Docker image and CI (#458)
 - Support for a yt-dlp PO token provider via `--yt-dlp-extractor-arg`, plus `--player-client` to pick a YouTube player client. The Docker image now starts a bundled provider whose yt-dlp plugin is auto-discovered (#429)
+- Daily `DailyTests` workflow running the integration test suite, and a `zimcheck` run of the test ZIM in both that workflow and `Tests` (#469)
 
 ### Changed
 
