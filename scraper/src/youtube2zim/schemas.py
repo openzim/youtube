@@ -1,13 +1,11 @@
 from humps import camelize
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class CamelModel(BaseModel):
     """Model to transform Python snake_case into JSON camelCase."""
 
-    class Config:
-        alias_generator = camelize
-        populate_by_name = True
+    model_config = ConfigDict(alias_generator=camelize, populate_by_name=True)
 
 
 class Author(CamelModel):
