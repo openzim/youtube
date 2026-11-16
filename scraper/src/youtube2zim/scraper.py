@@ -1102,7 +1102,7 @@ class Youtube2Zim:
             save_json(
                 self.subtitles_cache_dir,
                 video_id,
-                subtitles_list.dict(by_alias=True),
+                subtitles_list.model_dump(by_alias=True),
             )
             self.add_video_subtitles_to_zim(video_id)
         except Exception:
