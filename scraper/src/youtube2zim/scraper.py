@@ -126,11 +126,14 @@ class Youtube2Zim:
         banner_image=None,
         main_color=None,
         secondary_color=None,
+        datebefore=None,
     ):
         # data-retrieval info
         self.youtube_id = youtube_id
         self.api_key = api_key
         self.dateafter = dateafter
+        self.datebefore = datebefore
+        self.video_date_range = yt_dlp.utils.DateRange()
 
         # video-encoding info
         self.video_format = video_format
@@ -281,8 +284,8 @@ class Youtube2Zim:
             # first report => creates a file with appropriate structure
             self.report_progress()
 
-            # validate dateafter input
-            self.validate_dateafter_input()
+            # validate date range inputs
+            self.validate_date_range_input()
 
             if not self.name:
                 raise Exception("name is mandatory")
@@ -333,10 +336,8 @@ class Youtube2Zim:
 
             self.video_ids_count = len(self.videos_ids)
             nb_videos_msg = f".. {self.video_ids_count} videos"
-            if self.dateafter.start.year != 1:
-                nb_videos_msg += (
-                    f" in date range: {self.dateafter.start} - {datetime.date.today()}"
-                )
+            if self.dateafter or self.datebefore:
+                nb_videos_msg += f" in date range: {self.video_date_range}"
             logger.info(f"{nb_videos_msg}.")
 
             # set a timer to report progress only every 10 seconds
@@ -503,17 +504,21 @@ class Youtube2Zim:
             return False
         return True
 
-    def validate_dateafter_input(self):
+    def validate_date_range_input(self):
         try:
-            self.dateafter = yt_dlp.utils.DateRange(
-                self.dateafter  # pyright: ignore[reportArgumentType]
+            self.video_date_range = yt_dlp.utils.DateRange(
+                self.dateafter, self.datebefore
             )
         except Exception as exc:
             logger.error(
-                "Invalid dateafter input. Valid dateafter format: "
+                "Invalid date range. Valid --dateafter/--datebefore format: "
                 "YYYYMMDD or (now|today)[+-][0-9](day|week|month|year)(s)."
             )
-            raise ValueError(f"Invalid dateafter input: {exc}") from exc
+            raise ValueError(f"Invalid date range: {exc}") from exc
+
+    def validate_dateafter_input(self):
+        """Backward-compatible alias for the former dateafter validator."""
+        self.validate_date_range_input()
 
     def prepare_build_folder(self):
         """prepare build folder before we start downloading data"""
@@ -614,7 +619,7 @@ class Youtube2Zim:
                 videos_json = get_videos_json(playlist.playlist_id)
                 # filter in videos within date range and filter away deleted videos
                 skip_outofrange = functools.partial(
-                    skip_outofrange_videos, self.dateafter
+                    skip_outofrange_videos, self.video_date_range
                 )
                 filter_videos = filter(skip_outofrange, videos_json)
                 filter_videos = filter(skip_deleted_videos, filter_videos)
