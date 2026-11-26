@@ -101,6 +101,18 @@ describe('video player page', () => {
       })
 
     cy.get('video-skin').shadow().find('media-fullscreen-button').should('exist')
+
+    // The app's overlay controls live outside the skin and must stay clickable
+    // (the skin's shadow-DOM content paints over slotted children).
+    cy.get('.theater-toggle-button').click()
+    cy.get('.v-container').should('have.class', 'watch-theater-mode')
+    cy.get('.theater-toggle-button').click()
+    cy.get('.v-container').should('have.class', 'watch-default-mode')
+
+    cy.get('.shortcuts-popup-button').click()
+    cy.get('.popup-overlay').should('be.visible')
+    cy.get('.popup-overlay').click('topLeft')
+    cy.get('.popup-overlay').should('not.exist')
   })
 
   it('falls back to ogv.js when WebM is not supported natively', () => {
