@@ -95,6 +95,12 @@
       "title": "Only after date",
       "description": "Custom filter to download videos uploaded on or after specified date. Format: YYYYMMDD or (now|today)[+-][0-9](day|week|month|year)(s)?"
     },
+    "datebefore": {
+      "type": "string",
+      "required": false,
+      "title": "Only before date",
+      "description": "Custom filter to download videos uploaded on or before specified date. Format: YYYYMMDD or (now|today)[+-][0-9](day|week|month|year)(s)?"
+    },
     "format": {
       "type": "string-enum",
       "required": false,

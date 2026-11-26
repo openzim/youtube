@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add `--datebefore` support and allow combining it with `--dateafter` to select videos in a date range (#478)
 - Also cache subtitles and chapters in S3 with TTL-based expiry (#432)
 - Implement dark mode (#424)
 - Added Total playlist duration in the Playlist view and Playlist panel. (#435)

@@ -187,6 +187,12 @@ def main():
         "Format: YYYYMMDD or (now|today)[+-][0-9](day|week|month|year)(s)?",
     )
 
+    parser.add_argument(
+        "--datebefore",
+        help="Custom filter to download videos uploaded on or before specified date. "
+        "Format: YYYYMMDD or (now|today)[+-][0-9](day|week|month|year)(s)?",
+    )
+
     """
     skip-reencoding wont play nice with s3_storage,
     s3_storage assumes all videos haave same format,
