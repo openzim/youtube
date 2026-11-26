@@ -1,14 +1,26 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch, nextTick, type PropType } from 'vue'
-import videojs from 'video.js'
-import type Player from 'video.js/dist/types/player'
+import { computed, onBeforeUnmount, onMounted, ref, watch, type PropType } from 'vue'
 
-import 'video.js/dist/video-js.css'
+import '@videojs/html/video/player'
+import '@videojs/html/video/skin'
+import '@/plugins/ogvjs-video'
+import { canPlayNatively } from '@/plugins/ogvjs-video'
 import '@/assets/vjs-youtube.css'
-import '@/plugins/videojs-ogvjs.js'
-import { timeToSeconds } from '@/utils/format-utils'
-import type TimeTooltip from '@/types/videojs'
 import { useMainStore } from '@/stores/main'
+import type { Chapter } from '@/types/Videos'
+
+type SeekableMedia = {
+  currentTime: number
+  duration: number
+}
+
+type Track = {
+  kind: string
+  src: string
+  srclang: string
+  label: string
+  default?: boolean
+}
 
 const props = defineProps({
   options: {
@@ -20,706 +32,277 @@ const props = defineProps({
     default: false
   },
   chaptersList: {
-    type: Array as PropType<{ startTime: number; endTime: number; title: string }[]>,
+    type: Array as PropType<Chapter[]>,
     default: () => []
   }
 })
 
-const videoContainer = ref<HTMLVideoElement>()
-const player = ref<Player>()
-const chapterList = ref<{ startTime: number; endTime: number; title: string }[]>([])
-const isControlBarVisible = ref(false)
-const isShortcutsPopupVisible = ref(false)
-const main = useMainStore()
-
-const Button = videojs.getComponent('Button')
-
-const TheaterToggleButton = class extends Button {
-  constructor(player: Player) {
-    super(player)
-    this.el().querySelector('.vjs-icon-placeholder')?.classList.add('mdi', 'mdi-rectangle-outline')
-    this.on('click', toggleTheaterMode)
-  }
-}
-
 const emit = defineEmits(['video-ended', 'next-video', 'prev-video'])
 
-const addTheaterBtn = () => {
-  if (player.value) {
-    videojs.registerComponent('TheaterToggleButton', TheaterToggleButton)
-    const controlBar = player.value.getChild('controlBar')
-    const index = controlBar?.children().findIndex((item) => item.name() === 'FullscreenToggle')
-    controlBar?.addChild('TheaterToggleButton', {}, index ? index - 1 : -1)
-  }
-}
+const main = useMainStore()
+const mediaEl = ref<HTMLElement>()
+const chapterList = ref<Chapter[]>([...props.chaptersList])
+const isShortcutsPopupVisible = ref(false)
+const chapterIndicator = ref('')
 
-const addMarkers = () => {
-  if (player.value) {
-    const progressBar = player.value
-      ?.getChild('controlBar')
-      ?.getChild('progressControl')
-      ?.getChild('seekBar')
-      ?.el()
+const source = computed<string>(() => props.options.sources?.[0]?.src ?? '')
+const sourceType = computed<string>(() => props.options.sources?.[0]?.type ?? '')
+const poster = computed<string>(() => props.options.poster ?? '')
+const autoplay = computed<boolean>(() => Boolean(props.options.autoplay))
+const preload = computed<string>(() => {
+  const value = props.options.preload
+  if (value === true || value === 'auto') return 'auto'
+  if (value === 'metadata') return 'metadata'
+  if (value === false || value === 'none') return 'none'
+  return 'metadata'
+})
+const playbackRates = computed<string>(() =>
+  (props.options.playbackRates ?? [0.25, 0.5, 1, 1.5, 2])
+    .map((rate: number) => String(rate))
+    .join(' ')
+)
+const tracks = computed<Track[]>(() => props.options.tracks ?? [])
+const useNativeVideo = computed(() => canPlayNatively(sourceType.value))
 
-    if (!progressBar) return
-    const duration = player.value?.duration()
-    if (!duration) return
+const media = () => mediaEl.value as unknown as SeekableMedia | undefined
 
-    progressBar.querySelectorAll('.custom-marker').forEach((el) => el.remove())
-
-    chapterList.value.forEach((marker) => {
-      const markerEl = document.createElement('div')
-      markerEl.classList.add('custom-marker')
-      if (marker.startTime < 0 || marker.startTime > duration) return
-      markerEl.style.left = `${(marker.startTime / duration) * 100}%`
-      progressBar.appendChild(markerEl)
-    })
-  }
-}
-
-const getChapterAtTime = (timestr: string) => {
-  const inputSeconds = timeToSeconds(timestr)
-
-  for (const chapter of chapterList.value) {
-    if (chapter.startTime <= inputSeconds && chapter.endTime > inputSeconds) {
-      return chapter.title
-    }
-  }
-
-  return null
-}
-
-const updateChapterTimeTooltip = () => {
-  if (player.value) {
-    const timeTooltip = player.value
-      ?.getChild('controlBar')
-      ?.getChild('progressControl')
-      ?.getChild('seekBar')
-      ?.getChild('mouseTimeDisplay')
-      ?.getChild('timeTooltip') as TimeTooltip
-
-    if (!timeTooltip) return
-
-    timeTooltip.update = function (seekBarRect: DOMRect, seekBarPoint: number, time: string) {
-      const chapter = getChapterAtTime(time)
-      if (chapter) {
-        this.write(`${chapter.replace(/ /g, '\u00A0')}\n${time}`)
-        return
-      }
-      this.write(`${time}`)
-    }
-  }
-}
-
-const appendShortCutsPopupBtn = () => {
-  if (!player.value) return
-  const videoElement = player.value.el()
-
-  if (!videoElement) return
-
-  const btn = document.createElement('div')
-  btn.classList.add('shortCutsPopupBtn')
-
-  btn.innerHTML = '<i class="mdi mdi-keyboard"></i>'
-
-  btn.onclick = () => {
-    isShortcutsPopupVisible.value = true
-  }
-
-  videoElement.append(btn)
-}
-
-const appendShortCutsPopup = () => {
-  if (!player.value) return
-  const videoElement = player.value.el()
-
-  if (!videoElement) return
-
-  const popup = document.createElement('div')
-  popup.classList.add('popup-overlay')
-
-  popup.innerHTML = `
-  <div class="table-wraper">
-    <table>
-      <thead>
-        <tr>
-          <th>Key(s)</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>Shift + n</td><td>Next video</td></tr>
-        <tr><td>Shift + p</td><td>Previous video</td></tr>
-        <tr><td>Arrow Left</td><td>Skip -5s</td></tr>
-        <tr><td>shift + Arrow Left</td><td>Go to previous chapter</td></tr>
-        <tr><td>Arrow Right</td><td>Skip +5s</td></tr>
-        <tr><td>shift + Arrow Right</td><td>Go to next chapter</td></tr>
-        <tr><td>Arrow Up</td><td>Increase volume</td></tr>
-        <tr><td>Arrow Down</td><td>Decrease volume</td></tr>
-        <tr><td>Space</td><td>Play/Pause</td></tr>
-        <tr><td>f</td><td>Toggle fullscreen</td></tr>
-        <tr><td>t</td><td>Toggle theater mode</td></tr>
-        <tr><td>m</td><td>Toggle mute</td></tr>
-        <tr><td>j</td><td>Skip -10s</td></tr>
-        <tr><td>k</td><td>Play/Pause</td></tr>
-        <tr><td>l</td><td>Skip +10s</td></tr>
-        <tr><td>></td><td>Increase playback speed</td></tr>
-        <tr><td><</td><td>Decrease playback speed</td></tr>
-        <tr><td>Shift + ?</td><td>Show shortcuts</td></tr>
-      </tbody>
-    </table>
-  </div>
-  `
-  popup.onclick = () => {
-    isShortcutsPopupVisible.value = false
-  }
-  popup.querySelector('.table-wraper')?.addEventListener('click', (e) => {
-    e.stopPropagation()
-  })
-
-  videoElement.append(popup)
-}
-
-const appendSkipIndicator = () => {
-  if (!player.value) return
-  const videoElement = player.value.el()
-
-  if (!videoElement) return
-
-  const forwardSkipEl = document.createElement('div')
-  const backwardSkipEl = document.createElement('div')
-
-  forwardSkipEl.classList.add('custom-video-indicator', 'skip-indicator', 'forward')
-  forwardSkipEl.innerHTML = '+5 seconds'
-  backwardSkipEl.classList.add('custom-video-indicator', 'skip-indicator', 'backward')
-  backwardSkipEl.innerHTML = '-5 seconds'
-
-  videoElement.append(forwardSkipEl)
-  videoElement.append(backwardSkipEl)
-}
-
-const appendVolumeIndicator = () => {
-  if (!player.value) return
-  const videoElement = player.value.el()
-
-  if (!videoElement) return
-
-  const volumeEl = document.createElement('div')
-
-  volumeEl.classList.add('custom-video-indicator', 'volume-indicator')
-  volumeEl.innerHTML = '50%'
-
-  videoElement.append(volumeEl)
-}
-
-const appendChapterIndicator = () => {
-  if (!player.value) return
-  const videoElement = player.value.el()
-
-  if (!videoElement) return
-
-  const chapterEl = document.createElement('div')
-
-  chapterEl.classList.add('custom-video-indicator', 'chapter-indicator')
-  chapterEl.innerHTML = '<span>chapter</span>'
-
-  videoElement.append(chapterEl)
-}
-
-const appendPlaybackRateIndicator = () => {
-  if (!player.value) return
-  const videoElement = player.value.el()
-
-  if (!videoElement) return
-
-  const chapterEl = document.createElement('div')
-
-  chapterEl.classList.add('custom-video-indicator', 'playback-rate-indicator')
-  chapterEl.innerHTML = '<span>1x</span>'
-
-  videoElement.append(chapterEl)
-}
-
-const displayChapterIndicator = (chapterTitle: string) => {
-  if (!player.value) return
-  const videoElement = player.value?.el()
-
-  const targetElement = videoElement?.querySelector('.custom-video-indicator.chapter-indicator')
-  if (!targetElement) return
-
-  targetElement.innerHTML = `<span>${chapterTitle}</span>`
-
-  targetElement?.classList.add('show')
-  setTimeout(() => {
-    targetElement?.classList.remove('show')
-  }, 0.5 * 1000)
-}
-
-const displayPlaybackRateIndicator = (rate: number) => {
-  if (!player.value) return
-  const videoElement = player.value?.el()
-
-  const targetElement = videoElement?.querySelector(
-    '.custom-video-indicator.playback-rate-indicator'
-  )
-  if (!targetElement) return
-
-  targetElement.innerHTML = `<span>${rate}x</span>`
-
-  targetElement?.classList.add('show')
-  setTimeout(() => {
-    targetElement?.classList.remove('show')
-  }, 0.5 * 1000)
-}
-
-const displayVolumeIndicator = (volume?: number) => {
-  if (!player.value) return
-  const videoElement = player.value?.el()
-
-  const targetElement = videoElement?.querySelector('.custom-video-indicator.volume-indicator')
-  if (!targetElement) return
-
-  const newVolume = player.value.volume()
-  if (newVolume === undefined) return
-  let volumePercent = Math.round(newVolume * 100)
-  if (volume) {
-    volumePercent = Math.floor(volume)
-  }
-
-  targetElement.innerHTML = `<span>${volumePercent}%</span><span class="text">volume</span>`
-
-  targetElement?.classList.add('show')
-  setTimeout(() => {
-    targetElement?.classList.remove('show')
-  }, 0.5 * 1000)
-}
-
-const displaySkipIndicator = (skipTime: number) => {
-  if (!player.value) return
-  const videoElement = player.value?.el()
-
-  let targetElement: HTMLElement | null = null
-  let timeWithdirection: string = `${skipTime}`
-
-  if (skipTime > 0) {
-    targetElement = videoElement?.querySelector('.custom-video-indicator.skip-indicator.forward')
-    timeWithdirection = `+${skipTime}`
-  } else if (skipTime < 0) {
-    targetElement = videoElement?.querySelector('.custom-video-indicator.skip-indicator.backward')
-  }
-
-  if (!targetElement) return
-
-  targetElement.innerHTML = `${timeWithdirection} seconds`
-  targetElement?.classList.add('show')
-  setTimeout(() => {
-    targetElement?.classList.remove('show')
-  }, 0.5 * 1000)
+let indicatorTimer: ReturnType<typeof setTimeout> | null = null
+const showChapter = (title: string) => {
+  chapterIndicator.value = title
+  if (indicatorTimer) clearTimeout(indicatorTimer)
+  indicatorTimer = setTimeout(() => {
+    chapterIndicator.value = ''
+  }, 500)
 }
 
 const goToNextChapter = () => {
-  if (!player.value) return
-
-  const currentTime = player.value.currentTime()
-  if (currentTime === undefined) return
-
-  for (const chapter of chapterList.value) {
-    if (chapter.startTime > currentTime) {
-      player.value.currentTime(chapter.startTime)
-      displayChapterIndicator(chapter.title)
-      return
-    }
-  }
+  const current = media()
+  if (!current) return
+  const chapter = chapterList.value.find((item) => item.startTime > current.currentTime)
+  if (!chapter) return
+  current.currentTime = chapter.startTime
+  showChapter(chapter.title)
 }
 
 const goToPrevChapter = () => {
-  if (!player.value) return
-
-  const currentTime = player.value.currentTime()
-  if (currentTime === undefined) return
-
-  let prevChapter
+  const current = media()
+  if (!current) return
+  let previous: Chapter | undefined
   for (const chapter of chapterList.value) {
-    if (chapter.startTime > currentTime) {
-      break
-    }
-    if (chapter.endTime <= currentTime) {
-      prevChapter = chapter
-    }
+    if (chapter.startTime > current.currentTime) break
+    if (chapter.endTime <= current.currentTime) previous = chapter
   }
-
-  if (!prevChapter) return
-  player.value.currentTime(prevChapter.startTime)
-  displayChapterIndicator(prevChapter.title)
-}
-
-const changePlaybackRate = (direction: number) => {
-  if (!player.value) return
-  const currentRate = player.value.playbackRate()
-  if (!currentRate) return
-
-  if (direction < 0) {
-    if (currentRate <= 0.25) {
-      displayPlaybackRateIndicator(0.25)
-      return
-    }
-
-    const willChange = currentRate === 0.5 ? 0.25 : 0.5
-
-    player.value.playbackRate(currentRate - willChange)
-    displayPlaybackRateIndicator(currentRate - willChange)
-  } else if (direction > 0) {
-    if (currentRate >= 2) {
-      displayPlaybackRateIndicator(2)
-      return
-    }
-
-    const willChange = currentRate === 0.25 ? 0.25 : 0.5
-
-    player.value.playbackRate(currentRate + willChange)
-    displayPlaybackRateIndicator(currentRate + willChange)
-  }
-}
-
-const togglePause = () => {
-  if (player.value) {
-    if (player.value.paused()) {
-      player.value.play()
-    } else {
-      player.value.pause()
-    }
-  }
-}
-
-const toggleFullScreen = () => {
-  if (player.value) {
-    if (player.value.isFullscreen()) {
-      player.value.exitFullscreen()
-    } else {
-      player.value.requestFullscreen()
-    }
-  }
+  if (!previous) return
+  current.currentTime = previous.startTime
+  showChapter(previous.title)
 }
 
 const toggleTheaterMode = () => {
   main.theaterMode = !main.theaterMode
 }
 
-const toggleMute = () => {
-  if (!player.value) return
-  const volume = player.value.volume()
-
-  if (volume != undefined && volume <= 0) {
-    const newVolume = Number((0.1).toFixed(2))
-    player.value.volume(newVolume)
-    return
-  }
-
-  player.value.muted(!player.value.muted())
+const toggleShortcuts = () => {
+  isShortcutsPopupVisible.value = !isShortcutsPopupVisible.value
 }
 
-const changeVolume = (direction: number) => {
-  if (!player.value) return
-  let newVolume = player.value.volume()
-  if (newVolume === undefined) {
-    newVolume = 0
-  }
-  if (direction < 0) {
-    if (player.value.muted()) return
-    if (!(newVolume <= 0)) {
-      newVolume = Number((newVolume - 0.1).toFixed(2))
-    }
-  } else if (direction > 0) {
-    if (!(newVolume >= 1)) {
-      newVolume = Number((newVolume + 0.1).toFixed(2))
-    }
-    if (player.value.muted()) {
-      player.value.muted(false)
-      newVolume = Number((0.1).toFixed(2))
-    }
-  }
-  player.value.volume(newVolume)
-  displayVolumeIndicator()
-}
-
-const skip = (value: number) => {
-  if (!player.value) return
-  const currentTime = player.value.currentTime()
-
-  let skipTime
-  if (value < 0) {
-    skipTime = currentTime !== undefined ? currentTime + value : null
-
-    if (!skipTime || skipTime <= 0) {
-      player.value.currentTime(0)
-      displaySkipIndicator(value)
-      return
-    }
-
-    displaySkipIndicator(value)
-  } else if (value > 0) {
-    const duration = player.value.duration()
-    skipTime = currentTime !== undefined ? currentTime + value : null
-
-    if (!skipTime || !duration) return
-    if (duration < skipTime) {
-      player.value.currentTime(duration)
-      displaySkipIndicator(value)
-      return
-    }
-  }
-
-  if (!skipTime) return
-  displaySkipIndicator(value)
-  player.value.currentTime(skipTime)
-}
-
-let tappedOnVideoElement: ReturnType<typeof setTimeout> | null = null
-const handleTouch = (e: TouchEvent) => {
-  if (!player.value) return
-
-  if (!tappedOnVideoElement) {
-    tappedOnVideoElement = setTimeout(() => {
-      tappedOnVideoElement = null
-      if (!player.value?.hasStarted_) {
-        player.value?.play()
-      }
-    }, 300)
-  } else {
-    clearTimeout(tappedOnVideoElement)
-    tappedOnVideoElement = null
-
-    const videoElement = player.value.el()
-    if (!videoElement) return
-
-    const touch = e.touches[0]
-    if (!touch) return
-
-    const clickX = touch.clientX - videoElement.getBoundingClientRect().left
-    const middle = videoElement.clientWidth / 2
-
-    if (clickX < middle) {
-      skip(-10)
-    } else {
-      skip(10)
-    }
+// Video.js 10's packaged skin already handles Space/k/m/j/l/arrows/f/>/<,
+// volume steps, touch gestures and the built-in indicators. Only keep the
+// shortcuts that are specific to this application.
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.shiftKey && event.key === '?') {
+    event.preventDefault()
+    toggleShortcuts()
+  } else if (event.shiftKey && (event.key === 'n' || event.key === 'N')) {
+    event.preventDefault()
+    emit('next-video')
+  } else if (event.shiftKey && (event.key === 'p' || event.key === 'P')) {
+    event.preventDefault()
+    emit('prev-video')
+  } else if (event.shiftKey && event.key === 'ArrowLeft') {
+    event.preventDefault()
+    goToPrevChapter()
+  } else if (event.shiftKey && event.key === 'ArrowRight') {
+    event.preventDefault()
+    goToNextChapter()
+  } else if (!event.shiftKey && (event.key === 't' || event.key === 'T')) {
+    event.preventDefault()
+    toggleTheaterMode()
   }
 }
 
-const updateControlBarState = () => {
-  if (player.value) {
-    isControlBarVisible.value =
-      player.value?.el()?.classList.contains('vjs-user-active') || player.value?.paused()
-        ? true
-        : false
-    const videoElement = player.value.el()
-
-    const targetElement = videoElement?.querySelector('.shortCutsPopupBtn')
-    if (!targetElement) return
-
-    if (isControlBarVisible.value) {
-      targetElement?.classList.add('show')
-    } else if (!isControlBarVisible.value) {
-      targetElement?.classList.remove('show')
-    }
-  }
+const onEnded = () => {
+  emit('video-ended')
 }
-
-const keyActions: Record<string, (e: KeyboardEvent) => void> = {
-  '?': (e: KeyboardEvent) => {
-    if (e.shiftKey) {
-      if (isShortcutsPopupVisible.value) {
-        isShortcutsPopupVisible.value = false
-      } else {
-        isShortcutsPopupVisible.value = true
-      }
-    }
-  },
-
-  n: (e: KeyboardEvent) => e.shiftKey && emit('next-video'),
-  N: (e: KeyboardEvent) => e.shiftKey && emit('next-video'),
-  p: (e: KeyboardEvent) => e.shiftKey && emit('prev-video'),
-  P: (e: KeyboardEvent) => e.shiftKey && emit('prev-video'),
-
-  ArrowLeft: (e: KeyboardEvent) => (e.shiftKey ? goToPrevChapter() : skip(-5)),
-  ArrowRight: (e: KeyboardEvent) => (e.shiftKey ? goToNextChapter() : skip(5)),
-  j: () => skip(-10),
-  J: () => skip(-10),
-  l: () => skip(10),
-  L: () => skip(10),
-
-  ArrowUp: () => changeVolume(+1),
-  ArrowDown: () => changeVolume(-1),
-
-  ' ': () => togglePause(),
-  k: () => togglePause(),
-  K: () => togglePause(),
-
-  f: () => toggleFullScreen(),
-  F: () => toggleFullScreen(),
-
-  t: () => toggleTheaterMode(),
-  T: () => toggleTheaterMode(),
-
-  m: () => toggleMute(),
-  M: () => toggleMute(),
-
-  '>': () => changePlaybackRate(1),
-  '<': () => changePlaybackRate(-1)
-}
-
-const handleKeydown = (e: KeyboardEvent) => {
-  if (keyActions[e.key]) {
-    e.preventDefault()
-    const keyAction = keyActions[e.key]
-    if (!keyAction) return
-    keyAction(e)
-  }
-}
-
-const initPlayer = () => {
-  if (!videoContainer.value) return
-
-  // Remove existing video element if present
-  videoContainer.value.innerHTML = ''
-
-  // Create a new video element dynamically
-  const videoElement = document.createElement('video')
-  videoElement.className = 'video-js vjs-youtube'
-  videoElement.setAttribute('playsinline', '')
-  videoElement.setAttribute('controls', props.options.controls ? 'true' : 'false')
-  videoElement.setAttribute('preload', props.options.preload)
-  videoElement.setAttribute('autoplay', props.options.autoplay ? 'true' : 'false')
-  if (props.options.poster) {
-    videoElement.setAttribute('poster', props.options.poster)
-  }
-
-  // Append sources dynamically
-  props.options.sources.forEach((source: Record<string, string>) => {
-    const sourceElement = document.createElement('source')
-    if (!sourceElement) return
-    if (source.src) {
-      sourceElement.src = source.src
-    }
-    if (source.type) {
-      sourceElement.type = source.type
-    }
-    videoElement.appendChild(sourceElement)
-  })
-
-  // Append the new video element to the container
-  videoContainer.value.appendChild(videoElement)
-
-  // Initialize Video.js on the new video element
-  nextTick(() => {
-    player.value = videojs(videoElement, props.options)
-    player.value.loop(props.options.loop)
-    player.value.on('ended', () => {
-      emit('video-ended')
-    })
-    if (props.chaptersList) {
-      chapterList.value = props.chaptersList
-    }
-    player.value.on('useractive', updateControlBarState)
-    player.value.on('userinactive', updateControlBarState)
-
-    player.value.on('pause', updateControlBarState)
-    player.value.on('play', updateControlBarState)
-
-    player.value?.on('loadedmetadata', () => {
-      addTheaterBtn()
-      addMarkers()
-      appendShortCutsPopupBtn()
-      appendShortCutsPopup()
-      appendSkipIndicator()
-      appendVolumeIndicator()
-      appendChapterIndicator()
-      appendPlaybackRateIndicator()
-      if (player.value) {
-        const playerEl = player.value.el() as HTMLElement
-        playerEl.addEventListener('touchstart', handleTouch, { passive: false })
-        playerEl.addEventListener('click', () => {
-          if (!player.value) return
-          if (!player.value.hasStarted_) {
-            player.value.play()
-          }
-        })
-      }
-      nextTick(() => {
-        updateChapterTimeTooltip()
-      })
-    })
-  })
-}
-
-// Initialize video.js when the component is mounted
-onMounted(() => {
-  initPlayer()
-  document.addEventListener('keydown', handleKeydown)
-})
-
-// Watch for changes in the options prop
-watch(
-  () => props.options,
-  () => {
-    if (player.value) {
-      player.value.dispose()
-      initPlayer()
-    }
-  },
-  { deep: true }
-)
 
 watch(
   () => props.chaptersList,
   (newList) => {
-    chapterList.value = newList
-    nextTick(() => {
-      addMarkers()
-      updateChapterTimeTooltip()
-    })
+    chapterList.value = [...newList]
   },
   { deep: true }
 )
 
-watch(
-  () => isShortcutsPopupVisible.value,
-  () => {
-    if (player.value) {
-      const videoElement = player.value.el()
+onMounted(() => {
+  document.addEventListener('keydown', handleKeydown)
+})
 
-      const targetElement = videoElement?.querySelector('.popup-overlay')
-      if (!targetElement) return
-
-      if (isShortcutsPopupVisible.value) {
-        targetElement?.classList.add('show')
-      } else if (!isShortcutsPopupVisible.value) {
-        targetElement?.classList.remove('show')
-      }
-    }
-  }
-)
-// Watch for changes in the loop prop
-watch(
-  () => props.loop,
-  (newLoop) => {
-    if (player.value) {
-      player.value.loop(newLoop)
-    }
-  }
-)
-
-// Destroy video.js when the component is unmounted
 onBeforeUnmount(() => {
-  if (player.value) {
-    player.value.dispose()
-  }
   document.removeEventListener('keydown', handleKeydown)
+  if (indicatorTimer) clearTimeout(indicatorTimer)
 })
 </script>
 
 <template>
-  <div ref="videoContainer"></div>
+  <div class="video-player-container">
+    <video-player :key="source" :default-playback-rates="playbackRates">
+      <video-skin>
+        <video
+          v-if="useNativeVideo"
+          ref="mediaEl"
+          :src="source"
+          :poster="poster"
+          :loop="loop"
+          :autoplay="autoplay"
+          :preload="preload"
+          playsinline
+          @ended="onEnded"
+        >
+          <track
+            v-for="track in tracks"
+            :key="`${track.kind}-${track.src}`"
+            :kind="track.kind"
+            :src="track.src"
+            :srclang="track.srclang"
+            :label="track.label"
+            :default="track.default"
+          />
+        </video>
+        <ogvjs-video
+          v-else
+          ref="mediaEl"
+          :src="source"
+          :poster="poster"
+          :loop="loop"
+          :autoplay="autoplay"
+          :preload="preload"
+          @ended="onEnded"
+        />
+
+        <button
+          type="button"
+          class="theater-toggle-button"
+          aria-label="Toggle theater mode"
+          @click="toggleTheaterMode"
+        >
+          <i class="mdi mdi-rectangle-outline" />
+        </button>
+        <button
+          type="button"
+          class="shortcuts-popup-button"
+          aria-label="Show keyboard shortcuts"
+          @click="toggleShortcuts"
+        >
+          <i class="mdi mdi-keyboard" />
+        </button>
+        <div v-if="chapterIndicator" class="custom-video-indicator show">
+          {{ chapterIndicator }}
+        </div>
+      </video-skin>
+    </video-player>
+
+    <teleport to="body">
+      <div
+        v-if="isShortcutsPopupVisible"
+        class="popup-overlay show"
+        @click="isShortcutsPopupVisible = false"
+      >
+        <div class="table-wraper" @click.stop>
+          <table>
+            <thead>
+              <tr>
+                <th>Key(s)</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Shift + n</td>
+                <td>Next video</td>
+              </tr>
+              <tr>
+                <td>Shift + p</td>
+                <td>Previous video</td>
+              </tr>
+              <tr>
+                <td>Arrow Left</td>
+                <td>Skip -5s</td>
+              </tr>
+              <tr>
+                <td>shift + Arrow Left</td>
+                <td>Go to previous chapter</td>
+              </tr>
+              <tr>
+                <td>Arrow Right</td>
+                <td>Skip +5s</td>
+              </tr>
+              <tr>
+                <td>shift + Arrow Right</td>
+                <td>Go to next chapter</td>
+              </tr>
+              <tr>
+                <td>Arrow Up</td>
+                <td>Increase volume</td>
+              </tr>
+              <tr>
+                <td>Arrow Down</td>
+                <td>Decrease volume</td>
+              </tr>
+              <tr>
+                <td>Space</td>
+                <td>Play/Pause</td>
+              </tr>
+              <tr>
+                <td>f</td>
+                <td>Toggle fullscreen</td>
+              </tr>
+              <tr>
+                <td>t</td>
+                <td>Toggle theater mode</td>
+              </tr>
+              <tr>
+                <td>m</td>
+                <td>Toggle mute</td>
+              </tr>
+              <tr>
+                <td>j</td>
+                <td>Skip -10s</td>
+              </tr>
+              <tr>
+                <td>k</td>
+                <td>Play/Pause</td>
+              </tr>
+              <tr>
+                <td>l</td>
+                <td>Skip +10s</td>
+              </tr>
+              <tr>
+                <td>&gt;</td>
+                <td>Increase playback speed</td>
+              </tr>
+              <tr>
+                <td>&lt;</td>
+                <td>Decrease playback speed</td>
+              </tr>
+              <tr>
+                <td>Shift + ?</td>
+                <td>Show shortcuts</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </teleport>
+  </div>
 </template>
 
 <style scoped>

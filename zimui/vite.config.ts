@@ -10,7 +10,15 @@ import { viteStaticCopy } from 'vite-plugin-static-copy'
 export default defineConfig({
   base: './',
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          // Video.js 10 and the ogv.js fallback are native custom elements.
+          isCustomElement: (tag) =>
+            ['video-player', 'video-skin', 'ogvjs-video'].includes(tag)
+        }
+      }
+    }),
     vuetify({ autoImport: true }),
     legacy({
       targets: ['fully supports es6'],
@@ -20,7 +28,7 @@ export default defineConfig({
       targets: [
         {
           src: 'node_modules/ogv/dist/*',
-          dest: 'assets/ogvjs' // videojs-ogvjs-plugin needs access to ogvjs files at runtime
+          dest: 'assets/ogvjs' // ogv.js needs its workers and wasm files at runtime
         }
       ]
     })
