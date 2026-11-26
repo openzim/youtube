@@ -187,30 +187,30 @@ onBeforeUnmount(() => {
           :preload="preload"
           @ended="onEnded"
         />
+
+        <!-- Slotted into the skin so the controls stay inside the element that
+             goes fullscreen; z-index keeps them above the skin's own layers. -->
+        <button
+          type="button"
+          class="theater-toggle-button"
+          aria-label="Toggle theater mode"
+          @click="toggleTheaterMode"
+        >
+          <i class="mdi mdi-rectangle-outline" />
+        </button>
+        <button
+          type="button"
+          class="shortcuts-popup-button"
+          aria-label="Show keyboard shortcuts"
+          @click="toggleShortcuts"
+        >
+          <i class="mdi mdi-keyboard" />
+        </button>
+        <div v-if="chapterIndicator" class="custom-video-indicator show">
+          {{ chapterIndicator }}
+        </div>
       </video-skin>
     </video-player>
-
-    <!-- Kept outside <video-skin>: its shadow-DOM content paints over slotted
-         children, so controls placed inside it cannot be clicked. -->
-    <button
-      type="button"
-      class="theater-toggle-button"
-      aria-label="Toggle theater mode"
-      @click="toggleTheaterMode"
-    >
-      <i class="mdi mdi-rectangle-outline" />
-    </button>
-    <button
-      type="button"
-      class="shortcuts-popup-button"
-      aria-label="Show keyboard shortcuts"
-      @click="toggleShortcuts"
-    >
-      <i class="mdi mdi-keyboard" />
-    </button>
-    <div v-if="chapterIndicator" class="custom-video-indicator show">
-      {{ chapterIndicator }}
-    </div>
 
     <teleport to="body">
       <div

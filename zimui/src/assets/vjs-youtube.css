@@ -24,10 +24,13 @@ video-skin ogvjs-video {
   width: 100%;
 }
 
+/* These controls are slotted into <video-skin> so they stay inside the element
+   that enters fullscreen. The skin stacks its own layers up to z-index 50, and
+   slotted content is painted among them, so this must stay above that. */
 .theater-toggle-button,
 .shortcuts-popup-button {
   position: absolute;
-  z-index: 20;
+  z-index: 60;
   top: 10px;
   display: inline-flex;
   align-items: center;
@@ -68,7 +71,7 @@ video-skin ogvjs-video {
 
 .custom-video-indicator {
   position: absolute;
-  z-index: 20;
+  z-index: 60;
   top: 50%;
   left: 50%;
   display: inline-flex;
