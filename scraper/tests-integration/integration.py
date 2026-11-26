@@ -74,7 +74,7 @@ def test_zim_videos():
         for subtitle in video_json["subtitleList"]:
             assert (
                 zim_fh.get_item(
-                    video_json["subtitlePath"] + f"/video.{subtitle["code"]}.vtt"
+                    video_json["subtitlePath"] + f"/video.{subtitle['code']}.vtt"
                 ).mimetype
                 == "text/vtt"
             )

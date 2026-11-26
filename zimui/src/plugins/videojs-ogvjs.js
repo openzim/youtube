@@ -740,13 +740,13 @@ OgvJS.supportsTimeupdateEvents = () => {
  * @type {boolean}
  * @default {@link OgvJS.supportsProgressEvents}
  */
-/**
+;/**
  * Boolean indicating whether the 'OgvJS' tech currently supports time update events.
  *
  * @type {boolean}
  * @default {@link OgvJS.supportsTimeupdateEvents}
  */
-;[
+[
   ['featuresVolumeControl', 'canControlVolume'],
   ['featuresMuteControl', 'canMuteVolume'],
   ['featuresPlaybackRate', 'canControlPlaybackRate'],

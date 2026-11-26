@@ -9,7 +9,7 @@ See [README](README.md) for details about how to install with hatch virtualenv.
 
 * Open issues, bug reports and send PRs [on github](https://github.com/openzim/youtube).
 * Make sure it's `py3.6+` compatible.
-* Use [black](https://github.com/psf/black) code formatting.
+* Use [ruff](https://github.com/astral-sh/ruff) for linting and code formatting.
 
 ## notes
 

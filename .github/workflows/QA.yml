@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version-file: scraper/pyproject.toml
           architecture: x64
@@ -23,28 +23,28 @@ jobs:
         working-directory: scraper
         run: |
           pip install -U pip
-          pip install -e .[lint,check,scripts,test]
+          pip install -e .[qa,scripts,test]
 
-      - name: Check black formatting
+      - name: Check linting
         working-directory: scraper
-        run: inv lint-black
+        run: inv check-lint
 
-      - name: Check ruff
+      - name: Check formatting
         working-directory: scraper
-        run: inv lint-ruff
+        run: inv check-format
 
-      - name: Check pyright
+      - name: Check type
         working-directory: scraper
-        run: inv check-pyright
+        run: inv check-type
 
   check-scraper-qa-arm64:
     runs-on: ubuntu-24.04-arm
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version-file: scraper/pyproject.toml
 
@@ -52,28 +52,28 @@ jobs:
         working-directory: scraper
         run: |
           pip install -U pip
-          pip install -e .[lint,check,scripts,test]
+          pip install -e .[qa,scripts,test]
 
-      - name: Check black formatting
+      - name: Check linting
         working-directory: scraper
-        run: inv lint-black
+        run: inv check-lint
 
-      - name: Check ruff
+      - name: Check formatting
         working-directory: scraper
-        run: inv lint-ruff
+        run: inv check-format
 
-      - name: Check pyright
+      - name: Check type
         working-directory: scraper
-        run: inv check-pyright
+        run: inv check-type
 
   check-zimui-qa-amd64:
     runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: zimui/.node-version
 
@@ -94,10 +94,10 @@ jobs:
     runs-on: ubuntu-24.04-arm
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: zimui/.node-version
 

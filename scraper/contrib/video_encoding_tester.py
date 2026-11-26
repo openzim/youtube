@@ -8,9 +8,8 @@ video encoding comparator
 tests a set of videos accross different ffmpeg settings
 """
 
-
 import collections
-import datetime
+import datetime as dt
 import json
 import pathlib
 import subprocess
@@ -46,8 +45,10 @@ def preset_240p(video_format):
         "128k",
         # scale to 240p 4:3, adding bars if necessary
         "-vf",
-        "scale=426:240:force_original_aspect_ratio=decrease,"
-        "pad=426:240:(ow-iw)/2:(oh-ih)/2",
+        (
+            "scale=426:240:force_original_aspect_ratio=decrease,"
+            "pad=426:240:(ow-iw)/2:(oh-ih)/2"
+        ),
         "-codec:a",
         audio_codecs[video_format],
         # constant bitrate
@@ -77,8 +78,10 @@ def preset_360p(video_format):
         "384k",
         # scale to 360p 4:3, adding bars if necessary
         "-vf",
-        "scale=640:360:force_original_aspect_ratio=decrease,"
-        "pad=640:360:(ow-iw)/2:(oh-ih)/2",
+        (
+            "scale=640:360:force_original_aspect_ratio=decrease,"
+            "pad=640:360:(ow-iw)/2:(oh-ih)/2"
+        ),
         "-codec:a",
         audio_codecs[video_format],
         # constant bitrate
@@ -343,12 +346,10 @@ def main(output_dir: pathlib.Path):
             )
 
             for preset in PRESETS.keys():
-                started_on = datetime.datetime.utcnow()
+                started_on = dt.datetime.utcnow()
                 print(f"converting {youtube_id}/{video_format}/{preset}")
                 fpath = convert_video(output_dir, youtube_id, video_format, preset)
-                encoding_duration = (
-                    datetime.datetime.utcnow() - started_on
-                ).total_seconds()
+                encoding_duration = (dt.datetime.utcnow() - started_on).total_seconds()
                 size = fpath.stat().st_size
                 report[youtube_id][video_format][preset] = {
                     "encoding_duration": encoding_duration,

@@ -78,7 +78,7 @@ def main():
         all_ratios.sort()
         median = all_ratios[len(all_ratios) // 2]
         print(  # noqa: T201
-            f"  OVERALL ({len(all_ratios)} videos across {len(sys.argv)-1} ZIMs)"
+            f"  OVERALL ({len(all_ratios)} videos across {len(sys.argv) - 1} ZIMs)"
         )
         print(  # noqa: T201
             f"  1 min of YouTube ≈ {avg:.2f} MB in ZIM  "
