@@ -8,7 +8,7 @@ Create credentials (Other non-UI, Public Data)
 """
 
 import concurrent.futures
-import datetime
+import datetime as dt
 import functools
 import json
 import re
@@ -289,7 +289,7 @@ class Youtube2Zim:
 
             if not self.name:
                 raise Exception("name is mandatory")
-            period = datetime.date.today().strftime("%Y-%m")
+            period = dt.date.today().strftime("%Y-%m")
             self.fname = (
                 self.fname.format(period=period)
                 if self.fname
@@ -374,9 +374,7 @@ class Youtube2Zim:
                     Name=metadata.NameMetadata(self.name),
                     Title=metadata.TitleMetadata(self.title),
                     Publisher=metadata.PublisherMetadata(self.publisher),
-                    Date=metadata.DateMetadata(
-                        datetime.datetime.now(tz=datetime.UTC).date()
-                    ),
+                    Date=metadata.DateMetadata(dt.datetime.now(tz=dt.UTC).date()),
                     Creator=metadata.CreatorMetadata(self.creator),
                     Description=metadata.DescriptionMetadata(self.description),
                     LongDescription=(
@@ -758,7 +756,7 @@ class Youtube2Zim:
                     Bucket=self.s3_storage.bucket_name, Key=key
                 )
                 age_seconds = (
-                    datetime.datetime.now(datetime.UTC) - response["LastModified"]
+                    dt.datetime.now(dt.UTC) - response["LastModified"]
                 ).total_seconds()
                 if age_seconds > max_age_seconds:
                     logger.debug(f"S3 cache for {key} is expired")
@@ -808,7 +806,6 @@ class Youtube2Zim:
 
         s3_key = None
         if self.s3_storage:
-
             s3_key = f"{self.video_format}/{self.video_quality}/{video_id}"
             logger.debug(
                 f"Attempting to download video file for {video_id} from cache..."
@@ -944,16 +941,16 @@ class Youtube2Zim:
                 end = chapter["end_time"]
                 title = chapter["title"]
                 start_time = (
-                    f"{int(start//3600):02}:"
-                    f"{int((start%3600)//60):02}:"
-                    f"{int(start%60):02}."
-                    f"{int((start%1)*1000):03}"
+                    f"{int(start // 3600):02}:"
+                    f"{int((start % 3600) // 60):02}:"
+                    f"{int(start % 60):02}."
+                    f"{int((start % 1) * 1000):03}"
                 )
                 end_time = (
-                    f"{int(end//3600):02}:"
-                    f"{int((end%3600)//60):02}:"
-                    f"{int(end%60):02}."
-                    f"{int((end%1)*1000):03}"
+                    f"{int(end // 3600):02}:"
+                    f"{int((end % 3600) // 60):02}:"
+                    f"{int(end % 60):02}."
+                    f"{int((end % 1) * 1000):03}"
                 )
                 chapter_f.write(f"{start_time} --> {end_time}\n")
                 chapter_f.write(f"{title}\n\n")
@@ -1373,7 +1370,7 @@ class Youtube2Zim:
                     videos[0]["contentDetails"]["videoId"]
                 ),
                 duration=isodate.duration_isoformat(
-                    datetime.timedelta(seconds=playlist_duration)
+                    dt.timedelta(seconds=playlist_duration)
                 ),
             )
 
@@ -1393,7 +1390,7 @@ class Youtube2Zim:
                 videos_count=len(videos),
                 main_video_slug=get_video_slug(videos[0]),
                 duration=isodate.duration_isoformat(
-                    datetime.timedelta(seconds=playlist_duration)
+                    dt.timedelta(seconds=playlist_duration)
                 ),
             )
 

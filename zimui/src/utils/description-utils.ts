@@ -1,6 +1,6 @@
-import LinkifyIt from 'linkify-it'
+import { LinkifyIt } from 'linkify-it'
 
-const linkify = new LinkifyIt()
+const linkify = new LinkifyIt({ fuzzyLink: true })
 
 export const formatVideoDescription = (text: string): Array<[string, string]> => {
   const desc: Array<[string, string]> = []

@@ -7,7 +7,7 @@ repos:
   -   id: trailing-whitespace
   -   id: end-of-file-fixer
 - repo: https://github.com/pre-commit/mirrors-prettier
-  rev: v3.0.3
+  rev: v3.1.0
   hooks:
   - id: prettier
     files: zimui\/.*$ # files in zimui folder
@@ -20,14 +20,11 @@ repos:
     args:
     - --config
     - zimui/eslint.config.js
-- repo: https://github.com/psf/black
-  rev: "25.11.0"
-  hooks:
-  -   id: black
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.14.5
+  rev: v0.17.6
   hooks:
-  - id: ruff
+  - id: ruff-check
+  - id: ruff-format
 - repo: https://github.com/RobertCraigie/pyright-python
   rev: v1.1.407
   hooks:

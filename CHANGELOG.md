@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Resolve re.PatternError for invalid regex group reference (#434)
 - Fix prettier and eslint check in zimui QA CI (#463)
 - Retrieve the channel banner again, from `brandingSettings.image.bannerExternalUrl` (#342)
+- Fix `inv check-all`/`fix-all` passing an explicit `.` path to `pyright`, which bypassed its `[tool.pyright] include` scoping and reported spurious errors on `contrib/` and `tests-integration/`
 
 ### Added
 
@@ -32,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Upgrade to Vuetify 4 (#470)
 - Rework README to push Docker as the recommended installation method. (#457)
+- Upgrade Python and JS dependencies, and GitHub Actions, to their latest versions, except `zimscraperlib` which is kept at 5.3.0: versions 5.4.0-5.6.0 reliably break YouTube video downloads via yt-dlp (triggers "Sign in to confirm you're not a bot" on every video, confirmed unrelated to the `requests`/`urllib3` versions) (#485)
+- Migrate scraper to openZIM's Python bootstrap, conventions and policies v2.0.0 (drop `black` in favor of `ruff format`, merge the `lint`/`check` hatch environments into a single `qa` one)
 
 ## [3.5.0] - 2025-11-17
 

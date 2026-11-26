@@ -15,7 +15,7 @@ subtitles and the authors' profile pictures; It then produces JSON files contain
 
 `youtube2zim` adheres to openZIM's [Contribution Guidelines](https://github.com/openzim/overview/wiki/Contributing).
 
-`youtube2zim` has implemented openZIM's [Python bootstrap, conventions and policies](https://github.com/openzim/_python-bootstrap/blob/main/docs/Policy.md) **v1.0.2**.
+`youtube2zim` has implemented openZIM's [Python bootstrap, conventions and policies](https://github.com/openzim/_python-bootstrap/blob/main/docs/Policy.md) **v2.0.0**.
 
 # Documentation
 
