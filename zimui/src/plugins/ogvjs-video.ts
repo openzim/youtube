@@ -104,6 +104,8 @@ class OgvJSVideoElement extends MediaAttachBase {
   }
 
   readonly #player: OgvPlayer
+  #autoplay = false
+  #hasStarted = false
 
   constructor() {
     super()
@@ -122,19 +124,38 @@ class OgvJSVideoElement extends MediaAttachBase {
         this.dispatchEvent(new Event(type, { bubbles: true, composed: true }))
       })
     }
+    // ogv.js stubs out `<video>`'s autoplay handling (its `autoplay` property is
+    // a no-op that always reads `false`), so start playback ourselves as soon
+    // as the media can play.
+    for (const type of ['loadeddata', 'canplay'] as const) {
+      this.#player.addEventListener(type, () => this.#startPlayback())
+    }
+    this.#player.addEventListener('playing', () => {
+      this.#hasStarted = true
+    })
+  }
+
+  #startPlayback() {
+    // Only start playback once: later media events must not resume a video the
+    // user has paused.
+    if (!this.#autoplay || this.#hasStarted) return
+    try {
+      void Promise.resolve(this.#player.play()).catch(() => {
+        // Autoplay policies can reject before a user gesture; the play button
+        // stays available in that case.
+      })
+    } catch {
+      // ogv.js throws while the media is still loading; a media event retries.
+    }
   }
 
   connectedCallback() {
     super.connectedCallback()
-    if (this.hasAttribute('src')) this.#player.src = this.getAttribute('src') ?? ''
-    if (this.hasAttribute('poster')) this.#player.poster = this.getAttribute('poster') ?? ''
-    if (this.hasAttribute('preload')) this.#player.preload = this.getAttribute('preload') ?? ''
-    this.#player.loop = this.hasAttribute('loop')
-    this.#player.autoplay = this.hasAttribute('autoplay')
-    this.#player.muted = this.hasAttribute('muted')
-    if (this.hasAttribute('playback-rate')) {
-      this.#player.playbackRate = Number(this.getAttribute('playback-rate')) || 1
-    }
+    // Attribute-backed values are applied by `attributeChangedCallback`. Do not
+    // re-read them here: the element is usually configured through properties
+    // (Vue binds `src`, `loop`, `autoplay`, ... as properties), and re-applying
+    // the absent attributes would reset those values to their defaults.
+    this.#startPlayback()
   }
 
   disconnectedCallback() {
@@ -145,25 +166,25 @@ class OgvJSVideoElement extends MediaAttachBase {
   attributeChangedCallback(name: string, _oldValue: string | null, newValue: string | null) {
     switch (name) {
       case 'src':
-        this.#player.src = newValue ?? ''
+        this.src = newValue ?? ''
         break
       case 'poster':
-        this.#player.poster = newValue ?? ''
+        this.poster = newValue ?? ''
         break
       case 'preload':
-        this.#player.preload = newValue ?? ''
+        this.preload = newValue ?? ''
         break
       case 'loop':
-        this.#player.loop = newValue !== null
+        this.loop = newValue !== null
         break
       case 'autoplay':
-        this.#player.autoplay = newValue !== null
+        this.autoplay = newValue !== null
         break
       case 'muted':
-        this.#player.muted = newValue !== null
+        this.muted = newValue !== null
         break
       case 'playback-rate':
-        this.#player.playbackRate = Number(newValue) || 1
+        this.playbackRate = Number(newValue) || 1
         break
     }
   }
@@ -178,6 +199,7 @@ class OgvJSVideoElement extends MediaAttachBase {
 
   set src(value: string) {
     this.#player.src = value
+    this.#startPlayback()
   }
 
   get currentSrc() {
@@ -209,11 +231,12 @@ class OgvJSVideoElement extends MediaAttachBase {
   }
 
   get autoplay() {
-    return this.#player.autoplay
+    return this.#autoplay
   }
 
   set autoplay(value: boolean) {
-    this.#player.autoplay = value
+    this.#autoplay = value
+    this.#startPlayback()
   }
 
   get controls() {

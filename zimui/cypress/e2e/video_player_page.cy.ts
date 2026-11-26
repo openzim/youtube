@@ -125,5 +125,16 @@ describe('video player page', () => {
       const element = $element[0] as HTMLElement & { adapter: { src: string } }
       expect(element.adapter.src).to.include('video.webm')
     })
+
+    // ogv.js does not implement autoplay, so the media component starts
+    // playback itself once the fallback can play.
+    cy.get('ogvjs-video').should(($element) => {
+      const element = $element[0] as HTMLElement & {
+        adapter: { paused: boolean; currentTime: number; duration: number }
+      }
+      expect(element.adapter.duration, 'decoded duration').to.be.greaterThan(0)
+      expect(element.adapter.paused, 'playback started').to.equal(false)
+      expect(element.adapter.currentTime, 'playback position').to.be.greaterThan(0)
+    })
   })
 })
