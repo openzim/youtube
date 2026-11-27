@@ -166,13 +166,14 @@ jobs:
 
   # this job replaces the standard "build_docker" job since it builds the docker image
   #
-  # Runs on the self-hosted runner, not the GitHub-hosted ubuntu-24.04/-arm runners:
-  # it's the only one hitting real YouTube, and the shared GitHub-hosted runner pool's
-  # IP reputation with YouTube's bot detection degrades with volume, causing spurious
-  # failures unrelated to the code under test (see #485). A single run covers both
-  # architectures' worth of signal here, since YouTube bot-detection and scraper
-  # correctness aren't CPU-architecture-dependent; running it twice would only double
-  # the load on this small, shared, non-ephemeral machine for no extra signal.
+  # Runs on the self-hosted runner, not a GitHub-hosted one: the shared GitHub-hosted
+  # runner pool's IP reputation with YouTube's bot detection degrades with volume,
+  # causing spurious failures unrelated to the code under test (see #485). This is
+  # the primary, reliable signal for "does the scraper work against real YouTube".
+  # arm64-specific regressions (ffmpeg, libzim, pillow, ... native bits) are instead
+  # covered by run-integration-tests-arm64 below, on the GitHub-hosted arm64 runner,
+  # since this self-hosted machine is small, shared and non-ephemeral, and we don't
+  # want to double its load just to duplicate the already-reliable amd64 signal.
   run-integration-tests:
     runs-on: [self-hosted, Linux, X64]
     steps:
@@ -200,7 +201,7 @@ jobs:
       - name: Archive ZIM
         uses: actions/upload-artifact@v7
         with:
-          name: openZIM_testing.zim
+          name: openZIM_testing_amd64.zim
           path: output/openZIM_testing.zim
           retention-days: 7
 
@@ -213,4 +214,31 @@ jobs:
       - name: Cleanup docker
         if: always()
         run: docker system prune -af
+
+  # arm64-specific regression coverage for the full video-download/encode/ZIM-build
+  # path (ffmpeg, libzim, pillow, ... native bits aren't exercised by the pure unit
+  # tests above). Stays on the GitHub-hosted arm64 runner rather than moving to the
+  # (amd64-only) self-hosted one: it can occasionally show the same YouTube-bot-check
+  # noise as before, but that's an accepted, pre-existing trade-off for arch coverage
+  # we'd otherwise lose entirely, not a new one introduced by moving the amd64 job.
+  run-integration-tests-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Ensure we can build the Docker image
+        run: |
+          docker build -t youtube2zim .
+
+      - name: Ensure zimui and its files are present in Docker image
+        run: docker run --rm youtube2zim python -c "from pathlib import Path; import youtube2zim; path = Path(youtube2zim.__file__).parent / 'zimui'; assert (path / 'index.html').is_file() and (path / 'assets').is_dir(), 'zimui not found'"
+
+      - name: Run scraper
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          OPTIMIZATION_CACHE_URL: ${{ secrets.OPTIMIZATION_CACHE_URL }}
+        run: docker run -v $PWD/output:/output youtube2zim youtube2zim --api-key "$YOUTUBE_API_KEY" --optimization-cache "$OPTIMIZATION_CACHE_URL" --id "UC8elThf5TGMpQfQc_VE917Q" --name "tests_en_openzim-testing" --zim-file "openZIM_testing.zim" --tags "tEsTing,x-mark:yes"
+
+      - name: Run integration test suite
+        run: docker run -v $PWD/scraper/tests-integration/integration.py:/src/scraper/tests-integration/integration.py -v $PWD/output:/output youtube2zim bash -c "pip install pytest; pytest -v /src/scraper/tests-integration/integration.py"
 
