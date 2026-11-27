@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Upgrade Pinia to 4.x and vue-router to 5.x (#481)
 - Upgrade to Vuetify 4 (#470)
 - Rework README to push Docker as the recommended installation method. (#457)
 - Upgrade Python and JS dependencies, and GitHub Actions, to their latest versions, except `zimscraperlib` which is kept at 5.3.0: versions 5.4.0-5.6.0 reliably break YouTube video downloads via yt-dlp (triggers "Sign in to confirm you're not a bot" on every video, confirmed unrelated to the `requests`/`urllib3` versions) (#485)
