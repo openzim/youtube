@@ -33,7 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Upgrade to Vuetify 4 (#470)
 - Rework README to push Docker as the recommended installation method. (#457)
-- Upgrade Python and JS dependencies, and GitHub Actions, to their latest versions, except `zimscraperlib` which is kept at 5.3.0: versions 5.4.0-5.6.0 reliably break YouTube video downloads via yt-dlp (triggers "Sign in to confirm you're not a bot" on every video, confirmed unrelated to the `requests`/`urllib3` versions) (#485)
+- Upgrade Python and JS dependencies, and GitHub Actions, to their latest versions, including `zimscraperlib` to 5.6.0: it initially looked like it broke YouTube video downloads via yt-dlp, but that was a false signal from YouTube's bot detection degrading on the shared GitHub-hosted runner pool under repeated testing, not a real `zimscraperlib` issue (confirmed on the self-hosted runner, see #485)
+- Move the real-YouTube-hitting `run-integration-tests` job in `Tests`/`DailyTests` to the self-hosted runner, since the shared GitHub-hosted runner pool's IP reputation with YouTube's bot detection degrades with volume and caused spurious failures unrelated to the code under test (#485)
 - Migrate scraper to openZIM's Python bootstrap, conventions and policies v2.0.0 (drop `black` in favor of `ruff format`, merge the `lint`/`check` hatch environments into a single `qa` one)
 
 ## [3.5.0] - 2025-11-17
