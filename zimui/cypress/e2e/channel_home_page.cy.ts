@@ -28,6 +28,18 @@ describe('home page for a channel', () => {
     cy.contains('Coffee').should('be.visible')
   })
 
+  it('navigates back to the home tab', () => {
+    cy.intercept('GET', '/playlists.json', { fixture: 'channel/playlists.json' }).as('getPlaylists')
+    cy.contains('.v-btn__content', 'Playlists').click()
+    cy.wait('@getPlaylists')
+    cy.url().should('include', '/playlists')
+
+    cy.go('back')
+
+    cy.url().should('not.include', '/playlists')
+    cy.contains('Uploads from openZIM_testing').should('be.visible')
+  })
+
   it('opens and loads "About Channel" dialog', () => {
     cy.contains('.v-btn__content', 'About Channel').click()
     cy.contains('Description for openZIM_testing').should('be.visible')
