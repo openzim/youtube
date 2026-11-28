@@ -104,7 +104,10 @@ video-skin ogvjs-video {
   height: 100vh;
   background: rgba(0, 0, 0, 0.884);
   color: white;
-  font-size: larger;
+  /* The overlay is teleported to <body>, so it no longer inherits the small
+     font size the old player root used to provide. Pin its scale so the
+     table keeps its compact layout. */
+  font-size: 0.875rem;
 }
 
 .popup-overlay.show {
@@ -125,17 +128,17 @@ video-skin ogvjs-video {
 
 .popup-overlay table td:first-child,
 .popup-overlay table th:first-child {
-  padding-right: 10em;
+  padding-right: 4em;
 }
 
 .popup-overlay .table-wraper table {
   border-collapse: separate;
-  border-spacing: 0 1em;
+  border-spacing: 0 0.25em;
 }
 
 .popup-overlay table th,
 .popup-overlay table td {
-  padding: 1em;
+  padding: 0.4em 0.75em;
   border-bottom: 1px solid rgba(12, 12, 12, 0.2);
   text-align: left;
 }

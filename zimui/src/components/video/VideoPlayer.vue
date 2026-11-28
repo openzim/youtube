@@ -40,7 +40,9 @@ const props = defineProps({
 const emit = defineEmits(['video-ended', 'next-video', 'prev-video'])
 
 const main = useMainStore()
+const containerEl = ref<HTMLElement>()
 const mediaEl = ref<HTMLElement>()
+const isFullscreen = ref(false)
 const chapterList = ref<Chapter[]>([...props.chaptersList])
 const isShortcutsPopupVisible = ref(false)
 const chapterIndicator = ref('')
@@ -98,11 +100,29 @@ const goToPrevChapter = () => {
 }
 
 const toggleTheaterMode = () => {
+  if (isFullscreen.value) return
   main.theaterMode = !main.theaterMode
 }
 
 const toggleShortcuts = () => {
+  if (isFullscreen.value) return
   isShortcutsPopupVisible.value = !isShortcutsPopupVisible.value
+}
+
+// Video.js 10 requests fullscreen for the media container inside the skin's
+// shadow tree, so document.fullscreenElement is not a direct descendant of
+// this component: walk back up through the shadow root host to know whether
+// it is our own player which went fullscreen.
+const updateFullscreenState = () => {
+  const element = document.fullscreenElement
+  if (!element) {
+    isFullscreen.value = false
+    return
+  }
+  const root = element.getRootNode()
+  const target = root instanceof ShadowRoot ? root.host : element
+  isFullscreen.value = Boolean(containerEl.value?.contains(target))
+  if (isFullscreen.value) isShortcutsPopupVisible.value = false
 }
 
 // Video.js 10's packaged skin already handles Space/k/m/j/l/arrows/f/>/<,
@@ -144,16 +164,18 @@ watch(
 
 onMounted(() => {
   document.addEventListener('keydown', handleKeydown)
+  document.addEventListener('fullscreenchange', updateFullscreenState)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleKeydown)
+  document.removeEventListener('fullscreenchange', updateFullscreenState)
   if (indicatorTimer) clearTimeout(indicatorTimer)
 })
 </script>
 
 <template>
-  <div class="video-player-container">
+  <div ref="containerEl" class="video-player-container">
     <video-player :key="source" :default-playback-rates="playbackRates">
       <video-skin>
         <video
@@ -191,6 +213,7 @@ onBeforeUnmount(() => {
         <!-- Slotted into the skin so the controls stay inside the element that
              goes fullscreen; z-index keeps them above the skin's own layers. -->
         <button
+          v-if="!isFullscreen"
           type="button"
           class="theater-toggle-button"
           aria-label="Toggle theater mode"
@@ -199,6 +222,7 @@ onBeforeUnmount(() => {
           <i class="mdi mdi-rectangle-outline" />
         </button>
         <button
+          v-if="!isFullscreen"
           type="button"
           class="shortcuts-popup-button"
           aria-label="Show keyboard shortcuts"
