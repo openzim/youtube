@@ -109,10 +109,6 @@ const toggleShortcuts = () => {
   isShortcutsPopupVisible.value = !isShortcutsPopupVisible.value
 }
 
-// Video.js 10 requests fullscreen for the media container inside the skin's
-// shadow tree, so document.fullscreenElement is not a direct descendant of
-// this component: walk back up through the shadow root host to know whether
-// it is our own player which went fullscreen.
 const updateFullscreenState = () => {
   const element = document.fullscreenElement
   if (!element) {
