@@ -64,4 +64,89 @@ describe('video player page', () => {
     cy.contains('openZIM_testing - 2/2').should('be.visible')
     cy.get('video').should('have.prop', 'paused', false)
   })
+
+  it('controls playback with the Video.js 10 skin', () => {
+    cy.intercept('GET', '/videos/timelapse-9Tgo.json', {
+      fixture: 'channel/videos/timelapse-9Tgo.json'
+    }).as('getVideo')
+    cy.contains('.v-card-title ', 'Timelapse').click()
+    cy.wait('@getVideo')
+    cy.wait('@getPlaylist')
+    cy.wait('@getVideoFile')
+
+    cy.get('video-player video').should('have.prop', 'paused', false)
+    cy.get('video').should(($video) => {
+      expect($video[0].readyState).to.be.greaterThan(0)
+    })
+
+    const playButton = () => cy.get('video-skin').shadow().find('media-play-button').last()
+
+    // The packaged Video.js 10 skin exposes its controls in a shadow root.
+    playButton().click({ force: true })
+    cy.get('video').should('have.prop', 'paused', true)
+    playButton().click({ force: true })
+    cy.get('video').should('have.prop', 'paused', false)
+    playButton().click({ force: true })
+    cy.get('video').should('have.prop', 'paused', true)
+
+    cy.get('video')
+      .invoke('prop', 'currentTime')
+      .then((beforeSeek) => {
+        cy.get('video-skin').shadow().find('media-container').first().type('{rightarrow}', {
+          force: true
+        })
+        cy.get('video').should(($video) => {
+          expect($video[0].currentTime).to.be.greaterThan(beforeSeek as number)
+        })
+      })
+
+    cy.get('video-skin').shadow().find('media-fullscreen-button').should('exist')
+
+    // The app's overlay controls live outside the skin and must stay clickable
+    // (the skin's shadow-DOM content paints over slotted children).
+    cy.get('.theater-toggle-button').click()
+    cy.get('.v-container').should('have.class', 'watch-theater-mode')
+    cy.get('.theater-toggle-button').click()
+    cy.get('.v-container').should('have.class', 'watch-default-mode')
+
+    cy.get('.shortcuts-popup-button').click()
+    cy.get('.popup-overlay').should('be.visible')
+    cy.get('.popup-overlay').click('topLeft')
+    cy.get('.popup-overlay').should('not.exist')
+  })
+
+  it('falls back to ogv.js when WebM is not supported natively', () => {
+    cy.window().then((win) => {
+      const nativeCanPlayType = win.HTMLMediaElement.prototype.canPlayType
+      win.HTMLMediaElement.prototype.canPlayType = function (type: string) {
+        return type.startsWith('video/') ? '' : nativeCanPlayType.call(this, type)
+      }
+    })
+
+    cy.intercept('GET', '/videos/timelapse-9Tgo.json', {
+      fixture: 'channel/videos/timelapse-9Tgo.json'
+    }).as('getVideo')
+    cy.contains('.v-card-title ', 'Timelapse').click()
+    cy.wait('@getVideo')
+    cy.wait('@getPlaylist')
+    cy.wait('@getVideoFile')
+
+    cy.get('ogvjs-video').should('exist')
+    cy.get('video').should('not.exist')
+    cy.get('ogvjs-video').should(($element) => {
+      const element = $element[0] as HTMLElement & { adapter: { src: string } }
+      expect(element.adapter.src).to.include('video.webm')
+    })
+
+    // ogv.js does not implement autoplay, so the media component starts
+    // playback itself once the fallback can play.
+    cy.get('ogvjs-video').should(($element) => {
+      const element = $element[0] as HTMLElement & {
+        adapter: { paused: boolean; currentTime: number; duration: number }
+      }
+      expect(element.adapter.duration, 'decoded duration').to.be.greaterThan(0)
+      expect(element.adapter.paused, 'playback started').to.equal(false)
+      expect(element.adapter.currentTime, 'playback position').to.be.greaterThan(0)
+    })
+  })
 })

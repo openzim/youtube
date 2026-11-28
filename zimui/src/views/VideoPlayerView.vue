@@ -119,21 +119,13 @@ const tracks = computed(() => {
   return [...subtitles.value, ...chapters.value]
 })
 
+// Video.js 10 uses custom elements instead of a single options object. The
+// component keeps this prop shape so the public API of VideoPlayer.vue stays
+// unchanged; only the Video.js-specific options have been removed.
 const videoOptions = ref({
-  controls: true,
   autoplay: true,
-  preload: true,
-  fluid: true,
-  responsive: true,
-  enableSmoothSeeking: true,
-  controlBar: { pictureInPictureToggle: false },
+  preload: 'auto',
   playbackRates: [0.25, 0.5, 1, 1.5, 2],
-  techOrder: ['html5', 'ogvjs'],
-  html5: { preloadTextTracks: false },
-  ogvjs: {
-    base: './assets/ogvjs',
-    preloadTextTracks: false
-  },
   poster: videoPoster,
   sources: [
     {
@@ -239,7 +231,7 @@ watch(
   >
     <!-- Video Player -->
     <div class="video-player">
-      <video-player
+      <VideoPlayer
         :options="videoOptions"
         :loop="main.loop === LoopOptions.loopVideo"
         :chapters-list="chapterList"
